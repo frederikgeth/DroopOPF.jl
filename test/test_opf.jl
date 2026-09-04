@@ -36,4 +36,13 @@
     @test result.objective >= 0.0
     @test maximum(abs, equilibrium_residual(case, result.state).power.vector) < 1.0e-6
     @test maximum(abs, equilibrium_residual(case, result.state).droop) < 5.0e-3
+
+    warm_result = solve_opf(
+        case;
+        smooth_epsilon = 1.0e-3,
+        initial_state = result.state,
+        silent = true,
+    )
+    @test warm_result.state !== nothing
+    @test warm_result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
 end

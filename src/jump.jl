@@ -32,7 +32,12 @@ function _set_bound!(variable, lower, upper)
     set_upper_bound(variable, upper)
 end
 
-function _build_acopf_model(case::Case; epsilon::Real, silent::Bool)
+function _build_acopf_model(
+    case::Case;
+    epsilon::Real,
+    silent::Bool,
+    initial_state::Union{Nothing,ACState} = nothing,
+)
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
     nbus = length(network.buses)
@@ -42,6 +47,12 @@ function _build_acopf_model(case::Case; epsilon::Real, silent::Bool)
     count(bus -> bus.reference, network.buses) == 1 ||
         throw(ArgumentError("AC OPF requires exactly one reference bus"))
     epsilon > 0 || throw(ArgumentError("smooth_epsilon must be positive"))
+    if !isnothing(initial_state)
+        length(initial_state.vm) == nbus && length(initial_state.va) == nbus ||
+            throw(ArgumentError("initial_state voltage vectors do not match the network"))
+        length(initial_state.pg) == ngen && length(initial_state.qg) == ngen ||
+            throw(ArgumentError("initial_state generator vectors do not match the case"))
+    end
 
     model = Model(Ipopt.Optimizer)
     silent && set_silent(model)
@@ -54,14 +65,14 @@ function _build_acopf_model(case::Case; epsilon::Real, silent::Bool)
         _set_bound!(vm[i], bus.v_min, bus.v_max)
         _set_bound!(va[i], -pi, pi)
         bus.reference && fix(va[i], 0.0; force = true)
-        set_start_value(vm[i], 1.0)
-        set_start_value(va[i], 0.0)
+        set_start_value(vm[i], isnothing(initial_state) ? 1.0 : initial_state.vm[i])
+        set_start_value(va[i], isnothing(initial_state) ? 0.0 : initial_state.va[i])
     end
     for (i, generator) in enumerate(case.generators)
         _set_bound!(pg[i], generator.p_min, generator.p_max)
         _set_bound!(qg[i], generator.q_min, generator.q_max)
-        set_start_value(pg[i], generator.initial_p)
-        set_start_value(qg[i], generator.initial_q)
+        set_start_value(pg[i], isnothing(initial_state) ? generator.initial_p : initial_state.pg[i])
+        set_start_value(qg[i], isnothing(initial_state) ? generator.initial_q : initial_state.qg[i])
         if !generator.available
             fix(pg[i], 0.0; force = true)
             fix(qg[i], 0.0; force = true)
@@ -175,10 +186,16 @@ function solve_opf(
     case::Case;
     smooth_epsilon::Real = 1.0e-4,
     silent::Bool = true,
+    initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
 )
     validate_case(case)
-    model, variables = _build_acopf_model(case; epsilon = smooth_epsilon, silent = silent)
+    model, variables = _build_acopf_model(
+        case;
+        epsilon = smooth_epsilon,
+        silent = silent,
+        initial_state = initial_state,
+    )
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
     end

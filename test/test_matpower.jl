@@ -27,4 +27,24 @@
     @test length(attached.controls) == 1
     @test length(attached.attachments) == 1
     @test attached.generators == case.generators
+
+    simple_case = load_matpower_case(joinpath(@__DIR__, "data", "droop2.m"))
+    control = VoltVarDroop(
+        VoltageSchedule(1.0; v_db_low = 0.99, v_db_high = 1.01),
+        0.05,
+        0.0,
+        ReactiveCapability(p_min = 0.0, p_max = 2.0, q_min = -1.0, q_max = 1.0),
+    )
+    droop_case = attach_controls(
+        simple_case,
+        [control],
+        [GeneratorControlAttachment(1, 1, RegulatedLocation(:bus, 1))],
+    )
+    result = solve_opf(droop_case; smooth_epsilon = 1.0e-3, silent = true)
+    @test result.state !== nothing
+    @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+    report = validate_equilibrium(droop_case, result; droop_tolerance = 5.0e-3)
+    @test report.valid
+    @test report.power_balance_max < 1.0e-6
+    @test report.smooth_exact_droop_gap <= 5.0e-3
 end
