@@ -8,7 +8,7 @@ Last updated: 2026-09-03
 
 Deliver a small but scientifically credible proof of concept that demonstrates:
 
-> A Julia library can load a small AC network, attach generator frequency-droop controls, solve one post-contingency operating point, and independently validate the resulting equilibrium.
+> A Julia library can load a small AC network, attach synchronous-generator volt-var droop controls, solve a base AC OPF, and independently validate the resulting equilibrium.
 
 The proof of concept is successful when the entire workflow is executable from a clean environment and produces an interpretable validation report.
 
@@ -39,8 +39,9 @@ Avoid spending early iterations on infrastructure that does not improve the proo
 - MATPOWER case input;
 - 3–9 buses;
 - two or three generators;
-- one active-power/frequency droop curve per participating generator;
-- one common frequency-deviation variable per scenario;
+- one reactive-power/voltage droop curve per participating generator;
+- explicit regulated bus or terminal location per controller;
+- reactive capability limits associated with each generator;
 - one line or generator outage;
 - base and post-contingency AC states;
 - smooth softplus droop encoding;
@@ -51,7 +52,7 @@ Avoid spending early iterations on infrastructure that does not improve the proo
 ### Deferred
 
 - multiple islands;
-- voltage and reactive-power droop;
+- frequency/active-power droop and dynamic governor response;
 - PV/PQ switching;
 - generator dynamic states;
 - frequency nadir and RoCoF;
@@ -186,20 +187,20 @@ Exit criteria:
 - deadband leakage and breakpoint proximity are measurable;
 - epsilon is expressed in input units.
 
-### Iteration 4 — scalar droop-sharing model
+### Iteration 4 — multi-generator volt-var equilibrium
 
 Deliver:
 
-- one-frequency-variable model;
+- one or more regulated voltage locations;
 - two or three participating generators;
-- active-power balance with droop response;
+- reactive-power response with droop and deadband;
 - scalar reference test with known response direction;
-- saturation and reserve-headroom checks.
+- saturation and active-power-dependent capability checks.
 
 Exit criteria:
 
-- the response has the correct sign;
-- the total response balances the disturbance;
+- low voltage causes positive network reactive injection;
+- the voltage/reactive response satisfies the declared regulated location;
 - generators saturate only when expected;
 - exact curve replay passes the configured tolerance.
 
@@ -270,7 +271,7 @@ Exit criteria:
 - P0-06: independent AC residual evaluator;
 - P0-07: exact PWL response curve;
 - P0-08: smooth softplus response curve;
-- P0-09: scalar droop-sharing test;
+- P0-09: multi-generator volt-var sharing test;
 - P0-10: one-contingency scenario;
 - P0-11: independent equilibrium validator;
 - P0-12: structured report and end-to-end example.
@@ -301,7 +302,7 @@ Exit criteria:
 
 ### P3 — broader model scope
 
-- P3-01: reactive-power/voltage droop;
+- P3-01: frequency/active-power droop;
 - P3-02: converter controls;
 - P3-03: storage;
 - P3-04: multi-period scenarios;
@@ -352,7 +353,7 @@ The next two iterations should remain detailed. Later work should remain at epic
 | Risk | Consequence | Mitigation |
 |---|---|---|
 | Droop sign convention is wrong | Physically reversed response | Hand-worked scalar tests and explicit conventions |
-| Free slack masks frequency imbalance | False equilibrium | Require explicit frequency/balance policy |
+| Free slack masks voltage-control failure | False equilibrium | Require explicit regulated-location and Q-response checks |
 | Smooth curve differs materially from exact curve | Misleading security result | Exact replay and smoothing-gap findings |
 | AC model and validator share a bug | False confidence | Independent evaluator and differential tests |
 | Tiny epsilon destabilizes NLP | Failed or unreliable solves | Continuation and per-curve scaling |
@@ -385,4 +386,3 @@ Do not begin P2 work until the following are true:
 - scenario results are stable and serializable;
 - profiling identifies a real bottleneck;
 - the public interfaces have been used from an example outside the implementation files.
-

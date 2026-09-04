@@ -6,7 +6,7 @@ Last updated: 2026-09-03
 
 ## 1. Purpose
 
-`DroopOPF.jl` is a Julia library for steady-state and quasi-steady security-constrained AC optimal power flow with explicit generator and converter control responses, initially focused on generator frequency droop.
+`DroopOPF.jl` is a Julia library for steady-state and quasi-steady security-constrained AC optimal power flow with explicit generator and converter control responses, initially focused on synchronous-generator volt-var droop.
 
 The project has two simultaneous goals:
 
@@ -22,7 +22,7 @@ The reference implementation and the scalable implementation must share the same
 - balanced single-phase AC networks;
 - single-period steady-state and quasi-steady-state studies;
 - MATPOWER-compatible input;
-- generator active-power/frequency droop;
+- generator reactive-power/voltage droop;
 - preventive and corrective contingency response;
 - line and generator outages;
 - exact piecewise-linear control curves;
@@ -279,22 +279,24 @@ struct DroopControl{T}
 end
 ```
 
-For generator frequency response, the canonical relationship is:
+For generator volt-var response, the canonical relationship is:
 
 ```text
-Δf[c] = f[c] - f_reference
-P[g,c] = P[g,0] + response(control[g], Δf[c])
+V[g,c] = voltage at the control location for generator g in scenario c
+Q[g,c] = response(control[g], V[g,c]; P[g,c])
 ```
 
-Incremental output is the preferred representation because it composes naturally with base dispatch, reserve headroom, and contingency redispatch.
+The response is evaluated against the active-power-dependent reactive capability of the generator. Frequency droop can use the same abstraction later with `input_quantity=:frequency` and `output_quantity=:active_power`.
 
 ### 6.5 Measurement location
 
 The input signal must explicitly identify its scope:
 
-- `:system`: one coherent frequency for the study;
+- `:system`: one coherent system-wide signal, such as frequency;
 - `:bus`: a local signal attached to a bus;
 - `:terminal`: a device-terminal signal;
+- `:branch_terminal`: a branch endpoint signal;
+- `:remote_bus`: a voltage signal at an explicitly remote bus;
 - `:island`: a signal indexed by the island created by a contingency;
 - `:parameter`: an externally supplied scenario value.
 
@@ -384,7 +386,7 @@ For a scenario (c), the equilibrium residual should include at least:
 active-power balance
 reactive-power balance
 droop/control equations
-frequency balance or reference equation
+regulated-voltage or reference equations
 stage-coupling equations
 ```
 
@@ -510,7 +512,7 @@ Validation is layered:
 
 - every requested signal exists;
 - every scenario has a valid topology;
-- every island has a defined frequency policy;
+- every regulated location has a defined voltage policy;
 - every generator has valid operating limits;
 - no unconstrained balancing source exists accidentally.
 
@@ -523,7 +525,7 @@ Validation is layered:
 - exact-versus-smoothed curve error;
 - deadband leakage;
 - saturation consistency;
-- frequency balance;
+- voltage-control response and capability consistency;
 - scenario and island status.
 
 Use structured findings:
@@ -649,4 +651,3 @@ When choosing between implementations:
 5. prefer explicit diagnostics over silent fallback behavior;
 6. benchmark before introducing a new backend;
 7. require tests for every new formulation or control mode.
-
