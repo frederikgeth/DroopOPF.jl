@@ -1,4 +1,5 @@
 using JuMP
+using LogExpFunctions
 import Ipopt
 
 struct ACOPFResult{T<:Real}
@@ -7,24 +8,52 @@ struct ACOPFResult{T<:Real}
     termination_status::Symbol
     primal_status::Symbol
     smooth_epsilon::T
+    smooth_reactive_relative_epsilon::T
+    smooth_reactive_epsilon::Union{Nothing,T}
 end
 
 function _smooth_positive(x, epsilon)
-    # Stable softplus evaluation: the direct expression overflows when a
-    # bounded variable is more than a few dozen epsilon above zero.
-    if x > zero(x)
-        return x + epsilon * log1p(exp(-x / epsilon))
-    end
-    return epsilon * log1p(exp(x / epsilon))
+    return epsilon * log1pexp(x / epsilon)
 end
 
-function _smooth_droop_value(control::VoltVarDroop, voltage::Real, epsilon::Real)
-    low = _smooth_positive(control.schedule.v_db_low - voltage, epsilon)
-    high = _smooth_positive(voltage - control.schedule.v_db_high, epsilon)
+"""Return the reactive-power smoothing width for one droop control.
+
+The relative default is expressed as a fraction of the smaller distance from
+the deadband reactive reference to either capability limit. This makes the
+regularization comparable for generators with different ratings and power
+bases.
+"""
+function reactive_smoothing_epsilon(
+    control::VoltVarDroop,
+    relative_epsilon::Real;
+    absolute_epsilon::Union{Nothing,Real} = nothing,
+)
+    relative_epsilon > 0 && isfinite(relative_epsilon) ||
+        throw(ArgumentError("relative_epsilon must be positive and finite"))
+    if !isnothing(absolute_epsilon)
+        absolute_epsilon > 0 && isfinite(absolute_epsilon) ||
+            throw(ArgumentError("absolute_epsilon must be positive and finite"))
+        return absolute_epsilon
+    end
+    q_scale = min(
+        control.q_at_deadband - control.capability.q_min,
+        control.capability.q_max - control.q_at_deadband,
+    )
+    return relative_epsilon * q_scale
+end
+
+function _smooth_droop_value(
+    control::VoltVarDroop,
+    voltage::Real,
+    voltage_epsilon::Real,
+    reactive_epsilon::Real,
+)
+    low = _smooth_positive(control.schedule.v_db_low - voltage, voltage_epsilon)
+    high = _smooth_positive(voltage - control.schedule.v_db_high, voltage_epsilon)
     raw = control.q_at_deadband + (low - high) / control.slope
     q_min, q_max = control.capability.q_min, control.capability.q_max
-    return q_min + _smooth_positive(raw - q_min, epsilon) -
-           _smooth_positive(raw - q_max, epsilon)
+    return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
+           _smooth_positive(raw - q_max, reactive_epsilon)
 end
 
 function _set_bound!(variable, lower, upper)
@@ -34,7 +63,9 @@ end
 
 function _build_acopf_model(
     case::Case;
-    epsilon::Real,
+    voltage_epsilon::Real,
+    reactive_relative_epsilon::Real,
+    reactive_epsilon::Union{Nothing,Real},
     silent::Bool,
     initial_state::Union{Nothing,ACState} = nothing,
 )
@@ -46,7 +77,12 @@ function _build_acopf_model(
     nbus > 0 || throw(ArgumentError("AC OPF requires at least one bus"))
     count(bus -> bus.reference, network.buses) == 1 ||
         throw(ArgumentError("AC OPF requires exactly one reference bus"))
-    epsilon > 0 || throw(ArgumentError("smooth_epsilon must be positive"))
+    voltage_epsilon > 0 || throw(ArgumentError("smooth_voltage_epsilon must be positive"))
+    reactive_relative_epsilon > 0 ||
+        throw(ArgumentError("smooth_reactive_relative_epsilon must be positive"))
+    if !isnothing(reactive_epsilon)
+        reactive_epsilon > 0 || throw(ArgumentError("smooth_reactive_epsilon must be positive"))
+    end
     if !isnothing(initial_state)
         length(initial_state.vm) == nbus && length(initial_state.va) == nbus ||
             throw(ArgumentError("initial_state voltage vectors do not match the network"))
@@ -154,11 +190,21 @@ function _build_acopf_model(
         location_index > 0 || error("validated control-location lookup failed")
         control = case.controls[attachment.control_id]
         function_name = Symbol("droop_response_", attachment.control_id)
+        control_reactive_epsilon = reactive_smoothing_epsilon(
+            control,
+            reactive_relative_epsilon;
+            absolute_epsilon = reactive_epsilon,
+        )
         JuMP.register(
             model,
             function_name,
             1,
-            voltage -> _smooth_droop_value(control, voltage, epsilon),
+            voltage -> _smooth_droop_value(
+                control,
+                voltage,
+                voltage_epsilon,
+                control_reactive_epsilon,
+            ),
             autodiff = true,
         )
         # `@NLconstraint` requires function names to be literal symbols. Build
@@ -184,15 +230,24 @@ end
 
 function solve_opf(
     case::Case;
-    smooth_epsilon::Real = 1.0e-4,
+    smooth_epsilon::Union{Nothing,Real} = 1.0e-4,
+    smooth_voltage_epsilon::Union{Nothing,Real} = nothing,
+    smooth_reactive_relative_epsilon::Union{Nothing,Real} = nothing,
+    smooth_reactive_epsilon::Union{Nothing,Real} = nothing,
     silent::Bool = true,
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
 )
     validate_case(case)
+    base_epsilon = isnothing(smooth_epsilon) ? 1.0e-4 : smooth_epsilon
+    voltage_epsilon = isnothing(smooth_voltage_epsilon) ? base_epsilon : smooth_voltage_epsilon
+    reactive_relative_epsilon = isnothing(smooth_reactive_relative_epsilon) ?
+        base_epsilon : smooth_reactive_relative_epsilon
     model, variables = _build_acopf_model(
         case;
-        epsilon = smooth_epsilon,
+        voltage_epsilon = voltage_epsilon,
+        reactive_relative_epsilon = reactive_relative_epsilon,
+        reactive_epsilon = smooth_reactive_epsilon,
         silent = silent,
         initial_state = initial_state,
     )
@@ -204,7 +259,15 @@ function solve_opf(
     termination = Symbol(string(termination_status(model)))
     primal = Symbol(string(primal_status(model)))
     if !has_values(model)
-        return ACOPFResult{Float64}(nothing, NaN, termination, primal, Float64(smooth_epsilon))
+        return ACOPFResult{Float64}(
+            nothing,
+            NaN,
+            termination,
+            primal,
+            Float64(voltage_epsilon),
+            Float64(reactive_relative_epsilon),
+            isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
+        )
     end
     state = ACState(
         value.(variables.vm),
@@ -217,7 +280,9 @@ function solve_opf(
         objective_value(model),
         termination,
         primal,
-        Float64(smooth_epsilon),
+        Float64(voltage_epsilon),
+        Float64(reactive_relative_epsilon),
+        isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
     )
 end
 

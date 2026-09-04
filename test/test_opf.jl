@@ -33,6 +33,19 @@
 
     @test result.state !== nothing
     @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+    @test result.smooth_reactive_relative_epsilon == 1.0e-3
+    @test result.smooth_reactive_epsilon === nothing
+    @test reactive_smoothing_epsilon(droop, 1.0e-3) == 1.0e-3
+    small_capability_droop = VoltVarDroop(
+        schedule,
+        0.05,
+        0.0,
+        ReactiveCapability(p_min = 0.0, p_max = 2.0, q_min = -0.1, q_max = 0.2),
+    )
+    @test reactive_smoothing_epsilon(small_capability_droop, 1.0e-3) == 1.0e-4
+    @test reactive_smoothing_epsilon(droop, 1.0e-3; absolute_epsilon = 2.0e-5) == 2.0e-5
+    @test isfinite(DroopOPF._smooth_positive(1.0e6, 1.0e-3))
+    @test isfinite(DroopOPF._smooth_positive(-1.0e6, 1.0e-3))
     @test result.objective >= 0.0
     @test maximum(abs, equilibrium_residual(case, result.state).power.vector) < 1.0e-6
     @test maximum(abs, equilibrium_residual(case, result.state).droop) < 5.0e-3

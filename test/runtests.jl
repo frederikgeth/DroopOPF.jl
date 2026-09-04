@@ -9,4 +9,5 @@ using DroopOPF
     include("test_opf.jl")
     include("test_validation.jl")
     include("test_matpower.jl")
+    include("test_plotting.jl")
 end

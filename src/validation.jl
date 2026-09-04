@@ -14,6 +14,8 @@ struct EquilibriumValidationReport{T<:Real}
     control_active_power_violation_max::T
     smooth_exact_droop_gap::T
     smooth_epsilon::Union{Nothing,T}
+    smooth_reactive_relative_epsilon::Union{Nothing,T}
+    smooth_reactive_epsilon::Union{Nothing,T}
     violations::Vector{Symbol}
 end
 
@@ -37,6 +39,8 @@ function validate_equilibrium(
     limit_tolerance::Real = 1.0e-6,
     unavailable_tolerance::Real = 1.0e-8,
     smooth_epsilon::Union{Nothing,Real} = nothing,
+    smooth_reactive_relative_epsilon::Union{Nothing,Real} = nothing,
+    smooth_reactive_epsilon::Union{Nothing,Real} = nothing,
 )
     isnothing(case.network) && throw(ArgumentError("case has no AC network"))
     all(x -> x >= 0 && isfinite(x),
@@ -45,6 +49,14 @@ function validate_equilibrium(
     if !isnothing(smooth_epsilon)
         smooth_epsilon > 0 && isfinite(smooth_epsilon) ||
             throw(ArgumentError("smooth_epsilon must be positive and finite"))
+    end
+    if !isnothing(smooth_reactive_relative_epsilon)
+        smooth_reactive_relative_epsilon > 0 && isfinite(smooth_reactive_relative_epsilon) ||
+            throw(ArgumentError("smooth_reactive_relative_epsilon must be positive and finite"))
+    end
+    if !isnothing(smooth_reactive_epsilon)
+        smooth_reactive_epsilon > 0 && isfinite(smooth_reactive_epsilon) ||
+            throw(ArgumentError("smooth_reactive_epsilon must be positive and finite"))
     end
 
     balance = power_balance(case, state)
@@ -77,6 +89,9 @@ function validate_equilibrium(
     exact_droop_residuals = Float64[]
     control_active_power_violation = 0.0
     smooth_exact_gap = 0.0
+    reactive_relative_epsilon = isnothing(smooth_reactive_relative_epsilon) ?
+        (isnothing(smooth_epsilon) ? 1.0e-4 : smooth_epsilon) :
+        smooth_reactive_relative_epsilon
     bus_indices = _bus_indices(network)
     generator_indices = Dict(g.id => i for (i, g) in enumerate(case.generators))
     for attachment in case.attachments
@@ -97,7 +112,17 @@ function validate_equilibrium(
         )
         push!(exact_droop_residuals, state.qg[generator_index] - exact)
         if !isnothing(smooth_epsilon)
-            smooth = _smooth_droop_value(control, state.vm[location_index], smooth_epsilon)
+            q_epsilon = reactive_smoothing_epsilon(
+                control,
+                reactive_relative_epsilon;
+                absolute_epsilon = smooth_reactive_epsilon,
+            )
+            smooth = _smooth_droop_value(
+                control,
+                state.vm[location_index],
+                smooth_epsilon,
+                q_epsilon,
+            )
             smooth_exact_gap = max(smooth_exact_gap, abs(smooth - exact))
         end
     end
@@ -115,6 +140,10 @@ function validate_equilibrium(
     control_active_power_violation_max = Float64(control_active_power_violation)
     smooth_exact_gap = Float64(smooth_exact_gap)
     smooth_epsilon_value = isnothing(smooth_epsilon) ? nothing : Float64(smooth_epsilon)
+    smooth_reactive_relative_value = isnothing(smooth_reactive_relative_epsilon) &&
+        isnothing(smooth_epsilon) ? nothing : Float64(reactive_relative_epsilon)
+    smooth_reactive_value = isnothing(smooth_reactive_epsilon) ?
+        nothing : Float64(smooth_reactive_epsilon)
 
     violations = Symbol[]
     power_balance_max <= power_tolerance || push!(violations, :power_balance)
@@ -138,14 +167,27 @@ function validate_equilibrium(
         generator_q_min_margin, generator_q_max_margin,
         branch_thermal_min_margin, unavailable_generator_max,
         control_active_power_violation_max,
-        smooth_exact_gap, smooth_epsilon_value, violations,
+        smooth_exact_gap, smooth_epsilon_value,
+        smooth_reactive_relative_value, smooth_reactive_value, violations,
     )
 end
 
 function validate_equilibrium(case::Case, result::ACOPFResult; kwargs...)
     isnothing(result.state) &&
         throw(ArgumentError("cannot validate an ACOPFResult without a state"))
-    return validate_equilibrium(case, result.state; smooth_epsilon = result.smooth_epsilon, kwargs...)
+    if haskey(kwargs, :smooth_epsilon) ||
+       haskey(kwargs, :smooth_reactive_relative_epsilon) ||
+       haskey(kwargs, :smooth_reactive_epsilon)
+        return validate_equilibrium(case, result.state; kwargs...)
+    end
+    return validate_equilibrium(
+        case,
+        result.state;
+        smooth_epsilon = result.smooth_epsilon,
+        smooth_reactive_relative_epsilon = result.smooth_reactive_relative_epsilon,
+        smooth_reactive_epsilon = result.smooth_reactive_epsilon,
+        kwargs...,
+    )
 end
 
 """Combine solver metadata with an independent equilibrium validation."""
@@ -174,6 +216,8 @@ function markdown_report(report::EquilibriumReport)
         "- Primal status: `$(report.primal_status)`",
         "- Objective: `$(report.objective)`",
         "- Smooth epsilon: `$(validation.smooth_epsilon)`",
+        "- Reactive smoothing relative epsilon: `$(validation.smooth_reactive_relative_epsilon)`",
+        "- Reactive smoothing absolute epsilon: `$(validation.smooth_reactive_epsilon)`",
         "",
         "## Independent checks",
         "",

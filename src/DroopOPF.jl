@@ -8,6 +8,7 @@ include("physics.jl")
 include("matpower.jl")
 include("jump.jl")
 include("validation.jl")
+include("plotting.jl")
 
 export PiecewiseLinearCurve, evaluate, slope_at
 export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop
@@ -18,7 +19,10 @@ export Bus, Branch, Load, ACNetwork, ACState
 export power_balance, branch_flows, operating_margins
 export droop_residual, equilibrium_residual
 export ACOPFResult, ACOPFContinuationResult, solve, solve_opf, solve_opf_continuation
+export reactive_smoothing_epsilon
 export EquilibriumValidationReport, EquilibriumReport, validate_equilibrium
 export equilibrium_report, markdown_report
+export DroopOperatingPoint, droop_regime, droop_operating_point, droop_operating_points
+export write_droop_plot
 
 end
