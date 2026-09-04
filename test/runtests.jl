@@ -6,4 +6,5 @@ using DroopOPF
     include("test_controls.jl")
     include("test_domain.jl")
     include("test_network.jl")
+    include("test_opf.jl")
 end
