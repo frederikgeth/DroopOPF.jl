@@ -7,6 +7,7 @@ include("domain.jl")
 include("physics.jl")
 include("matpower.jl")
 include("jump.jl")
+include("complementarity.jl")
 include("validation.jl")
 include("plotting.jl")
 
@@ -20,9 +21,10 @@ export power_balance, branch_flows, operating_margins
 export droop_residual, equilibrium_residual
 export ACOPFResult, ACOPFContinuationResult, solve, solve_opf, solve_opf_continuation
 export reactive_smoothing_epsilon
+export ComplementarityOPFResult, solve_opf_complementarity
 export EquilibriumValidationReport, EquilibriumReport, validate_equilibrium
 export equilibrium_report, markdown_report
 export DroopOperatingPoint, droop_regime, droop_operating_point, droop_operating_points
-export write_droop_plot
+export solver_operating_points, write_droop_plot, write_solver_comparison_plot
 
 end

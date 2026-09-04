@@ -190,8 +190,28 @@ function validate_equilibrium(case::Case, result::ACOPFResult; kwargs...)
     )
 end
 
+function validate_equilibrium(case::Case, result::ComplementarityOPFResult; kwargs...)
+    isnothing(result.state) &&
+        throw(ArgumentError("cannot validate a ComplementarityOPFResult without a state"))
+    return validate_equilibrium(case, result.state; kwargs...)
+end
+
 """Combine solver metadata with an independent equilibrium validation."""
 function equilibrium_report(case::Case, result::ACOPFResult; kwargs...)
+    validation = validate_equilibrium(case, result; kwargs...)
+    solver_success = result.termination_status in
+        (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED, :OPTIMAL, :ALMOST_OPTIMAL)
+    return EquilibriumReport(
+        case.id,
+        solver_success && validation.valid,
+        result.termination_status,
+        result.primal_status,
+        result.objective,
+        validation,
+    )
+end
+
+function equilibrium_report(case::Case, result::ComplementarityOPFResult; kwargs...)
     validation = validate_equilibrium(case, result; kwargs...)
     solver_success = result.termination_status in
         (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED, :OPTIMAL, :ALMOST_OPTIMAL)

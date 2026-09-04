@@ -67,6 +67,7 @@ function _build_acopf_model(
     reactive_relative_epsilon::Real,
     reactive_epsilon::Union{Nothing,Real},
     silent::Bool,
+    optimizer_factory = Ipopt.Optimizer,
     initial_state::Union{Nothing,ACState} = nothing,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
@@ -90,7 +91,7 @@ function _build_acopf_model(
             throw(ArgumentError("initial_state generator vectors do not match the case"))
     end
 
-    model = Model(Ipopt.Optimizer)
+    model = Model(optimizer_factory)
     silent && set_silent(model)
     @variable(model, vm[1:nbus])
     @variable(model, va[1:nbus])
@@ -189,6 +190,11 @@ function _build_acopf_model(
         location_index = get(bus_indices, attachment.location.bus_id, 0)
         location_index > 0 || error("validated control-location lookup failed")
         control = case.controls[attachment.control_id]
+        _set_bound!(
+            pg[generator_index],
+            max(generator.p_min, control.capability.p_min),
+            min(generator.p_max, control.capability.p_max),
+        )
         function_name = Symbol("droop_response_", attachment.control_id)
         control_reactive_epsilon = reactive_smoothing_epsilon(
             control,
@@ -234,6 +240,7 @@ function solve_opf(
     smooth_voltage_epsilon::Union{Nothing,Real} = nothing,
     smooth_reactive_relative_epsilon::Union{Nothing,Real} = nothing,
     smooth_reactive_epsilon::Union{Nothing,Real} = nothing,
+    optimizer_factory = Ipopt.Optimizer,
     silent::Bool = true,
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
@@ -249,6 +256,7 @@ function solve_opf(
         reactive_relative_epsilon = reactive_relative_epsilon,
         reactive_epsilon = smooth_reactive_epsilon,
         silent = silent,
+        optimizer_factory = optimizer_factory,
         initial_state = initial_state,
     )
     for (key, value) in optimizer_attributes
@@ -303,6 +311,7 @@ function solve_opf_continuation(
     case::Case;
     smooth_epsilons::AbstractVector{<:Real} = [1.0e-2, 1.0e-3, 1.0e-4],
     initial_state::Union{Nothing,ACState} = nothing,
+    optimizer_factory = Ipopt.Optimizer,
     silent::Bool = true,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
 )
@@ -318,6 +327,7 @@ function solve_opf_continuation(
             case;
             smooth_epsilon = epsilon,
             initial_state = warm_start,
+            optimizer_factory = optimizer_factory,
             silent = silent,
             optimizer_attributes = optimizer_attributes,
         )

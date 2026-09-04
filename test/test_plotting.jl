@@ -23,4 +23,39 @@
     @test startswith(svg, "<svg")
     @test endswith(strip(svg), "</svg>")
     @test occursin("G7: proportional", svg)
+
+    state = ACState([1.0], [0.0], [0.5], [0.0])
+    grouped = solver_operating_points(
+        Case(
+            "plot-case";
+            base_power = 100.0,
+            base_frequency = 50.0,
+            network = ACNetwork([Bus(1; reference = true)], Branch[]),
+            generators = [Generator(7, 1; p_min = 0.0, p_max = 2.0, q_min = -1.0, q_max = 1.0,
+                                   initial_p = 0.5, initial_q = 0.0)],
+            controls = [control],
+            attachments = [GeneratorControlAttachment(7, 1, RegulatedLocation(:bus, 1))],
+        ),
+        Dict(:ipopt => (state = state,), :madnlp => (state = state,)),
+    )
+    @test length(grouped) == 2
+
+    comparison_path = joinpath(mktempdir(), "comparison.svg")
+    write_solver_comparison_plot(
+        comparison_path,
+        Case(
+            "plot-case";
+            base_power = 100.0,
+            base_frequency = 50.0,
+            network = ACNetwork([Bus(1; reference = true)], Branch[]),
+            generators = [Generator(7, 1; p_min = 0.0, p_max = 2.0, q_min = -1.0, q_max = 1.0,
+                                   initial_p = 0.5, initial_q = 0.0)],
+            controls = [control],
+            attachments = [GeneratorControlAttachment(7, 1, RegulatedLocation(:bus, 1))],
+        ),
+        Dict(:ipopt => (state = state,), :madnlp => (state = state,)),
+    )
+    comparison_svg = read(comparison_path, String)
+    @test occursin("ipopt", comparison_svg)
+    @test occursin("madnlp", comparison_svg)
 end
