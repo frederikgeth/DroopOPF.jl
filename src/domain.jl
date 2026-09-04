@@ -86,6 +86,8 @@ struct Case{T<:Real}
     id::String
     base_power::T
     base_frequency::T
+    network::Union{Nothing,ACNetwork{T}}
+    loads::Vector{Load{T}}
     generators::Vector{Generator{T}}
     controls::Vector{VoltVarDroop{T}}
     attachments::Vector{GeneratorControlAttachment}
@@ -94,6 +96,8 @@ struct Case{T<:Real}
         id::AbstractString,
         base_power::T,
         base_frequency::T,
+        network::Union{Nothing,ACNetwork{T}},
+        loads::Vector{Load{T}},
         generators::Vector{Generator{T}},
         controls::Vector{VoltVarDroop{T}},
         attachments::Vector{GeneratorControlAttachment},
@@ -111,7 +115,17 @@ struct Case{T<:Real}
             throw(ArgumentError("control attachment references an unknown generator"))
         all(a.control_id in control_ids for a in attachments) ||
             throw(ArgumentError("control attachment references an unknown control"))
-        new{T}(String(id), base_power, base_frequency, copy(generators), copy(controls), copy(attachments))
+        if !isnothing(network)
+            bus_ids = Set(b.id for b in network.buses)
+            all(g.bus_id in bus_ids for g in generators) ||
+                throw(ArgumentError("generator references an unknown network bus"))
+            all(l.bus_id in bus_ids for l in loads) ||
+                throw(ArgumentError("load references an unknown network bus"))
+            all(a.location.bus_id in bus_ids for a in attachments) ||
+                throw(ArgumentError("control location references an unknown network bus"))
+        end
+        new{T}(String(id), base_power, base_frequency, network, copy(loads),
+               copy(generators), copy(controls), copy(attachments))
     end
 end
 
@@ -119,14 +133,20 @@ function Case(
     id::AbstractString;
     base_power,
     base_frequency,
+    network = nothing,
+    loads::AbstractVector{<:Load} = Load[],
     generators::AbstractVector{<:Generator},
     controls::AbstractVector{<:VoltVarDroop},
     attachments::AbstractVector{<:GeneratorControlAttachment},
 )
-    T = promote_type(
-        typeof(base_power), typeof(base_frequency),
-        (typeof(g.p_min) for g in generators)...,
-    )
+    numeric_types = Any[typeof(base_power), typeof(base_frequency)]
+    append!(numeric_types, (typeof(g.p_min) for g in generators))
+    append!(numeric_types, (typeof(l.p) for l in loads))
+    if !isnothing(network)
+        append!(numeric_types, (typeof(b.v_min) for b in network.buses))
+        append!(numeric_types, (typeof(br.resistance) for br in network.branches))
+    end
+    T = promote_type(numeric_types...)
     # The explicit conversion keeps the public case homogeneous and avoids
     # type instability when a case is assembled from integer literals.
     gs = Generator{T}[
@@ -144,7 +164,20 @@ function Case(
                                   T(c.capability.q_min), T(c.capability.q_max)),
         ) for c in controls
     ]
-    return Case{T}(String(id), T(base_power), T(base_frequency), gs, cs, collect(attachments))
+    net = if isnothing(network)
+        nothing
+    else
+        ACNetwork{T}[
+            ACNetwork{T}(
+                Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in network.buses],
+                Branch{T}[Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance),
+                    T(br.reactance), T(br.charging), T(br.thermal_limit), br.available)
+                    for br in network.branches],
+            ),
+        ][1]
+    end
+    ls = Load{T}[Load{T}(l.id, l.bus_id, T(l.p), T(l.q)) for l in loads]
+    return Case{T}(String(id), T(base_power), T(base_frequency), net, ls, gs, cs, collect(attachments))
 end
 
 validate_case(case::Case) = true

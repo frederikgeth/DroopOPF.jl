@@ -28,6 +28,21 @@
     @test case.attachments[1].location.kind == :bus
     @test droop_response(case, 1, 0.98; p = 0.4) ≈ 0.2
 
+    network = ACNetwork([Bus(2; reference = true)], Branch[])
+    network_case = Case(
+        "networked-test";
+        base_power = 100.0,
+        base_frequency = 50.0,
+        network = network,
+        generators = [generator],
+        controls = [control],
+        attachments = [attachment],
+    )
+    state = ACState([1.0], [0.0], [0.4], [0.0])
+    equilibrium = equilibrium_residual(network_case, state)
+    @test maximum(abs, equilibrium.power.vector) == 0.4
+    @test equilibrium.droop == [0.0]
+
     @test_throws ArgumentError Generator(1, 2; p_min = 1.0, p_max = 0.0, q_min = -1.0, q_max = 1.0)
     @test_throws ArgumentError RegulatedLocation(:branch_terminal, 2)
     @test_throws ArgumentError GeneratorControlAttachment(1, 1, location; priority = :invalid)
