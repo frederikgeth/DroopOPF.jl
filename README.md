@@ -1,5 +1,10 @@
 # DroopOPF.jl
 
+[![CI](https://github.com/frederikgeth/DroopOPF.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/frederikgeth/DroopOPF.jl/actions/workflows/CI.yml)
+[![Documentation](https://github.com/frederikgeth/DroopOPF.jl/actions/workflows/Documentation.yml/badge.svg?branch=main)](https://github.com/frederikgeth/DroopOPF.jl/actions/workflows/Documentation.yml)
+[![Docs (dev)](https://img.shields.io/badge/docs-dev-blue.svg)](https://frederikgeth.github.io/DroopOPF.jl/dev/)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green.svg)](LICENSE)
+
 DroopOPF.jl is a Julia library for AC optimal power flow with generator
 volt-var droop controls. It is being developed as the foundation for a
 security-constrained AC OPF library with equilibrium-aware generator controls.
