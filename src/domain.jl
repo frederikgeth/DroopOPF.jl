@@ -109,6 +109,8 @@ struct Case{T<:Real}
             throw(ArgumentError("generator ids must be unique"))
         length(unique(a.control_id for a in attachments)) == length(attachments) ||
             throw(ArgumentError("each control may have at most one attachment in M1"))
+        length(unique(a.generator_id for a in attachments)) == length(attachments) ||
+            throw(ArgumentError("each generator may have at most one control attachment in M1"))
         generator_ids = Set(g.id for g in generators)
         control_ids = Set(eachindex(controls))
         all(a.generator_id in generator_ids for a in attachments) ||
@@ -180,7 +182,24 @@ function Case(
     return Case{T}(String(id), T(base_power), T(base_frequency), net, ls, gs, cs, collect(attachments))
 end
 
-validate_case(case::Case) = true
+function validate_case(case::Case)
+    generator_indices = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
+    for attachment in case.attachments
+        generator = case.generators[generator_indices[attachment.generator_id]]
+        control = case.controls[attachment.control_id]
+        p_overlap = max(generator.p_min, control.capability.p_min) <=
+            min(generator.p_max, control.capability.p_max)
+        p_overlap || throw(ArgumentError(
+            "control $(attachment.control_id) has no active-power overlap with generator $(generator.id)",
+        ))
+        control.capability.q_min >= generator.q_min &&
+            control.capability.q_max <= generator.q_max ||
+            throw(ArgumentError(
+                "control $(attachment.control_id) reactive capability must be inside generator $(generator.id) limits",
+            ))
+    end
+    return true
+end
 
 function droop_response(case::Case, generator_id::Integer, voltage::Real; p::Real)
     gen = findfirst(g -> g.id == generator_id, case.generators)

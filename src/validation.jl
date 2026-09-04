@@ -11,6 +11,7 @@ struct EquilibriumValidationReport{T<:Real}
     generator_q_max_margin::T
     branch_thermal_min_margin::T
     unavailable_generator_max::T
+    control_active_power_violation_max::T
     smooth_exact_droop_gap::T
     smooth_epsilon::Union{Nothing,T}
     violations::Vector{Symbol}
@@ -47,7 +48,6 @@ function validate_equilibrium(
     end
 
     balance = power_balance(case, state)
-    droop = droop_residual(case, state)
     network = case.network
 
     voltage_lower = [state.vm[i] - bus.v_min for (i, bus) in enumerate(network.buses)]
@@ -74,24 +74,36 @@ function validate_equilibrium(
     ]
     branch_margins = operating_margins(network, state)
 
+    exact_droop_residuals = Float64[]
+    control_active_power_violation = 0.0
     smooth_exact_gap = 0.0
-    if !isnothing(smooth_epsilon)
-        bus_indices = _bus_indices(network)
-        generator_indices = Dict(g.id => i for (i, g) in enumerate(case.generators))
-        for attachment in case.attachments
-            generator_index = generator_indices[attachment.generator_id]
-            generator = case.generators[generator_index]
-            generator.available || continue
-            location_index = bus_indices[attachment.location.bus_id]
-            control = case.controls[attachment.control_id]
-            exact = droop_response(control, state.vm[location_index]; p = state.pg[generator_index])
+    bus_indices = _bus_indices(network)
+    generator_indices = Dict(g.id => i for (i, g) in enumerate(case.generators))
+    for attachment in case.attachments
+        generator_index = generator_indices[attachment.generator_id]
+        generator = case.generators[generator_index]
+        generator.available || continue
+        location_index = bus_indices[attachment.location.bus_id]
+        control = case.controls[attachment.control_id]
+        active_power = state.pg[generator_index]
+        control_active_power_violation = max(
+            control_active_power_violation,
+            max(control.capability.p_min - active_power, active_power - control.capability.p_max, 0.0),
+        )
+        exact = clamp(
+            evaluate(droop_curve(control), state.vm[location_index]),
+            control.capability.q_min,
+            control.capability.q_max,
+        )
+        push!(exact_droop_residuals, state.qg[generator_index] - exact)
+        if !isnothing(smooth_epsilon)
             smooth = _smooth_droop_value(control, state.vm[location_index], smooth_epsilon)
             smooth_exact_gap = max(smooth_exact_gap, abs(smooth - exact))
         end
     end
 
     power_balance_max = Float64(_max_abs(balance.vector))
-    droop_residual_max = Float64(_max_abs(droop))
+    droop_residual_max = Float64(_max_abs(exact_droop_residuals))
     voltage_min_margin = Float64(_min_value(voltage_lower))
     voltage_max_margin = Float64(_min_value(voltage_upper))
     generator_p_min_margin = Float64(_min_value(generator_p_lower))
@@ -100,12 +112,15 @@ function validate_equilibrium(
     generator_q_max_margin = Float64(_min_value(generator_q_upper))
     branch_thermal_min_margin = Float64(_min_value(branch_margins))
     unavailable_generator_max = Float64(_max_abs(unavailable_generator))
+    control_active_power_violation_max = Float64(control_active_power_violation)
     smooth_exact_gap = Float64(smooth_exact_gap)
     smooth_epsilon_value = isnothing(smooth_epsilon) ? nothing : Float64(smooth_epsilon)
 
     violations = Symbol[]
     power_balance_max <= power_tolerance || push!(violations, :power_balance)
     droop_residual_max <= droop_tolerance || push!(violations, :droop)
+    control_active_power_violation_max <= limit_tolerance ||
+        push!(violations, :control_active_power)
     voltage_min_margin >= -limit_tolerance || push!(violations, :voltage_min)
     voltage_max_margin >= -limit_tolerance || push!(violations, :voltage_max)
     generator_p_min_margin >= -limit_tolerance || push!(violations, :generator_p_min)
@@ -122,6 +137,7 @@ function validate_equilibrium(
         generator_p_min_margin, generator_p_max_margin,
         generator_q_min_margin, generator_q_max_margin,
         branch_thermal_min_margin, unavailable_generator_max,
+        control_active_power_violation_max,
         smooth_exact_gap, smooth_epsilon_value, violations,
     )
 end
@@ -168,6 +184,7 @@ function markdown_report(report::EquilibriumReport)
         "| Minimum voltage lower margin | $(validation.voltage_min_margin) |",
         "| Minimum voltage upper margin | $(validation.voltage_max_margin) |",
         "| Minimum branch thermal margin | $(validation.branch_thermal_min_margin) |",
+        "| Control active-power violation | $(validation.control_active_power_violation_max) |",
         "| Smooth/exact droop gap | $(validation.smooth_exact_droop_gap) |",
         "",
         "Violations: `$(isempty(validation.violations) ? :none : validation.violations)`",

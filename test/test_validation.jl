@@ -50,4 +50,22 @@
     bad_report = validate_equilibrium(case, perturbed)
     @test !bad_report.valid
     @test :power_balance in bad_report.violations
+
+    out_of_control_range = ACState(state.vm, state.va, [-0.1], state.qg)
+    range_report = validate_equilibrium(case, out_of_control_range)
+    @test !range_report.valid
+    @test :control_active_power in range_report.violations
+
+    incompatible_control = VoltVarDroop(
+        VoltageSchedule(1.0; v_db_low = 0.99, v_db_high = 1.01),
+        0.05,
+        0.0,
+        ReactiveCapability(p_min = 0.0, p_max = 2.0, q_min = -2.0, q_max = 2.0),
+    )
+    incompatible_case = attach_controls(
+        case,
+        [incompatible_control],
+        [GeneratorControlAttachment(1, 1, RegulatedLocation(:bus, 1))],
+    )
+    @test_throws ArgumentError solve_opf(incompatible_case)
 end
