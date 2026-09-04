@@ -8,4 +8,5 @@ using DroopOPF
     include("test_network.jl")
     include("test_opf.jl")
     include("test_validation.jl")
+    include("test_matpower.jl")
 end
