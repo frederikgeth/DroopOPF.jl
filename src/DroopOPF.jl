@@ -17,7 +17,8 @@ export load_matpower_case, attach_controls
 export Bus, Branch, Load, ACNetwork, ACState
 export power_balance, branch_flows, operating_margins
 export droop_residual, equilibrium_residual
-export ACOPFResult, solve, solve_opf
-export EquilibriumValidationReport, validate_equilibrium
+export ACOPFResult, ACOPFContinuationResult, solve, solve_opf, solve_opf_continuation
+export EquilibriumValidationReport, EquilibriumReport, validate_equilibrium
+export equilibrium_report, markdown_report
 
 end

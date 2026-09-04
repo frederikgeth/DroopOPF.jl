@@ -38,6 +38,13 @@
     @test report.droop_residual_max < 5.0e-3
     @test report.smooth_exact_droop_gap >= 0.0
 
+    structured = equilibrium_report(case, result)
+    @test structured.valid
+    @test structured.validation.valid
+    rendered = markdown_report(structured)
+    @test occursin("# Equilibrium report", rendered)
+    @test occursin("Maximum AC power-balance residual", rendered)
+
     state = result.state
     perturbed = ACState(state.vm, state.va, [state.pg[1] + 0.1], state.qg)
     bad_report = validate_equilibrium(case, perturbed)

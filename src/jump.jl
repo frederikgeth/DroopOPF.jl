@@ -222,3 +222,45 @@ function solve_opf(
 end
 
 solve(case::Case; kwargs...) = solve_opf(case; kwargs...)
+
+struct ACOPFContinuationResult{T<:Real}
+    results::Vector{ACOPFResult{T}}
+end
+
+"""
+    solve_opf_continuation(case; smooth_epsilons, initial_state, kwargs...)
+
+Solve a sequence of smoothed OPF problems, passing each available state as the
+warm start for the next epsilon. The supplied epsilon sequence should usually
+decrease from a robust, relatively smooth value to the desired final value.
+"""
+function solve_opf_continuation(
+    case::Case;
+    smooth_epsilons::AbstractVector{<:Real} = [1.0e-2, 1.0e-3, 1.0e-4],
+    initial_state::Union{Nothing,ACState} = nothing,
+    silent::Bool = true,
+    optimizer_attributes::AbstractDict = Dict{String,Any}(),
+)
+    isempty(smooth_epsilons) &&
+        throw(ArgumentError("smooth_epsilons must contain at least one value"))
+    all(isfinite, smooth_epsilons) && all(>(0), smooth_epsilons) ||
+        throw(ArgumentError("smooth_epsilons must be positive and finite"))
+
+    results = ACOPFResult{Float64}[]
+    warm_start = initial_state
+    for epsilon in smooth_epsilons
+        result = solve_opf(
+            case;
+            smooth_epsilon = epsilon,
+            initial_state = warm_start,
+            silent = silent,
+            optimizer_attributes = optimizer_attributes,
+        )
+        push!(results, result)
+        if isnothing(result.state)
+            break
+        end
+        warm_start = result.state
+    end
+    return ACOPFContinuationResult(results)
+end

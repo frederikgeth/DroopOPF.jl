@@ -16,6 +16,15 @@ struct EquilibriumValidationReport{T<:Real}
     violations::Vector{Symbol}
 end
 
+struct EquilibriumReport{T<:Real}
+    case_id::String
+    valid::Bool
+    termination_status::Symbol
+    primal_status::Symbol
+    objective::T
+    validation::EquilibriumValidationReport{T}
+end
+
 _max_abs(values) = isempty(values) ? 0.0 : maximum(abs, values)
 _min_value(values) = isempty(values) ? Inf : minimum(values)
 
@@ -121,4 +130,47 @@ function validate_equilibrium(case::Case, result::ACOPFResult; kwargs...)
     isnothing(result.state) &&
         throw(ArgumentError("cannot validate an ACOPFResult without a state"))
     return validate_equilibrium(case, result.state; smooth_epsilon = result.smooth_epsilon, kwargs...)
+end
+
+"""Combine solver metadata with an independent equilibrium validation."""
+function equilibrium_report(case::Case, result::ACOPFResult; kwargs...)
+    validation = validate_equilibrium(case, result; kwargs...)
+    solver_success = result.termination_status in
+        (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED, :OPTIMAL, :ALMOST_OPTIMAL)
+    return EquilibriumReport(
+        case.id,
+        solver_success && validation.valid,
+        result.termination_status,
+        result.primal_status,
+        result.objective,
+        validation,
+    )
+end
+
+"""Render an equilibrium report as compact Markdown for logs and artifacts."""
+function markdown_report(report::EquilibriumReport)
+    validation = report.validation
+    lines = [
+        "# Equilibrium report: $(report.case_id)",
+        "",
+        "- Valid: `$(report.valid)`",
+        "- Termination status: `$(report.termination_status)`",
+        "- Primal status: `$(report.primal_status)`",
+        "- Objective: `$(report.objective)`",
+        "- Smooth epsilon: `$(validation.smooth_epsilon)`",
+        "",
+        "## Independent checks",
+        "",
+        "| Quantity | Value |",
+        "|---|---:|",
+        "| Maximum AC power-balance residual | $(validation.power_balance_max) |",
+        "| Maximum exact droop residual | $(validation.droop_residual_max) |",
+        "| Minimum voltage lower margin | $(validation.voltage_min_margin) |",
+        "| Minimum voltage upper margin | $(validation.voltage_max_margin) |",
+        "| Minimum branch thermal margin | $(validation.branch_thermal_min_margin) |",
+        "| Smooth/exact droop gap | $(validation.smooth_exact_droop_gap) |",
+        "",
+        "Violations: `$(isempty(validation.violations) ? :none : validation.violations)`",
+    ]
+    return join(lines, "\n")
 end

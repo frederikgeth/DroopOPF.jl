@@ -45,4 +45,16 @@
     )
     @test warm_result.state !== nothing
     @test warm_result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+
+    continuation = solve_opf_continuation(
+        case;
+        smooth_epsilons = [1.0e-2, 1.0e-3],
+        silent = true,
+    )
+    @test length(continuation.results) == 2
+    @test all(result -> result.state !== nothing, continuation.results)
+    @test all(
+        result -> result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED),
+        continuation.results,
+    )
 end
