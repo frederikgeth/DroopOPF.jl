@@ -60,7 +60,7 @@ function branch_flows(network::ACNetwork, state::ACState)
     bus_indices = _bus_indices(network)
     voltage = state.vm .* cis.(state.va)
     from_power = zeros(Complex{eltype(state.vm)}, length(network.branches))
-    to_power = similar(from_power)
+    to_power = zeros(eltype(from_power), length(network.branches))
     for (k, branch) in enumerate(network.branches)
         branch.available || continue
         i, j = bus_indices[branch.from_bus], bus_indices[branch.to_bus]

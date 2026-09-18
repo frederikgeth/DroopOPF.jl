@@ -103,6 +103,9 @@ function _build_complementarity_opf_model(
     case::Case;
     silent::Bool,
     initial_state::Union{Nothing,ACState} = nothing,
+    shared_model::Union{Nothing,Model} = nothing,
+    scenario_prefix::String = "",
+    set_objective::Bool = true,
 )
     validate_case(case)
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
@@ -118,15 +121,15 @@ function _build_complementarity_opf_model(
             throw(ArgumentError("initial_state generator vectors do not match the case"))
     end
 
-    model = Model(CCOpt.Optimizer)
+    model = isnothing(shared_model) ? Model(CCOpt.Optimizer) : shared_model
     # This must be called before adding complementarity constraints so JuMP can
     # route them to CCOpt's MOI wrapper.
-    MathOptComplements.Bridges.add_all_bridges(model)
+    isnothing(shared_model) && MathOptComplements.Bridges.add_all_bridges(model)
     silent && set_silent(model)
-    @variable(model, vm[1:nbus])
-    @variable(model, va[1:nbus])
-    @variable(model, pg[1:ngen])
-    @variable(model, qg[1:ngen])
+    vm = @variable(model, [1:nbus], base_name = scenario_prefix * "vm")
+    va = @variable(model, [1:nbus], base_name = scenario_prefix * "va")
+    pg = @variable(model, [1:ngen], base_name = scenario_prefix * "pg")
+    qg = @variable(model, [1:ngen], base_name = scenario_prefix * "qg")
 
     for (i, bus) in enumerate(network.buses)
         _set_bound!(vm[i], bus.v_min, bus.v_max)
@@ -166,15 +169,15 @@ function _build_complementarity_opf_model(
     end
 
     ncontrol = length(active_attachments)
-    @variable(model, voltage_lower[1:ncontrol] >= 0)
-    @variable(model, voltage_lower_complement[1:ncontrol] >= 0)
-    @variable(model, voltage_upper[1:ncontrol] >= 0)
-    @variable(model, voltage_upper_complement[1:ncontrol] >= 0)
-    @variable(model, raw_q[1:ncontrol])
-    @variable(model, q_lower_slack[1:ncontrol] >= 0)
-    @variable(model, q_lower_multiplier[1:ncontrol] >= 0)
-    @variable(model, q_upper_slack[1:ncontrol] >= 0)
-    @variable(model, q_upper_multiplier[1:ncontrol] >= 0)
+    voltage_lower = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower")
+    voltage_lower_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower_complement")
+    voltage_upper = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper")
+    voltage_upper_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper_complement")
+    raw_q = @variable(model, [1:ncontrol], base_name = scenario_prefix * "raw_q")
+    q_lower_slack = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_slack")
+    q_lower_multiplier = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_multiplier")
+    q_upper_slack = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_upper_slack")
+    q_upper_multiplier = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_upper_multiplier")
 
     for (k, (_, generator_index, location_index)) in enumerate(active_attachments)
         attachment = active_attachments[k][1]
@@ -230,12 +233,14 @@ function _build_complementarity_opf_model(
         )
     end
 
-    @objective(
-        model,
-        Min,
-        sum((pg[i] - case.generators[i].initial_p)^2 +
-            1.0e-3 * (qg[i] - case.generators[i].initial_q)^2 for i in 1:ngen),
-    )
+    if set_objective
+        @objective(
+            model,
+            Min,
+            sum((pg[i] - case.generators[i].initial_p)^2 +
+                1.0e-3 * (qg[i] - case.generators[i].initial_q)^2 for i in 1:ngen),
+        )
+    end
     return model, (vm = vm, va = va, pg = pg, qg = qg,
                    voltage_lower = voltage_lower,
                    voltage_lower_complement = voltage_lower_complement,

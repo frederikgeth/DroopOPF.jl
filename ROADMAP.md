@@ -2,7 +2,7 @@
 
 Status: agile development plan with proof-of-concept priority.
 
-Last updated: 2026-09-03
+Last updated: 2026-09-18
 
 ## 1. Product goal
 
@@ -62,56 +62,58 @@ Avoid spending early iterations on infrastructure that does not improve the proo
 - GPU, MPI, and distributed decomposition;
 - global optimality certificates.
 
-## 4. Release targets
+## 4. Current milestone plan
 
-### v0.1.0-alpha: trusted reference slice
+The milestone names below match the README. The original alpha/beta version
+numbers were planning targets, not releases; M1 was actually released as 0.1.0.
 
-The release should provide:
+### M1 — AC OPF with fixed volt-var curves (released in 0.1.0)
 
-```julia
-case = load_case("case9_droop.json")
-study = Study(case; contingencies = [:generator_2])
-result = solve(study)
-report = validate_equilibrium(study, result)
-```
+Typed case data, MATPOWER loading, AC OPF, exact/smooth droop encodings,
+independent equilibrium validation, solver comparison, and plotting.
 
-The report must state whether the base case and each contingency are valid, including residuals, margins, droop errors, smoothing error, solver metadata, and assumptions.
+### M2 — security-constrained AC OPF (implemented, unreleased)
 
-### v0.2.0-alpha: reusable SCOPF engine
+The implementation contract is in [docs/src/scopf.md](docs/src/scopf.md).
+The validation-sized steps are:
 
-Add:
+1. Preserve M1: an empty contingency set reproduces its objective and dispatch.
+2. Validate outage overlays: known IDs, unchanged input, zero unavailable-device
+   output/flows, and explicit rejection of islanding.
+3. Couple one line-outage equilibrium to base dispatch using an explicit response policy.
+4. Add generator outages with inactive droop and normalized surviving participation.
+5. Enumerate multiple scenarios with preventive or bounded corrective response.
+6. Independently validate physical residuals, exact/encoded droop, limits, and
+   response coupling; reject deliberate perturbations and infeasible policies.
+7. Reproduce an end-to-end workflow with JSON study/result round trips,
+   Markdown/JSON reports, warm starts, and smoothing continuation.
 
-- multiple contingencies;
-- full enumeration;
-- preventive and corrective modes;
-- scenario-indexed results;
-- exact and smooth control encodings;
-- epsilon continuation;
-- case and result serialization.
+Acceptance includes a constrained case where security changes base dispatch,
+not merely independently feasible scenario solves. Run
+`julia --project=. examples/m2_workflow.jl` for the reproducible workflow.
 
-### v0.3.0-beta: scalable algorithm path
+### M3 — optimize droop curves (planned)
 
-Add:
+Start with one bounded droop parameter and validate against a small parameter
+sweep. Fixing that parameter must reproduce M2. Add reference settings, deadbands,
+and generalized curves incrementally, with exact replay and held-out scenarios.
 
-- contingency ranking;
-- fast contingency evaluation;
-- violation-driven constraint generation;
-- warm starts;
-- parallel scenario evaluation;
-- benchmark and profiling harness.
+### Later scaling target
 
-### v1.0.0: stable research API
+Contingency ranking, fast AC evaluation, violation-driven constraint generation,
+warm starts at scale, parallel evaluation, and profiling/benchmarking. Begin only
+after the scale-up gate below identifies a real need.
 
-Only consider a 1.0 release after:
+### Stable research API target (v1.0.0)
 
-- the data model is versioned;
-- results are backward-compatible;
-- reference cases are reproducible;
-- documentation covers assumptions and limitations;
-- at least one large public benchmark family is supported;
-- independent validation is part of the normal workflow.
+Require a versioned data model, backward-compatible results, reproducible public
+reference cases, documented assumptions, at least one large public benchmark
+family, and independent validation in the normal workflow.
 
 ## 5. Agile iterations
+
+The iterations below retain the original implementation breakdown; they are not
+additional numbered milestones. The current milestone/status authority is section 4.
 
 The suggested cadence is one-week iterations, with a demonstrable artifact at the end of each iteration. A team may compress or extend the timebox, but should preserve the order and exit criteria.
 

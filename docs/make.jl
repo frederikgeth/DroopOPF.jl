@@ -20,6 +20,7 @@ makedocs(
         "Data model" => "data_model.md",
         "Solver formulations" => "solvers.md",
         "Validation" => "validation.md",
+        "Security-constrained OPF" => "scopf.md",
         "Examples" => "examples.md",
         "API reference" => "api.md",
         "Development" => "development.md",

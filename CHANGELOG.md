@@ -7,7 +7,19 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Development continues toward M2: security-constrained AC OPF.
+### Added
+
+- M2 full-enumeration SCOPF with line and generator outage overlays.
+- Explicit preventive participation and bounded corrective redispatch policies.
+- Smooth Ipopt/MadNLP and exact CCOpt scenario formulations using the existing AC builders.
+- Independent per-scenario physics, exact/encoded droop, availability, and response checks.
+- Fixed-base contingency evaluation, scenario warm starts, and epsilon continuation.
+- Versioned JSON study/result save/load, JSON/Markdown reports, and an M2 workflow example.
+- Regressions for binding security constraints, infeasible response policies, and corrupted results.
+
+### Fixed
+
+- Initialize both branch-flow ends to zero for unavailable branches.
 
 ## [0.1.0] - 2026-09-04
 

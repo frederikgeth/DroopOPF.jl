@@ -69,6 +69,9 @@ function _build_acopf_model(
     silent::Bool,
     optimizer_factory = Ipopt.Optimizer,
     initial_state::Union{Nothing,ACState} = nothing,
+    shared_model::Union{Nothing,Model} = nothing,
+    scenario_prefix::String = "",
+    set_objective::Bool = true,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -91,12 +94,12 @@ function _build_acopf_model(
             throw(ArgumentError("initial_state generator vectors do not match the case"))
     end
 
-    model = Model(optimizer_factory)
+    model = isnothing(shared_model) ? Model(optimizer_factory) : shared_model
     silent && set_silent(model)
-    @variable(model, vm[1:nbus])
-    @variable(model, va[1:nbus])
-    @variable(model, pg[1:ngen])
-    @variable(model, qg[1:ngen])
+    vm = @variable(model, [1:nbus], base_name = scenario_prefix * "vm")
+    va = @variable(model, [1:nbus], base_name = scenario_prefix * "va")
+    pg = @variable(model, [1:ngen], base_name = scenario_prefix * "pg")
+    qg = @variable(model, [1:ngen], base_name = scenario_prefix * "qg")
 
     for (i, bus) in enumerate(network.buses)
         _set_bound!(vm[i], bus.v_min, bus.v_max)
@@ -195,7 +198,7 @@ function _build_acopf_model(
             max(generator.p_min, control.capability.p_min),
             min(generator.p_max, control.capability.p_max),
         )
-        function_name = Symbol("droop_response_", attachment.control_id)
+        function_name = Symbol(scenario_prefix, "droop_response_", attachment.control_id)
         control_reactive_epsilon = reactive_smoothing_epsilon(
             control,
             reactive_relative_epsilon;
@@ -225,12 +228,14 @@ function _build_acopf_model(
         JuMP.add_nonlinear_constraint(model, droop_constraint)
     end
 
-    @objective(
-        model,
-        Min,
-        sum((pg[i] - case.generators[i].initial_p)^2 +
-            1.0e-3 * (qg[i] - case.generators[i].initial_q)^2 for i in 1:ngen),
-    )
+    if set_objective
+        @objective(
+            model,
+            Min,
+            sum((pg[i] - case.generators[i].initial_p)^2 +
+                1.0e-3 * (qg[i] - case.generators[i].initial_q)^2 for i in 1:ngen),
+        )
+    end
     return model, (vm = vm, va = va, pg = pg, qg = qg)
 end
 

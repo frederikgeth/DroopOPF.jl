@@ -19,8 +19,15 @@ The current `0.1.0` release delivers M1:
 - an exact complementarity encoding for CCOpt;
 - operating-point extraction, SVG plots, and solver comparison examples.
 
-This is an early research-oriented release. M2 will add security-constrained
-OPF, and M3 will generalize the model to optimize droop curves.
+The working tree implements M2 (unreleased): full-enumeration security-constrained
+AC OPF with fixed droop curves, line/generator outages, preventive participation
+and bounded corrective redispatch, independent scenario validation, continuation,
+and JSON study/result serialization. M3 will optimize droop curves.
+
+Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
+See [the M2 response contract and examples](docs/src/scopf.md) for assumptions,
+solver choices, validation tolerances, and the distinction between preventive
+and corrective operation.
 
 ## Installation
 

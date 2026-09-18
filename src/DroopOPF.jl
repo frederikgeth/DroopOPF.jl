@@ -4,13 +4,20 @@ include("curves.jl")
 include("controls.jl")
 include("network.jl")
 include("domain.jl")
+include("contingencies.jl")
 include("physics.jl")
 include("matpower.jl")
 include("jump.jl")
 include("complementarity.jl")
+include("scopf.jl")
 include("validation.jl")
+include("scopf_validation.jl")
+include("scopf_io.jl")
 include("plotting.jl")
 
+export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
+export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
+export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
 export PiecewiseLinearCurve, evaluate, slope_at
 export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop
 export droop_response, droop_curve
