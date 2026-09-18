@@ -12,4 +12,5 @@ using DroopOPF
     include("test_validation.jl")
     include("test_matpower.jl")
     include("test_plotting.jl")
+    include("test_droop_sweep.jl")
 end

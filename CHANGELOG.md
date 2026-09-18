@@ -7,6 +7,13 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Reference-anchored M3 fixed-slope sweeps through the validated M2 SCOPF.
+- Per-candidate objective, voltage-deviation, branch-loading, exact-droop, and
+  solver-status diagnostics with versioned JSON round trips.
+- A self-contained SVG trade-off plot and reproducible M3 example workflow.
+
 ## [0.2.0] - 2026-09-18
 
 ### Added

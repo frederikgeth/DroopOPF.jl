@@ -92,11 +92,17 @@ Acceptance includes a constrained case where security changes base dispatch,
 not merely independently feasible scenario solves. Run
 `julia --project=. examples/m2_workflow.jl` for the reproducible workflow.
 
-### M3 — optimize droop curves (planned)
+### M3 — optimize droop curves (in progress)
 
 Start with one bounded droop parameter and validate against a small parameter
 sweep. Fixing that parameter must reproduce M2. Add reference settings, deadbands,
 and generalized curves incrementally, with exact replay and held-out scenarios.
+
+The first slice is implemented as a reference-anchored fixed-slope sweep. It
+reuses the complete M2 SCOPF, warm-starts neighbouring candidates, independently
+validates every candidate, and writes versioned JSON plus an SVG trade-off plot.
+The next slice promotes the slope from an enumerated parameter to a bounded
+decision variable and checks its solution against the sweep.
 
 ### Later scaling target
 

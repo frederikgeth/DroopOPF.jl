@@ -8,8 +8,8 @@ validation, and solver-comparison tooling.
 !!! note "Current status"
 
     Version `0.2.0` delivers milestone M2: security-constrained AC OPF with
-    fixed generator volt-var droops. Droop-curve optimization is planned for
-    M3.
+    fixed generator volt-var droops. M3 is in progress; its first slice provides
+    a validated fixed-slope parameter sweep before in-model curve optimization.
 
 ## Formulations
 
@@ -20,6 +20,7 @@ validation, and solver-comparison tooling.
 | Exact PWL droop graph with CCOpt | `solve_opf_complementarity(case)` |
 | Independent equilibrium checks | `equilibrium_report(case, result)` |
 | Droop operating-point plot | `write_droop_plot(...)` |
+| Validated M3 slope sweep | `sweep_droop_slope(...)` |
 
 The smooth model uses stable softplus terms and generator-specific reactive
 smoothing widths. The complementarity model encodes the voltage hinges and
@@ -33,6 +34,8 @@ reactive clipping directly as complementarity pairs.
   complementarity semantics.
 - [Validation](validation.md) — check physical equilibrium and curve
   membership independently of the solver.
+- [M3 droop-slope search](droop_optimization.md) — compare bounded candidate
+  settings against the M2 reference.
 - [Examples](examples.md) — reproduce the M1 regime and solver studies.
 - [API reference](api.md) — generated documentation for exported
   types and functions.
