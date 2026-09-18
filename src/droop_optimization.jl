@@ -178,7 +178,9 @@ _droop_design_value(value::VariableRef) = JuMP.value(value)
 Optimize one control's slope, voltage reference, and asymmetric deadband widths
 as variables shared by the base case and every training contingency. Omitted
 bounds fix that setting at its M2 value. The dispatch objective is unchanged,
-so fixing all bounds at the reference reproduces M2.
+so fixing all bounds at the reference reproduces M2. This is a smooth-NLP
+design problem for Ipopt or MadNLP; CCOpt may be used only after reconstructing
+the optimized fixed curve.
 """
 function optimize_droop_parameters(
     study::Study,
@@ -198,6 +200,10 @@ function optimize_droop_parameters(
     study = _validated_study(study)
     1 <= control_id <= length(study.case.controls) ||
         throw(ArgumentError("control_id is out of range"))
+    optimizer_factory === CCOpt.Optimizer && throw(ArgumentError(
+        "CCOpt does not optimize M3 droop parameters; reconstruct the design " *
+        "and use solve_scopf(...; encoding=:complementarity) for an exact fixed-curve solve",
+    ))
     all(x -> isfinite(x) && x > 0, (smooth_epsilon, smooth_reactive_relative_epsilon)) ||
         throw(ArgumentError("smoothing widths must be positive and finite"))
     isnothing(smooth_reactive_epsilon) ||

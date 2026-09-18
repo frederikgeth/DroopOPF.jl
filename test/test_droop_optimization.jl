@@ -1,3 +1,6 @@
+import CCOpt
+import MadNLP
+
 @testset "M3 bounded droop-parameter optimization" begin
     case = m2_case()
     study = Study(
@@ -10,6 +13,16 @@
     )
     reference = solve_scopf(study; smooth_epsilon = 1e-5)
     @test equilibrium_report(study, reference).valid
+    madnlp_reference = solve_scopf(
+        study;
+        smooth_epsilon = 1e-5,
+        optimizer_factory = MadNLP.Optimizer,
+        optimizer_attributes = Dict("max_iter" => 500),
+        initial_states = reference.states,
+    )
+    @test madnlp_reference.termination_status == :LOCALLY_SOLVED
+    @test equilibrium_report(study, madnlp_reference).valid
+    @test madnlp_reference.objective ≈ reference.objective atol = 1e-10
 
     fixed = optimize_droop_parameters(
         study,
@@ -45,17 +58,32 @@
     @test abs(slope_design.settings.slope - sampled_best.slope) < 0.005
     @test slope_design.result.objective <= sampled_best.objective + 1e-10
 
-    generalized = optimize_droop_parameters(
-        study,
-        2;
+    design_bounds = (
         slope_bounds = (0.04, 0.10),
         v_ref_bounds = (0.995, 1.005),
         deadband_low_bounds = (0.005, 0.015),
         deadband_high_bounds = (0.005, 0.015),
+    )
+    generalized = optimize_droop_parameters(
+        study,
+        2;
+        design_bounds...,
         smooth_epsilon = 1e-5,
         reference_result = reference,
     )
     @test validate_droop_design(study, generalized).valid
+    madnlp_design = optimize_droop_parameters(
+        study,
+        2;
+        design_bounds...,
+        smooth_epsilon = 1e-5,
+        optimizer_factory = MadNLP.Optimizer,
+        optimizer_attributes = Dict("max_iter" => 500),
+        reference_result = madnlp_reference,
+    )
+    @test madnlp_design.result.termination_status == :LOCALLY_SOLVED
+    @test validate_droop_design(study, madnlp_design).valid
+    @test madnlp_design.result.objective ≈ generalized.result.objective atol = 1e-10
     optimized = with_droop_settings(study, generalized)
     @test optimized.case.controls[2].slope == generalized.settings.slope
     @test optimized.case.controls[2].schedule.v_db_low ≈
@@ -63,6 +91,27 @@
     @test optimized.case.controls[2].schedule.v_db_high ≈
         generalized.settings.v_ref + generalized.settings.deadband_high
     @test study.case.controls[2].slope == 0.075
+    exact_fixed_curve = solve_scopf(
+        optimized;
+        encoding = :complementarity,
+        initial_states = generalized.result.states,
+        optimizer_attributes = Dict(
+            "tol" => 1e-7,
+            "max_iter" => 2000,
+            "mu_strategy" => "monotone",
+        ),
+    )
+    exact_report = equilibrium_report(
+        optimized,
+        exact_fixed_curve;
+        power_tolerance = 1e-5,
+        droop_tolerance = 1e-4,
+        limit_tolerance = 1e-5,
+        coupling_tolerance = 1e-5,
+    )
+    @test exact_fixed_curve.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+    @test exact_report.valid
+    @test exact_fixed_curve.objective ≈ generalized.result.objective atol = 1e-7
     mktempdir() do directory
         path = write_droop_design(joinpath(directory, "design.json"), generalized)
         restored = read_droop_design(path)
@@ -121,6 +170,13 @@
         2;
         deadband_low_bounds = (1.0, 1.1),
         smooth_epsilon = 1e-5,
+        reference_result = reference,
+    )
+    @test_throws ArgumentError optimize_droop_parameters(
+        study,
+        2;
+        slope_bounds = (0.04, 0.10),
+        optimizer_factory = CCOpt.Optimizer,
         reference_result = reference,
     )
 end

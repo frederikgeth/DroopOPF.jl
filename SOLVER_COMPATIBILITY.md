@@ -1,6 +1,6 @@
 # Solver compatibility and agreement
 
-DroopOPF exposes two mathematically related formulations of M1:
+DroopOPF exposes two mathematically related formulations of fixed droop curves:
 
 - `solve_opf(case; optimizer_factory=Ipopt.Optimizer)` solves the smoothed NLP.
 - `solve_opf(case; optimizer_factory=MadNLP.Optimizer)` solves the same smoothed NLP through MadNLP.
@@ -46,3 +46,24 @@ julia --project=. examples/m1_solver_comparison.jl
 It prints solver status, objective, AC/droop/complementarity residuals, and
 each operating point's exact curve error. It also writes
 `m1_solver_comparison.svg`.
+
+## M2 and M3 scope
+
+| Capability | Ipopt | MadNLP | CCOpt |
+|---|---|---|---|
+| M2 fixed-curve SCOPF | smooth | smooth, warm-start recommended | exact complementarity |
+| M3 bounded parameter design | smooth | smooth, warm-start recommended | unsupported |
+| M3 reconstructed fixed curve | smooth re-solve available | smooth re-solve available | exact complementarity re-solve |
+
+The regression matrix warm-starts MadNLP from validated Ipopt M2 states at the
+`1e-5` smoothing width. This is part of the compatibility contract: a cold
+MadNLP start is not guaranteed to select the same local solution. Ipopt and
+MadNLP must both pass independent exact-curve validation and agree on objective
+within tolerance; optimized settings are not required to be identical.
+
+M3 parameter optimization rejects `CCOpt.Optimizer` because the design model
+uses differentiable droop-parameter variables. CCOpt is used only after those
+parameters have been fixed and reconstructed as an ordinary `VoltVarDroop`.
+`validate_droop_design` performs solver-independent exact algebraic replay of
+the optimized states. A separate CCOpt re-solve is accepted only when
+`equilibrium_report` passes.

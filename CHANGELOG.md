@@ -11,6 +11,8 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 - Exact reference-versus-optimized droop visualization with explicit training,
   held-out, and unavailable-control scenario annotations.
+- M2/M3 solver-compatibility regressions for warm-started MadNLP and CCOpt
+  fixed-curve validation, with explicit rejection of CCOpt as an M3 optimizer.
 
 ## [0.3.0] - 2026-09-18
 

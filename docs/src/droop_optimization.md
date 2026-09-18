@@ -83,6 +83,20 @@ design = optimize_droop_parameters(
 that reconstructed exact PWL curve. A design is not accepted from solver status
 alone.
 
+## Solver scope
+
+Bounded parameter design is a smooth nonlinear program supported by Ipopt and
+MadNLP. For the M2/M3 regression fixture, MadNLP is warm-started from validated
+M2 states; an unseeded solve can select an infeasible local point. The two
+smooth solvers are required to agree on the validated objective, not on the
+parameter vector, because multiple settings can be nearly equivalent.
+
+CCOpt is intentionally not accepted as an `optimize_droop_parameters` optimizer.
+Once a design is reconstructed as a fixed exact curve, CCOpt can independently
+re-solve it through `solve_scopf(optimized; encoding=:complementarity)`. The
+solver-independent `validate_droop_design` exact replay remains the primary
+acceptance gate.
+
 ## Held-out scenarios
 
 `evaluate_held_out_contingencies` holds the optimized base dispatch fixed and
