@@ -7,9 +7,8 @@ validation, and solver-comparison tooling.
 
 !!! note "Current status"
 
-    Version `0.2.0` delivers milestone M2: security-constrained AC OPF with
-    fixed generator volt-var droops. The unreleased M3 implementation on `main`
-    adds bounded standard-droop design, exact replay, and held-out validation.
+    Version `0.3.0` delivers milestone M3: validated parameter sweeps, bounded
+    standard-droop design, exact PWL replay, and held-out contingency checks.
 
 ## Formulations
 

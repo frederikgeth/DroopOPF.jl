@@ -19,12 +19,12 @@ Version `0.1.0` delivered M1:
 - an exact complementarity encoding for CCOpt;
 - operating-point extraction, SVG plots, and solver comparison examples.
 
-The current `0.2.0` release delivers M2: full-enumeration security-constrained
-AC OPF with fixed droop curves, line/generator outages, preventive participation
-and bounded corrective redispatch, independent scenario validation, continuation,
-JSON study/result serialization, and visual validation. The unreleased M3 work
-on `main` adds bounded optimization of droop slope, voltage reference, and
-asymmetric deadband widths, with exact replay and held-out contingency checks.
+The current `0.3.0` release delivers M3: reference-anchored slope sweeps and
+bounded optimization of droop slope, voltage reference, and asymmetric deadband
+widths. Optimized designs are reconstructed as exact PWL curves, independently
+validated across the M2 security-constrained model, and checked on held-out
+contingencies. M2 line/generator outages, response policies, continuation, JSON
+serialization, and visual validation remain available unchanged.
 
 Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
 Run the first M3 validation slice with

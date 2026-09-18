@@ -7,6 +7,8 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-18
+
 ### Added
 
 - Reference-anchored M3 fixed-slope sweeps through the validated M2 SCOPF.
@@ -64,6 +66,7 @@ First public M1 milestone release.
   assessed using physical residuals, objective values, and droop regimes.
 - Security constraints and droop-curve optimization are planned for M2 and M3.
 
-[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/frederikgeth/DroopOPF.jl/releases/tag/v0.1.0

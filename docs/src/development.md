@@ -35,5 +35,5 @@ The staged development plan is maintained in
 
 - M1: AC OPF with generator volt-var droops — complete in `0.1.0`;
 - M2: security-constrained AC OPF — complete in `0.2.0`; see [the response contract](scopf.md);
-- M3: implemented on `main`, release pending — validated fixed-slope search,
-  bounded standard-droop optimization, exact replay, and held-out validation.
+- M3: complete in `0.3.0` — validated fixed-slope search, bounded
+  standard-droop optimization, exact replay, and held-out validation.

@@ -87,7 +87,9 @@ end
 
     corrective = Study(case; contingencies=contingencies, mode=:corrective,
         redispatch_limits=Dict(7=>0.8,9=>0.8))
-    corrected = solve_scopf(corrective)
+    # Anchor the nonconvex corrective solve at the validated preventive states;
+    # an unseeded start can select a different local point across Ipopt builds.
+    corrected = solve_scopf(corrective; initial_states=result.states)
     @test equilibrium_report(corrective, corrected).valid
     @test isempty(corrected.balancing_power)
     @test !equilibrium_report(study, corrected).valid

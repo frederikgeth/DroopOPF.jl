@@ -92,7 +92,7 @@ Acceptance includes a constrained case where security changes base dispatch,
 not merely independently feasible scenario solves. Run
 `julia --project=. examples/m2_workflow.jl` for the reproducible workflow.
 
-### M3 — optimize droop curves (implemented on `main`; release pending)
+### M3 — optimize droop curves (released in 0.3.0)
 
 Start with one bounded droop parameter and validate against a small parameter
 sweep. Fixing that parameter must reproduce M2. Add reference settings, deadbands,
