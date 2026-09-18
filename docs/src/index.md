@@ -7,9 +7,9 @@ validation, and solver-comparison tooling.
 
 !!! note "Current status"
 
-    Version `0.1.0` delivers milestone M1: AC OPF with static generator
-    volt-var droops. Security-constrained OPF is planned for M2, followed by
-    droop-curve optimization in M3.
+    Version `0.2.0` delivers milestone M2: security-constrained AC OPF with
+    fixed generator volt-var droops. Droop-curve optimization is planned for
+    M3.
 
 ## Formulations
 

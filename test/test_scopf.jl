@@ -2,6 +2,8 @@ include(joinpath(@__DIR__, "..", "examples", "m2_case.jl"))
 
 @testset "M2 contingency data and physics" begin
     case = m2_case()
+    @test [control.slope for control in case.controls] == [0.05, 0.075]
+    @test case.controls[1].curve.breakpoints != case.controls[2].curve.breakpoints
     line = Contingency(:line_22; branch_ids=[22])
     gen = Contingency(:generator_9; generator_ids=[9])
     overlay = scenario_case(case, line)
@@ -32,7 +34,7 @@ end
     contingencies = [Contingency(:line_22; branch_ids=[22]),
                      Contingency(:generator_9; generator_ids=[9])]
     study = Study(case; contingencies=contingencies, participation=Dict(7=>2.0,9=>1.0))
-    result = solve(study)
+    result = solve(study; smooth_epsilon=1e-5)
     @test result.termination_status == :LOCALLY_SOLVED
     @test Set(keys(result.states)) == Set([:base,:line_22,:generator_9])
     report = equilibrium_report(study, result)
@@ -139,7 +141,7 @@ end
     case = m2_case()
     study = Study(case; contingencies=[Contingency(:line_22;branch_ids=[22]),
         Contingency(:generator_9;generator_ids=[9])], participation=Dict(7=>1.0,9=>1.0))
-    result = solve_scopf(study)
+    result = solve_scopf(study; smooth_epsilon=1e-5)
     mktempdir() do dir
         saved_study = write_study(joinpath(dir,"study.json"),study)
         restored = read_study(saved_study)
@@ -163,4 +165,37 @@ end
     @test equilibrium_report(study,exact;power_tolerance=1e-5,droop_tolerance=1e-4,
         limit_tolerance=1e-5,coupling_tolerance=1e-5).valid
     @test abs(exact.objective-result.objective) < 1e-4
+end
+
+@testset "M2 visual validation" begin
+    case = m2_case()
+    study = Study(case; contingencies=[Contingency(:line_22;branch_ids=[22]),
+        Contingency(:generator_9;generator_ids=[9])], participation=Dict(7=>1.0,9=>1.0))
+    result = solve_scopf(study; smooth_epsilon=1e-5)
+    points = scopf_operating_points(study,result)
+    @test length(points) == 5
+    @test Set(point.scenario for point in points) == Set([:base,:line_22,:generator_9])
+    mktempdir() do directory
+        paths = write_scopf_validation_plots(directory,study,result)
+        @test all(isfile,path for path in paths)
+        @test all(path -> startswith(read(path,String),"<svg"),paths)
+        droop = read(paths.droop,String)
+        @test occursin("G7 line_22",droop)
+        @test occursin("G9 base",droop)
+        voltage = read(paths.voltage,String)
+        @test occursin("Bus 10",voltage)
+        @test occursin("generator_9",voltage)
+        loading = read(paths.branch_loading,String)
+        @test occursin("Branch 22",loading)
+        @test occursin("× = outaged",loading)
+        dispatch = read(paths.dispatch,String)
+        @test occursin("Active P",dispatch)
+        @test occursin("G9",dispatch)
+        residuals = read(paths.residuals,String)
+        @test occursin("Residual / tolerance",residuals)
+        @test occursin("PASS",residuals)
+        missing = deepcopy(result)
+        missing.states[:line_22] = nothing
+        @test_throws ArgumentError write_scopf_droop_plot(joinpath(directory,"bad.svg"),study,missing)
+    end
 end

@@ -7,6 +7,8 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-18
+
 ### Added
 
 - M2 full-enumeration SCOPF with line and generator outage overlays.
@@ -15,6 +17,8 @@ and releases use [Semantic Versioning](https://semver.org/).
 - Independent per-scenario physics, exact/encoded droop, availability, and response checks.
 - Fixed-base contingency evaluation, scenario warm starts, and epsilon continuation.
 - Versioned JSON study/result save/load, JSON/Markdown reports, and an M2 workflow example.
+- M2 SVG validation plots for droop points, bus voltages, branch loading,
+  generator dispatch, and residual-to-tolerance ratios.
 - Regressions for binding security constraints, infeasible response policies, and corrupted results.
 
 ### Fixed
@@ -49,5 +53,6 @@ First public M1 milestone release.
   assessed using physical residuals, objective values, and droop regimes.
 - Security constraints and droop-curve optimization are planned for M2 and M3.
 
-[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/frederikgeth/DroopOPF.jl/releases/tag/v0.1.0

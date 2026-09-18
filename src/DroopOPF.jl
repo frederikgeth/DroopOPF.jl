@@ -14,6 +14,7 @@ include("validation.jl")
 include("scopf_validation.jl")
 include("scopf_io.jl")
 include("plotting.jl")
+include("scopf_plotting.jl")
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
 export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
@@ -33,5 +34,8 @@ export EquilibriumValidationReport, EquilibriumReport, validate_equilibrium
 export equilibrium_report, markdown_report
 export DroopOperatingPoint, droop_regime, droop_operating_point, droop_operating_points
 export solver_operating_points, write_droop_plot, write_solver_comparison_plot
+export scopf_operating_points, write_scopf_droop_plot, write_scopf_voltage_plot
+export write_scopf_branch_loading_plot, write_scopf_dispatch_plot
+export write_scopf_residual_plot, write_scopf_validation_plots
 
 end

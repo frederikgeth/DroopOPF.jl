@@ -72,7 +72,7 @@ numbers were planning targets, not releases; M1 was actually released as 0.1.0.
 Typed case data, MATPOWER loading, AC OPF, exact/smooth droop encodings,
 independent equilibrium validation, solver comparison, and plotting.
 
-### M2 — security-constrained AC OPF (implemented, unreleased)
+### M2 — security-constrained AC OPF (released in 0.2.0)
 
 The implementation contract is in [docs/src/scopf.md](docs/src/scopf.md).
 The validation-sized steps are:

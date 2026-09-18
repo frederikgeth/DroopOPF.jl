@@ -144,6 +144,37 @@ restored_result = read_scopf_result("result.json")
 restored_report = equilibrium_report(restored_study, restored_result)
 ```
 
+## Visual validation
+
+The end-to-end workflow also writes five self-contained SVG figures:
+
+- `m2_droop_operating_points.svg` overlays base and contingency operating
+  points on the exact volt-var curves. Marker shape identifies the scenario;
+  curve colour identifies the control.
+- `m2_bus_voltages.svg` compares each bus across scenarios and shows its
+  allowable voltage interval behind every operating point.
+- `m2_branch_loading.svg` reports apparent-power loading as a percentage of
+  rating, draws the 100% threshold, and marks outaged branches with a cross.
+- `m2_generator_dispatch.svg` compares active and reactive generation and
+  marks outaged generators.
+- `m2_validation_residuals.svg` plots AC-balance, exact-droop, and response
+  residuals divided by their acceptance tolerances. The horizontal threshold
+  is one; bars below it pass.
+
+Generate the complete bundle with:
+
+```julia
+paths = write_scopf_validation_plots("m2-validation", study, result)
+```
+
+Individual writers are available when only one view is needed:
+`write_scopf_droop_plot`, `write_scopf_voltage_plot`,
+`write_scopf_branch_loading_plot`, `write_scopf_dispatch_plot`, and
+`write_scopf_residual_plot`. A missing scenario state or a result whose
+scenario set differs from the study is rejected instead of producing a partial
+figure. The graphics explain a validated result; the independent numerical
+report remains the acceptance authority.
+
 JSON documents use schema version 1 and a document-kind tag. Study files contain
 all case data, contingencies, and the response policy. Result files contain
 scenario states, balancing powers, solver/status, encoding, and smoothing widths.

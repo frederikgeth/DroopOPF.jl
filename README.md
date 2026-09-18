@@ -9,7 +9,7 @@ DroopOPF.jl is a Julia library for AC optimal power flow with generator
 volt-var droop controls. It is being developed as the foundation for a
 security-constrained AC OPF library with equilibrium-aware generator controls.
 
-The current `0.1.0` release delivers M1:
+Version `0.1.0` delivered M1:
 
 - AC network power-flow physics and OPF constraints;
 - static piecewise-linear volt-var curves with deadband and reactive limits;
@@ -19,15 +19,18 @@ The current `0.1.0` release delivers M1:
 - an exact complementarity encoding for CCOpt;
 - operating-point extraction, SVG plots, and solver comparison examples.
 
-The working tree implements M2 (unreleased): full-enumeration security-constrained
+The current `0.2.0` release delivers M2: full-enumeration security-constrained
 AC OPF with fixed droop curves, line/generator outages, preventive participation
 and bounded corrective redispatch, independent scenario validation, continuation,
-and JSON study/result serialization. M3 will optimize droop curves.
+JSON study/result serialization, and visual validation. M3 will optimize droop
+curves.
 
 Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
 See [the M2 response contract and examples](docs/src/scopf.md) for assumptions,
 solver choices, validation tolerances, and the distinction between preventive
-and corrective operation.
+and corrective operation. The workflow also writes SVG comparisons of droop
+operating points, bus voltages, branch loading, generator dispatch, and
+independent residual-to-tolerance ratios.
 
 ## Installation
 

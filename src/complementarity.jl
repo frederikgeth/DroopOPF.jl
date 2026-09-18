@@ -185,6 +185,24 @@ function _build_complementarity_opf_model(
         schedule = control.schedule
         q_min, q_max = control.capability.q_min, control.capability.q_max
 
+        voltage_start = isnothing(initial_state) ? 1.0 : initial_state.vm[location_index]
+        voltage_lower_start = max(schedule.v_db_low - voltage_start, 0.0)
+        voltage_upper_start = max(voltage_start - schedule.v_db_high, 0.0)
+        raw_q_start = control.q_at_deadband +
+            (voltage_lower_start - voltage_upper_start) / control.slope
+        q_start = clamp(raw_q_start, q_min, q_max)
+        set_start_value(vm[location_index], voltage_start)
+        set_start_value(qg[generator_index], q_start)
+        set_start_value(voltage_lower[k], voltage_lower_start)
+        set_start_value(voltage_lower_complement[k], max(voltage_start - schedule.v_db_low, 0.0))
+        set_start_value(voltage_upper[k], voltage_upper_start)
+        set_start_value(voltage_upper_complement[k], max(schedule.v_db_high - voltage_start, 0.0))
+        set_start_value(raw_q[k], raw_q_start)
+        set_start_value(q_lower_slack[k], q_start - q_min)
+        set_start_value(q_upper_slack[k], q_max - q_start)
+        set_start_value(q_lower_multiplier[k], max(q_start - raw_q_start, 0.0))
+        set_start_value(q_upper_multiplier[k], max(raw_q_start - q_start, 0.0))
+
         # max(v_db_low - V, 0)
         @constraint(
             model,

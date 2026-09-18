@@ -29,3 +29,20 @@ for each solver.
 
 The generated figure is intended as a regression artifact as well as a visual
 explanation of the deadband, proportional, and saturation encodings.
+
+## M2 scenario validation
+
+The M2 workflow solves the base case, a line outage, and a generator outage,
+using distinct generator droop coefficients of 0.05 and 0.075 pu voltage per
+unit reactive output. The workflow uses a `1e-5` smoothing width for this
+heterogeneous fixture, then writes numerical reports and a five-figure
+visual-validation bundle:
+
+```sh
+julia --project=. examples/m2_workflow.jl /tmp/droopopf-m2
+```
+
+The figures compare scenario droop operating points, bus voltages, branch
+loading, generator dispatch, and independently recomputed residuals against
+their tolerances. See [Security-constrained AC OPF](scopf.md#visual-validation)
+for the plot semantics and individual writer functions.
