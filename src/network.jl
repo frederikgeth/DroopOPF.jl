@@ -19,6 +19,10 @@ function Bus(id::Integer; v_min = 0.9, v_max = 1.1, reference::Bool = false)
     return Bus{T}(id, T(v_min), T(v_max), reference)
 end
 
+"""Two-terminal branch with a from-side complex tap `tap_ratio * cis(phase_shift)`.
+The ratio is positive and dimensionless; phase shift is in radians. Defaults
+preserve line behavior. Ratio and phase are fixed equipment inputs in M5.
+"""
 struct Branch{T<:Real}
     id::Int
     from_bus::Int
@@ -28,6 +32,8 @@ struct Branch{T<:Real}
     charging::T
     thermal_limit::T
     available::Bool
+    tap_ratio::T
+    phase_shift::T
 
     function Branch{T}(
         id::Integer,
@@ -38,18 +44,21 @@ struct Branch{T<:Real}
         charging::T,
         thermal_limit::T,
         available::Bool,
+        tap_ratio::T = one(T),
+        phase_shift::T = zero(T),
     ) where {T<:Real}
         id > 0 || throw(ArgumentError("branch id must be positive"))
         from_bus > 0 || throw(ArgumentError("branch from_bus must be positive"))
         to_bus > 0 || throw(ArgumentError("branch to_bus must be positive"))
         from_bus != to_bus || throw(ArgumentError("a branch cannot connect a bus to itself"))
-        all(isfinite, (resistance, reactance, charging, thermal_limit)) ||
+        all(isfinite, (resistance, reactance, charging, thermal_limit, tap_ratio, phase_shift)) ||
             throw(ArgumentError("branch parameters must be finite"))
         resistance >= zero(T) || throw(ArgumentError("branch resistance must be nonnegative"))
         !iszero(resistance) || !iszero(reactance) ||
             throw(ArgumentError("branch impedance cannot be zero"))
         thermal_limit > zero(T) || throw(ArgumentError("branch thermal_limit must be positive"))
-        new{T}(Int(id), Int(from_bus), Int(to_bus), resistance, reactance, charging, thermal_limit, available)
+        tap_ratio > zero(T) || throw(ArgumentError("branch tap_ratio must be positive"))
+        new{T}(Int(id), Int(from_bus), Int(to_bus), resistance, reactance, charging, thermal_limit, available, tap_ratio, phase_shift)
     end
 end
 
@@ -62,10 +71,12 @@ function Branch(
     charging = 0.0,
     thermal_limit,
     available::Bool = true,
+    tap_ratio = 1,
+    phase_shift = 0,
 )
-    T = promote_type(typeof(resistance), typeof(reactance), typeof(charging), typeof(thermal_limit))
+    T = promote_type(typeof(resistance), typeof(reactance), typeof(charging), typeof(thermal_limit), typeof(tap_ratio), typeof(phase_shift))
     return Branch{T}(
-        id, from_bus, to_bus, T(resistance), T(reactance), T(charging), T(thermal_limit), available,
+        id, from_bus, to_bus, T(resistance), T(reactance), T(charging), T(thermal_limit), available, T(tap_ratio), T(phase_shift),
     )
 end
 
@@ -117,7 +128,7 @@ function ACNetwork(
     bs = Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in buses]
     brs = Branch{T}[
         Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance), T(br.reactance),
-                  T(br.charging), T(br.thermal_limit), br.available) for br in branches
+                  T(br.charging), T(br.thermal_limit), br.available, T(br.tap_ratio), T(br.phase_shift)) for br in branches
     ]
     return ACNetwork{T}(bs, brs)
 end

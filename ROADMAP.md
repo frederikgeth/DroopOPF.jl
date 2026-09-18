@@ -160,6 +160,62 @@ benchmarks record environment, actual JuMP model size, elapsed time, and Julia
 allocations. The evidence-based decision is to retain the current formulation:
 no P2 scaling algorithm is justified by the validated small-case measurements.
 
+### Equipment extension — revised continuous-first plan
+
+M1-M4 remain released and unchanged. The following M5-M10 milestones record the
+agreed planning direction on branch `transformers`; M5.1-M5.4 are implemented and
+validated on this branch, while M6-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
+small validation slices and acceptance evidence. This roadmap owns sequencing.
+
+**M5 complete on `transformers` (unreleased, 2026-09-18):** transformer
+data/import/schema migration (M5.1), fixed-ratio physics (M5.2), fixed phase shift,
+availability and both-terminal ratings (M5.3), and OPF/SCOPF plus bounded-droop
+integration (M5.4). Independent validation computes internal-side currents;
+the optimizer uses the admittance primitive. The full suite passed 440/440
+tests. See the [M5 evidence report](artifacts/m5/report.md) and
+[M5.1 data report](artifacts/m5_1/report.md).
+
+The synthetic integration fixture uses declared proportional-regime starts and
+explicit CCOpt accuracy settings. Failed flat-start/default-CCOpt diagnostics
+are retained; convergence from arbitrary starts is not claimed. Tap optimization,
+AVR and shunt physics remain in their existing later milestones. Order is unchanged.
+
+
+| Milestone | Small validation slices | Dependency / central evidence |
+|---|---|---|
+| M5 — Transformer reference physics **complete** | M5.1 data/import; M5.2 fixed ratio; M5.3 fixed phase/availability; M5.4 OPF/SCOPF integration | M1-M4 foundation; analytical currents/powers, flow curves, outages and round trips |
+| M6 — Shunt reference physics | M6.1 fixed admittance; M6.2 supplied bank states; M6.3 OPF/SCOPF integration | Independent of M5; signs, V-squared curves and reactive accounting |
+| M7 — Continuous equipment optimization | M7.1 tap ratio; M7.2 susceptance; M7.3 joint equipment/droop | Applicable M5/M6 physics; fixed-bound equivalence, sweeps and setting extraction |
+| M8 — Steady-state transformer AVR | M8.1 target plus saturation; M8.2 deadband/selection; M8.3 fixed/OPF/AVR comparisons | Can start after M5.4; voltage-target tracking, tap limits and explicit equilibrium-selection semantics |
+| M9 — Equipment/AVR-aware SCOPF | M9.1 preventive sharing; M9.2 bounded corrective action; M9.3 before-response versus AVR-settled security | M7 and, for AVR cases, M8; independent coupling and stage-specific margin checks |
+| M10 — Comparative validation gate | M10.1 external physics references; M10.2 matched studies; M10.3 regression/performance evidence | M5-M9; held-out conditions, interactions, multi-starts and reproducible reports |
+
+Continuous tap-ratio and shunt-susceptance relaxation is the primary optimization
+path. Discrete physical position data and fixed operation remain first-class.
+Small enumeration, legal-position recovery and mixed-integer optimization are
+optional verification/solution branches, not prerequisites for the primary path.
+Relaxed outputs are labelled explicitly; recovery requires a new physical solve,
+including all selected security cases. A local relaxed objective is not a
+certified lower bound on the discrete problem.
+
+Fixed transformers/shunts are present in existing SCOPF from M5.4/M6.3 onward.
+M9 adds coordinated decisions and response policies, not a second SCOPF engine.
+Transformer mode is fixed, OPF-optimized or AVR-controlled. AVR equilibrium,
+including limit saturation, is distinct from unrestricted tap optimization.
+Deadband feasibility alone does not establish a reached position or action count.
+
+Each submilestone requires a runnable example, machine-readable evidence, a
+readable report and the specified plots/tables. Separate solver, physics,
+operational-limit and control-policy statuses. Report AVR unmet targets explicitly.
+Numerical checks and adversarial tests determine acceptance; visuals explain it.
+M10 consolidates existing evidence rather than postponing validation.
+
+Maintain data / optimization problem / formulation / validation boundaries.
+M5 and M6 can proceed independently; M8 can branch from M5 while M7 progresses.
+Sequential automatic delays, dwell, hunting and discrete event counts are later
+scope; M9.3 compares two steady states and makes no transient-security claim.
+The original performance gate and released milestone identities remain unchanged.
+
 ### Later scaling target
 
 Contingency ranking, fast AC evaluation, violation-driven constraint generation,

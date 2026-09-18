@@ -1,0 +1,17 @@
+(:ALMOST_LOCALLY_SOLVED, EquilibriumValidationReport{Float64}(false, 3.1086244689504383e-15, 0.00018773056398233706, 0.0732263384715196, 0.11105060660918054, 0.3011454998723377, 0.898850923836979, 1.0211998627475911, 0.8672594011356592, 1.6080830551574212, 0.0, 0.0, 0.0, nothing, nothing, nothing, [:droop]), 1.0008899356704953e-8)
+# SCOPF report: m5-fixed-transformer
+
+- Valid: `false`; exact-curve feasible: `false`; encoded-model feasible: `false`
+- Solver: CCOpt; termination: `SLOW_PROGRESS`; primal: `UNKNOWN_RESULT_STATUS`
+- Mode: `preventive`; encoding: `complementarity`
+- Base dispatch objective: 2.0702046753279246e-5
+- Tolerances (p.u., reference angle in radians): `(power_tolerance = 1.0e-6, droop_tolerance = 1.0e-5, limit_tolerance = 1.0e-6, unavailable_tolerance = 1.0e-8, coupling_tolerance = 1.0e-6)`
+
+| Scenario | AC residual | Exact droop residual | Encoded droop residual | Smooth/exact gap | Branch margin | Response violation | Failures |
+|---|---:|---:|---:|---:|---:|---:|---|
+| base | 8.909539772616881e-15 | 0.00018773056398478996 | 0.00018773056398478996 | 0.0 | 1.6080830551549998 | 0.0 | droop |
+| transformer_out | 2.3037127760972e-15 | 1.7922835536268722e-5 | 1.7922835536268722e-5 | 0.0 | 1.6853604275975402 | 5.57822017743792e-17 | droop |
+| line_out | 3.219646771412954e-15 | 2.317807361175428e-5 | 2.317807361175428e-5 | 0.0 | 1.366314612118114 | 5.789639601072594e-17 | droop |
+| generator_out | 5.192894725336572e-15 | 8.900307494702497e-6 | 8.900307494702497e-6 | 0.0 | 1.4960834226502502 | 5.551115123125783e-17 | none |
+
+Controls and network limits are checked independently in each scenario. Active-power response follows the declared policy; this report makes no dynamic or frequency-stability claim.

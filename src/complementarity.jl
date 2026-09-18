@@ -62,32 +62,8 @@ function _add_complementarity_ac_physics!(
         )
     end
 
-    for branch in network.branches
-        branch.available || continue
-        from = bus_indices[branch.from_bus]
-        to = bus_indices[branch.to_bus]
-        y = inv(complex(branch.resistance, branch.reactance))
-        conductance, susceptance = real(y), imag(y)
-        shunt = branch.charging / 2
-        δ_from = va[from] - va[to]
-        δ_to = va[to] - va[from]
-        @NLconstraint(
-            model,
-            (vm[from]^2 * conductance -
-             vm[from] * vm[to] * (conductance * cos(δ_from) + susceptance * sin(δ_from)))^2 +
-            (-vm[from]^2 * (susceptance + shunt) -
-             vm[from] * vm[to] * (conductance * sin(δ_from) - susceptance * cos(δ_from)))^2 <=
-            branch.thermal_limit^2,
-        )
-        @NLconstraint(
-            model,
-            (vm[to]^2 * conductance -
-             vm[to] * vm[from] * (conductance * cos(δ_to) + susceptance * sin(δ_to)))^2 +
-            (-vm[to]^2 * (susceptance + shunt) -
-             vm[to] * vm[from] * (conductance * sin(δ_to) - susceptance * cos(δ_to)))^2 <=
-            branch.thermal_limit^2,
-        )
-    end
+    _add_branch_thermal_limits!(model, network, vm, va)
+
     return
 end
 

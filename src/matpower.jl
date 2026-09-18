@@ -49,8 +49,11 @@ end
     load_matpower_case(path; base_frequency = 50.0, id = nothing)
 
 Load the core bus, generator, load, and branch tables from a MATPOWER v2 case
-file. Values are normalized to the case base power. MATPOWER fields that are
-not represented by the M1 domain model are intentionally ignored.
+file. Values are normalized to the case base power. TAP=0 maps to unity;
+SHIFT is converted from degrees to radians. Nonzero bus GS/BS are rejected
+until M6 shunt support; they must not silently disappear. Other unsupported
+fields (including costs and angle-difference limits) remain outside this adapter.
+Fixed ratios and phase shifts are supported by AC evaluation and OPF/SCOPF.
 
 `RATE_A == 0` is treated as an unavailable thermal limit and represented by a
 large finite limit so that the M1 model remains numerically well-defined.
@@ -76,6 +79,8 @@ function load_matpower_case(
     buses = Bus[]
     loads = Load[]
     for row in eachrow(bus_table)
+        (iszero(row[5]) && iszero(row[6])) ||
+            throw(ArgumentError("bus $(row[1]): nonzero MATPOWER GS/BS requires M6 shunt support"))
         bus_id = round(Int, row[1])
         bus_type = round(Int, row[2])
         v_max, v_min = row[12], row[13]
@@ -124,6 +129,8 @@ function load_matpower_case(
                 charging = row[5],
                 thermal_limit = rate,
                 available = row[11] > 0,
+                tap_ratio = iszero(row[9]) ? 1.0 : row[9],
+                phase_shift = deg2rad(row[10]),
             ),
         )
     end

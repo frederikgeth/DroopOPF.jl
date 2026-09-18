@@ -11,6 +11,8 @@ using DroopOPF
     include("test_solver_compatibility.jl")
     include("test_validation.jl")
     include("test_matpower.jl")
+    include("test_transformer_data.jl")
+    include("test_transformer_physics.jl")
     include("test_plotting.jl")
     include("test_droop_sweep.jl")
     include("test_droop_optimization.jl")

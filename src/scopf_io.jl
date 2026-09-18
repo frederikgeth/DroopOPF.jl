@@ -21,7 +21,7 @@ end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        JSON.json(io, Dict("schema_version"=>1, "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
+        JSON.json(io, Dict("schema_version"=>(kind == "DroopOPF.Study" ? 2 : 1), "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
     return path
@@ -49,9 +49,26 @@ write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
 
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
-    get(document,"schema_version",nothing) == 1 || throw(ArgumentError("unsupported JSON schema version"))
+    version = get(document,"schema_version",nothing)
+    supported = kind == "DroopOPF.Study" ? (1, 2) : (1,)
+    version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
-    return document["data"]
+    data = document["data"]
+    if kind == "DroopOPF.Study"
+        for b in data["case"]["network"]["branches"]
+            if version == 1
+                # Never silently discard contradictory transformer data labelled v1.
+                (get(b, "tap_ratio", 1.0) == 1 && get(b, "phase_shift", 0.0) == 0) ||
+                    throw(ArgumentError("nontrivial transformer data requires study schema v2"))
+                b["tap_ratio"] = 1.0
+                b["phase_shift"] = 0.0
+            else
+                all(haskey(b, k) for k in ("tap_ratio", "phase_shift")) ||
+                    throw(ArgumentError("v2 study branches require tap_ratio and phase_shift"))
+            end
+        end
+    end
+    return data
 end
 
 """Load a study and recheck case, outage, and response-policy validity."""
@@ -62,7 +79,8 @@ function read_study(path::AbstractString)
     buses = [Bus(b["id"]; v_min=Float64(b["v_min"]), v_max=Float64(b["v_max"]), reference=b["reference"]) for b in n["buses"]]
     branches = [Branch(b["id"],b["from_bus"],b["to_bus"]; resistance=Float64(b["resistance"]),
         reactance=Float64(b["reactance"]), charging=Float64(b["charging"]),
-        thermal_limit=Float64(b["thermal_limit"]), available=b["available"]) for b in n["branches"]]
+        thermal_limit=Float64(b["thermal_limit"]), available=b["available"],
+        tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"])) for b in n["branches"]]
     generators = [Generator(g["id"],g["bus_id"]; available=g["available"],
         p_min=Float64(g["p_min"]), p_max=Float64(g["p_max"]), q_min=Float64(g["q_min"]),
         q_max=Float64(g["q_max"]), initial_p=Float64(g["initial_p"]), initial_q=Float64(g["initial_q"])) for g in c["generators"]]

@@ -640,6 +640,55 @@ The design is informed by:
 - [ExaPF.jl](https://exanauts.github.io/ExaPF.jl/stable/): differentiable and backend-oriented power-flow kernels;
 - [MadNLP.jl](https://madsuite.org/MadNLP.jl/stable/): Julia-native sparse NLP and linear-solver interfaces.
 
+## 17a. Transformer/shunt planning boundaries
+
+[ROADMAP.md](ROADMAP.md) owns completed M5 and pending M6-M10; [TRANSFORMER_SHUNT_PLAN.md](TRANSFORMER_SHUNT_PLAN.md)
+defines the validation slices and required reporting/visualization bundles.
+M5 fixed-transformer data and physics are implemented; the M6-M10 contracts
+remain planned. The confirmed
+[pre-M5.1 architecture review](TRANSFORMER_SHUNT_PLAN.md#pre-m51-architecture-review--confirmed)
+records the starting decisions approved by the user on 2026-09-18.
+
+- Data retains physical parameters, legal tap/bank positions, availability,
+  reference settings and AVR measurements/targets. Do not infer bank steps from
+  aggregate MATPOWER shunt admittance.
+- The optimization problem selects fixed, continuous-optimized or AVR-controlled
+  transformer modes, fixed/free shunts, sharing and corrective permissions.
+- Formulations implement the same AC physics with continuous equipment relaxation
+  as the main path. Optional discrete/enumerated/MINLP paths have explicit support
+  checks. AVR needs interior target and correctly directed saturation regimes;
+  deadband equilibrium selection is declared, not silently optimized as autonomy.
+- Independent validation recomputes electrical results, continuous bounds or legal
+  positions as appropriate, availability, exact AVR regimes and scenario coupling.
+  Report relaxation/recovery status separately from physical implementability.
+
+Preserve M1-M4 constructors and schemas through defaults or versioned migration.
+Reuse existing scenario and droop-design machinery. Distinguish before-tap-response
+and AVR-settled security stages with explicit dispatch and equipment permissions.
+These steady states do not simulate intervening dynamics. Initial-position-driven
+settling, timers, dwell, hunting and operation counts require a later sequential
+runner. Continuous displacement is not a count. Multiple simultaneous AVRs require
+an explicit coordination contract before support is claimed.
+
+Every slice includes machine-readable results, a readable report and explanatory
+visuals with independent numerical acceptance. Reporting is part of implementation,
+not an optional final-stage task. No broad public-class rewrite is required merely
+to preserve these conceptual boundaries.
+
+### Decision gates after M5.1
+
+- Before M7, settle supplied/initial/solved setting ownership with stable equipment
+  IDs, and separate physical metric evaluation from objective/constraint selection.
+- Before M8, specify controller-conflict handling and deadband equilibrium selection.
+- Before M9, declare shared/recourse permissions by equipment and response stage;
+  keep contingency identity separate from period identity.
+- Before operating-point replay, distinguish exact fixed observations from
+  tolerance-based reconciliation and report every permitted adjustment.
+
+Across these gates, report solver termination, AC feasibility, control-policy
+compliance and discrete implementability separately. These gates do not expand
+M5.1 or prescribe a generic framework ahead of its use cases.
+
 ## 18. Architecture decision rules
 
 When choosing between implementations:

@@ -1,0 +1,23 @@
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+# SCOPF report: m5-fixed-transformer
+
+- Valid: `false`; exact-curve feasible: `false`; encoded-model feasible: `false`
+- Solver: Ipopt; termination: `ITERATION_LIMIT`; primal: `INFEASIBLE_POINT`
+- Mode: `preventive`; encoding: `smooth`
+- Base dispatch objective: 2.0800474997641393e-5
+- Tolerances (p.u., reference angle in radians): `(power_tolerance = 1.0e-6, droop_tolerance = 1.0e-5, limit_tolerance = 1.0e-6, unavailable_tolerance = 1.0e-8, coupling_tolerance = 1.0e-6)`
+
+| Scenario | AC residual | Exact droop residual | Encoded droop residual | Smooth/exact gap | Branch margin | Response violation | Failures |
+|---|---:|---:|---:|---:|---:|---:|---|
+| base | 3.524958103184872e-15 | 6.661338147750939e-16 | 5.551115123125783e-16 | 1.1102230246251565e-16 | 1.608022923823266 | 0.0 | none |
+| transformer_out | 1.3877787807814457e-15 | 7.771561172376096e-16 | 6.661338147750939e-16 | 1.1102230246251565e-16 | 1.6851634691124893 | 1.3850682753502319e-17 | none |
+| line_out | 2.525757381022231e-15 | 1.6514567491299204e-15 | 1.5404344466674047e-15 | 1.1102230246251565e-16 | 1.3663146060495848 | 4.8138576458356397e-17 | none |
+| generator_out | 0.00014246684829932743 | 0.1592450103656721 | 0.1592450103656722 | 1.1102230246251565e-16 | 1.4922752455284272 | 5.551115123125783e-17 | power_balance, droop |
+
+Controls and network limits are checked independently in each scenario. Active-power response follows the declared policy; this report makes no dynamic or frequency-stability claim.

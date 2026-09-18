@@ -2,6 +2,14 @@ function _bus_indices(network::ACNetwork)
     return Dict(bus.id => i for (i, bus) in enumerate(network.buses))
 end
 
+"""Two-terminal admittance primitive for a fixed, from-side complex tap."""
+function _branch_admittances(branch::Branch)
+    y = inv(complex(branch.resistance, branch.reactance))
+    yc = complex(zero(branch.charging), branch.charging / 2)
+    a = branch.tap_ratio * cis(branch.phase_shift)
+    return ((y + yc) / abs2(a), -y / conj(a), -y / a, y + yc)
+end
+
 function _admittance_matrix(network::ACNetwork{T}) where {T<:Real}
     n = length(network.buses)
     Y = zeros(Complex{T}, n, n)
@@ -9,12 +17,11 @@ function _admittance_matrix(network::ACNetwork{T}) where {T<:Real}
     for branch in network.branches
         branch.available || continue
         i, j = indices[branch.from_bus], indices[branch.to_bus]
-        y = inv(complex(branch.resistance, branch.reactance))
-        y_shunt = complex(zero(T), branch.charging / 2)
-        Y[i, i] += y + y_shunt
-        Y[j, j] += y + y_shunt
-        Y[i, j] -= y
-        Y[j, i] -= y
+        yff, yft, ytf, ytt = _branch_admittances(branch)
+        Y[i, i] += yff
+        Y[j, j] += ytt
+        Y[i, j] += yft
+        Y[j, i] += ytf
     end
     return Y
 end
@@ -46,8 +53,14 @@ function power_balance(
         q_inj[bus] -= load.q
     end
 
-    voltage = state.vm .* cis.(state.va)
-    network_injection = voltage .* conj.(_admittance_matrix(network) * voltage)
+    # Independent of the optimizer's Ybus primitive: assemble terminal powers
+    # computed using internal-side voltage and ideal-transformer current scaling.
+    flows = branch_flows(network, state)
+    network_injection = zeros(Complex{eltype(state.vm)}, length(network.buses))
+    for (k, branch) in enumerate(network.branches)
+        network_injection[bus_indices[branch.from_bus]] += flows.from[k]
+        network_injection[bus_indices[branch.to_bus]] += flows.to[k]
+    end
     p_residual = p_inj .- real.(network_injection)
     q_residual = q_inj .- imag.(network_injection)
     return (active = p_residual, reactive = q_residual,
@@ -66,8 +79,11 @@ function branch_flows(network::ACNetwork, state::ACState)
         i, j = bus_indices[branch.from_bus], bus_indices[branch.to_bus]
         y = inv(complex(branch.resistance, branch.reactance))
         y_shunt = complex(zero(eltype(state.vm)), branch.charging / 2)
-        current_from = (y + y_shunt) * voltage[i] - y * voltage[j]
-        current_to = (y + y_shunt) * voltage[j] - y * voltage[i]
+        a = branch.tap_ratio * cis(branch.phase_shift)
+        internal_voltage = voltage[i] / a
+        series_current = y * (internal_voltage - voltage[j])
+        current_from = (series_current + y_shunt * internal_voltage) / conj(a)
+        current_to = -series_current + y_shunt * voltage[j]
         from_power[k] = voltage[i] * conj(current_from)
         to_power[k] = voltage[j] * conj(current_to)
     end

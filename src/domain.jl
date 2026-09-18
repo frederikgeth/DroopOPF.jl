@@ -173,7 +173,8 @@ function Case(
             ACNetwork{T}(
                 Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in network.buses],
                 Branch{T}[Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance),
-                    T(br.reactance), T(br.charging), T(br.thermal_limit), br.available)
+                    T(br.reactance), T(br.charging), T(br.thermal_limit), br.available,
+                    T(br.tap_ratio), T(br.phase_shift))
                     for br in network.branches],
             ),
         ][1]

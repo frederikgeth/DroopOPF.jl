@@ -79,6 +79,28 @@ function _set_bound!(variable, lower, upper)
     set_upper_bound(variable, upper)
 end
 
+# Both formulations use the same terminal-limit convention. Physical validation
+# separately evaluates internal-side currents in branch_flows.
+function _add_branch_thermal_limits!(model, network::ACNetwork, vm, va)
+    indices = _bus_indices(network)
+    for branch in network.branches
+        branch.available || continue
+        f, t = indices[branch.from_bus], indices[branch.to_bus]
+        yff, yft, ytf, ytt = _branch_admittances(branch)
+        for (i, j, self, mutual) in ((f, t, yff, yft), (t, f, ytt, ytf))
+            gs, bs = real(self), imag(self)
+            gm, bm = real(mutual), imag(mutual)
+            @NLconstraint(model,
+                (vm[i]^2 * gs + vm[i] * vm[j] *
+                    (gm * cos(va[i] - va[j]) + bm * sin(va[i] - va[j])))^2 +
+                (-vm[i]^2 * bs + vm[i] * vm[j] *
+                    (gm * sin(va[i] - va[j]) - bm * cos(va[i] - va[j])))^2 <=
+                branch.thermal_limit^2)
+        end
+    end
+    return nothing
+end
+
 function _build_acopf_model(
     case::Case;
     voltage_epsilon::Real,
@@ -177,32 +199,7 @@ function _build_acopf_model(
         )
     end
 
-    for (i, branch) in enumerate(network.branches)
-        branch.available || continue
-        from = bus_indices[branch.from_bus]
-        to = bus_indices[branch.to_bus]
-        y = inv(complex(branch.resistance, branch.reactance))
-        conductance, susceptance = real(y), imag(y)
-        shunt = branch.charging / 2
-        δ_from = va[from] - va[to]
-        δ_to = va[to] - va[from]
-        @NLconstraint(
-            model,
-            (vm[from]^2 * conductance -
-             vm[from] * vm[to] * (conductance * cos(δ_from) + susceptance * sin(δ_from)))^2 +
-            (-vm[from]^2 * (susceptance + shunt) -
-             vm[from] * vm[to] * (conductance * sin(δ_from) - susceptance * cos(δ_from)))^2 <=
-            branch.thermal_limit^2,
-        )
-        @NLconstraint(
-            model,
-            (vm[to]^2 * conductance -
-             vm[to] * vm[from] * (conductance * cos(δ_to) + susceptance * sin(δ_to)))^2 +
-            (-vm[to]^2 * (susceptance + shunt) -
-             vm[to] * vm[from] * (conductance * sin(δ_to) - susceptance * cos(δ_to)))^2 <=
-            branch.thermal_limit^2,
-        )
-    end
+    _add_branch_thermal_limits!(model, network, vm, va)
 
     for attachment in case.attachments
         generator_index = findfirst(g -> g.id == attachment.generator_id, case.generators)

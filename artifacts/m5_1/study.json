@@ -1,0 +1,125 @@
+{
+  "data": {
+    "case": {
+      "attachments": [],
+      "base_frequency": 50.0,
+      "base_power": 100.0,
+      "controls": [],
+      "generators": [
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 1,
+          "initial_p": 0.8,
+          "initial_q": 0.1,
+          "p_max": 2.5,
+          "p_min": 0.1,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 2,
+          "id": 2,
+          "initial_p": 0.4,
+          "initial_q": 0.424,
+          "p_max": 3.0,
+          "p_min": 0.1,
+          "q_max": 0.5,
+          "q_min": -0.4
+        }
+      ],
+      "id": "transformer3",
+      "loads": [
+        {
+          "bus_id": 2,
+          "id": 1,
+          "p": 0.217,
+          "q": 0.127
+        },
+        {
+          "bus_id": 3,
+          "id": 2,
+          "p": 0.9420000000000001,
+          "q": 0.19
+        }
+      ],
+      "network": {
+        "branches": [
+          {
+            "available": true,
+            "charging": 0.176,
+            "from_bus": 1,
+            "id": 1,
+            "phase_shift": 0.17453292519943295,
+            "reactance": 0.085,
+            "resistance": 0.01,
+            "tap_ratio": 1.05,
+            "thermal_limit": 2.5,
+            "to_bus": 2
+          },
+          {
+            "available": true,
+            "charging": 0.158,
+            "from_bus": 1,
+            "id": 2,
+            "phase_shift": 0.0,
+            "reactance": 0.092,
+            "resistance": 0.017,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.5,
+            "to_bus": 3
+          },
+          {
+            "available": true,
+            "charging": 0.306,
+            "from_bus": 2,
+            "id": 3,
+            "phase_shift": 0.0,
+            "reactance": 0.161,
+            "resistance": 0.032,
+            "tap_ratio": 1.0,
+            "thermal_limit": 1.5,
+            "to_bus": 3
+          }
+        ],
+        "buses": [
+          {
+            "id": 1,
+            "reference": true,
+            "v_max": 1.06,
+            "v_min": 0.94
+          },
+          {
+            "id": 2,
+            "reference": false,
+            "v_max": 1.06,
+            "v_min": 0.94
+          },
+          {
+            "id": 3,
+            "reference": false,
+            "v_max": 1.06,
+            "v_min": 0.94
+          }
+        ]
+      }
+    },
+    "contingencies": [
+      {
+        "branch_ids": [
+          1
+        ],
+        "generator_ids": [],
+        "id": "transformer_out"
+      }
+    ],
+    "mode": "preventive",
+    "participation": {
+      "1": 1.0
+    },
+    "redispatch_limits": {}
+  },
+  "kind": "DroopOPF.Study",
+  "schema_version": 2
+}
