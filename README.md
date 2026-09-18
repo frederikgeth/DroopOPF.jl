@@ -31,6 +31,9 @@ Run the first M3 validation slice with
 `julia --project=. examples/m3_slope_sweep.jl /tmp/droopopf-m3`.
 Run the complete bounded-design workflow with
 `julia --project=. examples/m3_workflow.jl /tmp/droopopf-m3-design`.
+
+![M3 reference and optimized droop design](m3_validation/m3_droop_design_comparison.svg)
+
 See [the M2 response contract and examples](docs/src/scopf.md) for assumptions,
 solver choices, validation tolerances, and the distinction between preventive
 and corrective operation. The workflow also writes SVG comparisons of droop
