@@ -21,7 +21,7 @@ makedocs(
         "Solver formulations" => "solvers.md",
         "Validation" => "validation.md",
         "Security-constrained OPF" => "scopf.md",
-        "M3 droop-slope search" => "droop_optimization.md",
+        "M3 droop optimization" => "droop_optimization.md",
         "Examples" => "examples.md",
         "API reference" => "api.md",
         "Development" => "development.md",

@@ -22,20 +22,22 @@ Version `0.1.0` delivered M1:
 The current `0.2.0` release delivers M2: full-enumeration security-constrained
 AC OPF with fixed droop curves, line/generator outages, preventive participation
 and bounded corrective redispatch, independent scenario validation, continuation,
-JSON study/result serialization, and visual validation. M3 development now
-includes a reference-anchored fixed-slope sweep that validates candidate droop
-settings through the complete M2 SCOPF and independent equilibrium checks.
+JSON study/result serialization, and visual validation. The unreleased M3 work
+on `main` adds bounded optimization of droop slope, voltage reference, and
+asymmetric deadband widths, with exact replay and held-out contingency checks.
 
 Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
 Run the first M3 validation slice with
 `julia --project=. examples/m3_slope_sweep.jl /tmp/droopopf-m3`.
+Run the complete bounded-design workflow with
+`julia --project=. examples/m3_workflow.jl /tmp/droopopf-m3-design`.
 See [the M2 response contract and examples](docs/src/scopf.md) for assumptions,
 solver choices, validation tolerances, and the distinction between preventive
 and corrective operation. The workflow also writes SVG comparisons of droop
 operating points, bus voltages, branch loading, generator dispatch, and
 independent residual-to-tolerance ratios.
-See [M3 droop-slope search](docs/src/droop_optimization.md) for the sweep
-contract, limitations, and the path from parameter search to curve optimization.
+See [M3 droop optimization](docs/src/droop_optimization.md) for the sweep,
+in-model design, exact replay, held-out validation, and scope limitations.
 
 ## Installation
 

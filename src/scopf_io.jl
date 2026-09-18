@@ -80,9 +80,7 @@ function read_study(path::AbstractString)
         redispatch_limits=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["redispatch_limits"]))
 end
 
-"""Load saved states and metadata. Revalidate them against the corresponding study before use."""
-function read_scopf_result(path::AbstractString)
-    d = _read_scopf_json(path,"DroopOPF.SCOPFResult")
+function _scopf_result_from_data(d)
     states = Dict{Symbol,Union{Nothing,ACState{Float64}}}()
     for (id,state) in d["states"]
         states[Symbol(id)] = isnothing(state) ? nothing : ACState(
@@ -95,3 +93,7 @@ function read_scopf_result(path::AbstractString)
         Float64(d["smooth_epsilon"]),Float64(d["smooth_reactive_relative_epsilon"]),
         isnothing(d["smooth_reactive_epsilon"]) ? nothing : Float64(d["smooth_reactive_epsilon"]),d["solver"])
 end
+
+"""Load saved states and metadata. Revalidate them against the corresponding study before use."""
+read_scopf_result(path::AbstractString) =
+    _scopf_result_from_data(_read_scopf_json(path,"DroopOPF.SCOPFResult"))

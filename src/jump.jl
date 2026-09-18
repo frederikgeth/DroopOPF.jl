@@ -56,6 +56,24 @@ function _smooth_droop_value(
            _smooth_positive(raw - q_max, reactive_epsilon)
 end
 
+function _smooth_droop_value(
+    control::VoltVarDroop,
+    voltage::Real,
+    slope::Real,
+    v_ref::Real,
+    deadband_low::Real,
+    deadband_high::Real,
+    voltage_epsilon::Real,
+    reactive_epsilon::Real,
+)
+    low = _smooth_positive(v_ref - deadband_low - voltage, voltage_epsilon)
+    high = _smooth_positive(voltage - v_ref - deadband_high, voltage_epsilon)
+    raw = control.q_at_deadband + (low - high) / slope
+    q_min, q_max = control.capability.q_min, control.capability.q_max
+    return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
+           _smooth_positive(raw - q_max, reactive_epsilon)
+end
+
 function _set_bound!(variable, lower, upper)
     set_lower_bound(variable, lower)
     set_upper_bound(variable, upper)
@@ -72,6 +90,7 @@ function _build_acopf_model(
     shared_model::Union{Nothing,Model} = nothing,
     scenario_prefix::String = "",
     set_objective::Bool = true,
+    droop_parameter_variables::AbstractDict = Dict(),
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -204,21 +223,54 @@ function _build_acopf_model(
             reactive_relative_epsilon;
             absolute_epsilon = reactive_epsilon,
         )
-        JuMP.register(
-            model,
-            function_name,
-            1,
-            voltage -> _smooth_droop_value(
-                control,
-                voltage,
-                voltage_epsilon,
-                control_reactive_epsilon,
-            ),
-            autodiff = true,
-        )
+        parameters = get(droop_parameter_variables, attachment.control_id, nothing)
+        if isnothing(parameters)
+            JuMP.register(
+                model,
+                function_name,
+                1,
+                voltage -> _smooth_droop_value(
+                    control,
+                    voltage,
+                    voltage_epsilon,
+                    control_reactive_epsilon,
+                ),
+                autodiff = true,
+            )
+        else
+            JuMP.register(
+                model,
+                function_name,
+                5,
+                (voltage, slope, v_ref, deadband_low, deadband_high) ->
+                    _smooth_droop_value(
+                        control,
+                        voltage,
+                        slope,
+                        v_ref,
+                        deadband_low,
+                        deadband_high,
+                        voltage_epsilon,
+                        control_reactive_epsilon,
+                    ),
+                autodiff = true,
+            )
+        end
         # `@NLconstraint` requires function names to be literal symbols. Build
         # the expression programmatically because control IDs are data.
-        droop_expression = Expr(:call, function_name, vm[location_index])
+        droop_expression = if isnothing(parameters)
+            Expr(:call, function_name, vm[location_index])
+        else
+            Expr(
+                :call,
+                function_name,
+                vm[location_index],
+                parameters.slope,
+                parameters.v_ref,
+                parameters.deadband_low,
+                parameters.deadband_high,
+            )
+        end
         droop_constraint = Expr(
             :call,
             Symbol("=="),

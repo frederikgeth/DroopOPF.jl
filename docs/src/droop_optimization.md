@@ -1,9 +1,9 @@
-# M3 droop-slope search
+# M3 droop optimization
 
 M3 begins with a deliberately small, auditable problem: vary one positive
 volt-var slope over a bounded candidate set and solve the complete M2
 security-constrained AC OPF for every setting. This establishes the reference
-surface that later in-model optimization must reproduce.
+surface that in-model optimization must reproduce.
 
 ## Contract
 
@@ -50,12 +50,70 @@ reconstructs the same M2 problem. The test suite requires that reference point
 to reproduce the independently valid M2 objective. This prevents the M3 search
 layer from silently changing contingency policy or physical semantics.
 
-## Next M3 slices
+## Bounded in-model design
 
-1. Add a bounded slope decision variable to the SCOPF formulation and compare
-   the optimized result against a refined fixed-slope sweep.
-2. Add voltage-reference and deadband parameters one at a time, preserving the
-   same reproduction and independent-validation gates.
-3. Evaluate chosen settings on held-out contingencies before accepting them.
-4. Generalize the curve representation only after the scalar cases remain
-   reproducible and interpretable.
+`optimize_droop_parameters` promotes selected physical settings to variables
+shared across the base case and every training contingency. Bounds omitted by
+the caller fix that setting at its M2 value. Available settings are:
+
+- positive slope;
+- positive voltage reference;
+- nonnegative lower and upper deadband widths.
+
+The two widths may differ, providing an asymmetric deadband while preserving
+the standard saturated `VoltVarDroop` family. The active/reactive dispatch
+objective remains the M2 objective; no hidden design penalty is introduced.
+
+```julia
+design = optimize_droop_parameters(
+    study,
+    2;
+    slope_bounds = (0.04, 0.10),
+    v_ref_bounds = (0.995, 1.005),
+    deadband_low_bounds = (0.005, 0.015),
+    deadband_high_bounds = (0.005, 0.015),
+    smooth_epsilon = 1e-5,
+)
+```
+
+`with_droop_settings(study, design)` reconstructs an ordinary typed study.
+`validate_droop_design(study, design)` independently replays every state against
+that reconstructed exact PWL curve. A design is not accepted from solver status
+alone.
+
+## Held-out scenarios
+
+`evaluate_held_out_contingencies` holds the optimized base dispatch fixed and
+solves contingencies whose IDs were absent from training:
+
+```julia
+held_out = evaluate_held_out_contingencies(
+    study,
+    design,
+    [Contingency(:line_33; branch_ids = [33])],
+)
+held_out.report.valid
+```
+
+The returned study, result, and report retain the normal M2 data and validation
+contracts. `write_droop_design` and `read_droop_design` provide a versioned JSON
+round trip for the optimized settings and training result.
+
+## Acceptance gates
+
+M3 requires all of the following:
+
+1. fixed bounds at the reference reproduce the M2 objective;
+2. slope-only optimization agrees with the minimum of the fixed-slope sweep;
+3. generalized bounded settings satisfy every training scenario;
+4. reconstructed exact curves pass independent replay;
+5. at least one excluded contingency passes held-out evaluation;
+6. the end-to-end workflow regenerates machine-readable and visual artifacts.
+
+## Scope limit
+
+M3 optimizes the identifiable physical parameters of the standard saturated
+volt-var family. Reactive capability and reactive output at deadband remain
+fixed. Arbitrary free-knot PWL topology optimization is intentionally deferred:
+without a separate regularization and identifiability contract it can overfit a
+small contingency set while producing non-unique, hard-to-interpret curves.

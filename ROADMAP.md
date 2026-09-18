@@ -92,17 +92,26 @@ Acceptance includes a constrained case where security changes base dispatch,
 not merely independently feasible scenario solves. Run
 `julia --project=. examples/m2_workflow.jl` for the reproducible workflow.
 
-### M3 — optimize droop curves (in progress)
+### M3 — optimize droop curves (implemented on `main`; release pending)
 
 Start with one bounded droop parameter and validate against a small parameter
 sweep. Fixing that parameter must reproduce M2. Add reference settings, deadbands,
 and generalized curves incrementally, with exact replay and held-out scenarios.
 
-The first slice is implemented as a reference-anchored fixed-slope sweep. It
+The first slice is a reference-anchored fixed-slope sweep. It
 reuses the complete M2 SCOPF, warm-starts neighbouring candidates, independently
 validates every candidate, and writes versioned JSON plus an SVG trade-off plot.
-The next slice promotes the slope from an enumerated parameter to a bounded
-decision variable and checks its solution against the sweep.
+The completed bounded-design slice promotes slope, voltage reference, and
+independent lower/upper deadband widths to variables shared across all training
+scenarios. Fixed bounds reproduce M2, continuous slope optimization agrees with
+the sweep, optimized states replay against reconstructed exact PWL curves, and
+an excluded line outage provides the held-out acceptance gate. Versioned design
+JSON and a numerical/visual validation bundle make the workflow reproducible.
+
+M3 deliberately retains the standard saturated volt-var family and fixed
+reactive capability. Arbitrary free-knot PWL topology optimization is deferred;
+it requires a separate identifiability and regularization contract rather than
+an implicit expansion of this milestone.
 
 ### Later scaling target
 

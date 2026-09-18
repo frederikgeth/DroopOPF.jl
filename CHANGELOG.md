@@ -13,6 +13,10 @@ and releases use [Semantic Versioning](https://semver.org/).
 - Per-candidate objective, voltage-deviation, branch-loading, exact-droop, and
   solver-status diagnostics with versioned JSON round trips.
 - A self-contained SVG trade-off plot and reproducible M3 example workflow.
+- Bounded in-model optimization of slope, voltage reference, and asymmetric
+  deadband widths shared across base and training-contingency equations.
+- Exact-curve reconstruction and independent training/held-out validation for
+  optimized designs, including versioned design JSON and visual artifacts.
 
 ## [0.2.0] - 2026-09-18
 
