@@ -7,12 +7,26 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-18
+
 ### Added
 
 - Exact reference-versus-optimized droop visualization with explicit training,
   held-out, and unavailable-control scenario annotations.
 - M2/M3 solver-compatibility regressions for warm-started MadNLP and CCOpt
   fixed-curve validation, with explicit rejection of CCOpt as an M3 optimizer.
+- Named SCOPF multi-start experiments that retain every run and classify valid
+  objective agreement without silently selecting an invalid solution.
+- Machine-readable droop-breakpoint distances and structured findings for
+  solver/validation failure, binding limits, and the minimum-margin contingency.
+- M3 parameter multi-start comparison with retained initial settings, exact-curve
+  validation, objective agreement, and component-wise optimized-setting spread.
+- Pinned PGLib-OPF v23.07 case 3 and case 5 regressions with CC BY 4.0
+  provenance, serialization, and independent validation.
+- Reproducible SCOPF measurement reports covering environment, actual JuMP
+  model size, elapsed time, allocations, objective, termination, and validity.
+- Process peak RSS in bytes, with fresh-process benchmark runs and explicit
+  lifetime scope including compilation, warm-up, and validation.
 
 ## [0.3.0] - 2026-09-18
 
@@ -73,7 +87,8 @@ First public M1 milestone release.
   assessed using physical residuals, objective values, and droop regimes.
 - Security constraints and droop-curve optimization are planned for M2 and M3.
 
-[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/frederikgeth/DroopOPF.jl/releases/tag/v0.1.0

@@ -8,7 +8,9 @@ _json_data(x::AbstractDict) = Dict(string(k) => _json_data(v) for (k,v) in x)
 _json_data(x::NamedTuple) = Dict(string(k) => _json_data(v) for (k,v) in pairs(x))
 function _json_data(x::Union{Bus,Branch,Load,Generator,RegulatedLocation,VoltageSchedule,
     ReactiveCapability,GeneratorControlAttachment,ACNetwork,Case,Contingency,Study,
-    ACState,SCOPFResult,SCOPFReport,EquilibriumValidationReport})
+    ACState,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
+    SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
+    SCOPFFinding,SCOPFDiagnostics})
     return Dict(string(k) => _json_data(getfield(x,k)) for k in fieldnames(typeof(x)))
 end
 function _json_data(x::VoltVarDroop)
@@ -36,6 +38,14 @@ write_scopf_result(path::AbstractString, result::SCOPFResult) =
 """Write a report to JSON; null margins mean an absent bound and null residuals are unavailable."""
 write_scopf_report(path::AbstractString, report::SCOPFReport) =
     _write_scopf_json(path, "DroopOPF.SCOPFReport", report)
+
+"""Write all multi-start outcomes and the objective-comparison classification."""
+write_scopf_multistart(path::AbstractString, result::SCOPFMultiStartResult) =
+    _write_scopf_json(path, "DroopOPF.SCOPFMultiStartResult", result)
+
+"""Write breakpoint distances and structured findings to versioned JSON."""
+write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
+    _write_scopf_json(path, "DroopOPF.SCOPFDiagnostics", diagnostics)
 
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)

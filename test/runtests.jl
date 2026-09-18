@@ -14,4 +14,5 @@ using DroopOPF
     include("test_plotting.jl")
     include("test_droop_sweep.jl")
     include("test_droop_optimization.jl")
+    include("test_robustness.jl")
 end

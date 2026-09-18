@@ -19,18 +19,29 @@ Version `0.1.0` delivered M1:
 - an exact complementarity encoding for CCOpt;
 - operating-point extraction, SVG plots, and solver comparison examples.
 
-The current `0.3.0` release delivers M3: reference-anchored slope sweeps and
+Version `0.3.0` delivered M3: reference-anchored slope sweeps and
 bounded optimization of droop slope, voltage reference, and asymmetric deadband
 widths. Optimized designs are reconstructed as exact PWL curves, independently
 validated across the M2 security-constrained model, and checked on held-out
 contingencies. M2 line/generator outages, response policies, continuation, JSON
 serialization, and visual validation remain available unchanged.
 
+The current `0.4.0` release delivers M4: M2/M3 multi-start comparisons,
+structured diagnostics, public-case regressions, and measurements of model
+size, time, Julia allocations, and process peak RSS. The scale-up decision
+retains full enumeration until larger experiments identify a bottleneck.
+
 Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
 Run the first M3 validation slice with
 `julia --project=. examples/m3_slope_sweep.jl /tmp/droopopf-m3`.
 Run the complete bounded-design workflow with
 `julia --project=. examples/m3_workflow.jl /tmp/droopopf-m3-design`.
+Run the first M4 robustness slice with
+`julia --project=. examples/m4_robustness_workflow.jl /tmp/droopopf-m4`.
+Run M3 parameter multi-start validation with
+`julia --project=. examples/m4_design_multistart.jl /tmp/droopopf-m4-design`.
+Run the pinned public-case and M2 measurements with
+`julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark`.
 
 ![M3 reference and optimized droop design](m3_validation/m3_droop_design_comparison.svg)
 
@@ -41,6 +52,12 @@ operating points, bus voltages, branch loading, generator dispatch, and
 independent residual-to-tolerance ratios.
 See [M3 droop optimization](docs/src/droop_optimization.md) for the sweep,
 in-model design, exact replay, held-out validation, and scope limitations.
+See [M4 robustness](docs/src/robustness.md) for named multi-start comparison,
+nearest-breakpoint distances, binding-limit findings, and critical-contingency
+screening and reproducible measurements. The current
+[scale-up decision](docs/src/scale_up_decision.md) retains the
+existing formulation because the validated small-case measurements do not yet
+justify a P2 scaling algorithm.
 
 ## Installation
 

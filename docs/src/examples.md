@@ -79,3 +79,41 @@ and must also pass the independent report. The committed `m3_validation/`
 bundle contains versioned design/study/result/report JSON, a Markdown summary,
 an exact reference-versus-optimized droop comparison, and the existing M2 SVG
 diagnostics for the held-out scenarios.
+
+## M4 multi-start robustness
+
+The first M4 workflow solves the M2 study from cold, converged, low-voltage,
+and high-voltage initial points. It independently validates every solution,
+classifies objective agreement, identifies the minimum-margin contingency and
+binding devices, and measures each active controller's distance to its nearest
+PWL breakpoint:
+
+```sh
+julia --project=. examples/m4_robustness_workflow.jl /tmp/droopopf-m4
+```
+
+It writes machine-readable JSON and Markdown artifacts without adding another
+plotting layer. See [M4 robustness and diagnostics](robustness.md) for the
+classification rules and the remaining milestone gates.
+
+For true M3 parameter multi-starts, rather than state-only warm starts, run:
+
+```sh
+julia --project=. examples/m4_design_multistart.jl /tmp/droopopf-m4-design
+```
+
+This records the initial and optimized droop settings, independent validation,
+objective spread, and component-wise parameter spread for every run.
+
+## M4 public-case benchmark
+
+The benchmark workflow runs pinned PGLib-OPF v23.07 case 3 and case 5 plus the
+three-scenario M2 study:
+
+```sh
+julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark
+```
+
+It excludes one warm-up, records three measurements per study, and writes
+actual JuMP model size, elapsed time, allocations, environment identity,
+objective, validity, and copied PGLib provenance.

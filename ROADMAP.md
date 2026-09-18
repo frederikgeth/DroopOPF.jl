@@ -113,11 +113,60 @@ reactive capability. Arbitrary free-knot PWL topology optimization is deferred;
 it requires a separate identifiability and regularization contract rather than
 an implicit expansion of this milestone.
 
+### M4 — robustness and benchmark gate (released in 0.4.0)
+
+M4 should establish whether the validated small-system workflow is repeatable,
+diagnostically useful, and ready to scale. It is not a scale-up milestone.
+
+Deliver:
+
+1. systematic multi-start M2/M3 experiments with recorded initial-point,
+   feasibility, objective, and parameter spread;
+2. per-scenario distance-to-breakpoint diagnostics for every active droop
+   control, including an explicit near-breakpoint classification;
+3. structured findings for solver failure, validation failure, binding limits,
+   critical contingencies, and sensitive control behaviour;
+4. small public PGLib regression cases exercised through the normal adapter,
+   solver, serialization, and independent-validation workflow;
+5. reproducible timing, model-size, and memory measurements for the reference
+   cases and full-enumeration SCOPF;
+6. a written scale-up decision identifying the measured bottleneck and whether
+   any P2 algorithm is justified.
+
+Acceptance requires:
+
+- repeated starts either produce comparable independently valid solutions or
+  classify the disagreement without silently selecting one result;
+- reports identify binding limits, the critical contingency, and operating
+  points close to droop breakpoints;
+- at least two public small cases run from a clean environment and retain
+  machine-readable provenance;
+- benchmark output records Julia, package, solver, model-size, time, and memory
+  information;
+- the scale-up decision cites measurements rather than assumed bottlenecks.
+
+M4 does not include PTDF/LODF screening, constraint generation, parallelism,
+ExaModels, or distributed decomposition. Those remain behind the scale-up gate.
+
+Implemented: named M2 state multi-start runs preserve every solver
+result and independent report, classify valid objective agreement, and emit
+versioned JSON/Markdown. Structured diagnostics now report per-control nearest
+breakpoint distance, device-level near-binding limits, validation/solver
+failures, and the minimum-margin contingency. Named M3 runs now vary the actual
+design-variable starts and report both objective and final parameter spread.
+Two pinned public PGLib cases now exercise the adapter, solve, serialization,
+and independent validation path with machine-readable provenance. Reproducible
+benchmarks record environment, actual JuMP model size, elapsed time, and Julia
+allocations. The evidence-based decision is to retain the current formulation:
+no P2 scaling algorithm is justified by the validated small-case measurements.
+
 ### Later scaling target
 
 Contingency ranking, fast AC evaluation, violation-driven constraint generation,
-warm starts at scale, parallel evaluation, and profiling/benchmarking. Begin only
-after the scale-up gate below identifies a real need.
+warm starts at scale, parallel evaluation, and benchmark-driven performance
+tuning. Begin only after M4 and the scale-up gate below identify a real need.
+Basic warm starts and the MadNLP backend already exist; their performance at
+scale is not yet established.
 
 ### Stable research API target (v1.0.0)
 
@@ -278,54 +327,67 @@ Exit criteria:
 
 ## 6. Prioritized backlog
 
+Status terms below are authoritative for the current implementation:
+
+- **complete** — implemented, tested, and documented;
+- **partial** — a useful slice exists but the stated backlog outcome is not met;
+- **pending** — not implemented;
+- **deferred** — intentionally outside the current milestone sequence.
+
 ### P0 — required for proof of concept
 
-- P0-01: package skeleton and CI;
-- P0-02: domain types for case, generator, control, curve, and contingency;
-- P0-03: native case validation;
-- P0-04: MATPOWER case adapter;
-- P0-05: base AC OPF;
-- P0-06: independent AC residual evaluator;
-- P0-07: exact PWL response curve;
-- P0-08: smooth softplus response curve;
-- P0-09: multi-generator volt-var sharing test;
-- P0-10: one-contingency scenario;
-- P0-11: independent equilibrium validator;
-- P0-12: structured report and end-to-end example.
+- **complete** — P0-01: package skeleton and CI;
+- **complete** — P0-02: domain types for case, generator, control, curve, and contingency;
+- **complete** — P0-03: native case validation;
+- **complete** — P0-04: MATPOWER case adapter;
+- **complete** — P0-05: base AC OPF;
+- **complete** — P0-06: independent AC residual evaluator;
+- **complete** — P0-07: exact PWL response curve;
+- **complete** — P0-08: smooth softplus response curve;
+- **complete** — P0-09: multi-generator volt-var sharing test;
+- **complete** — P0-10: one-contingency scenario;
+- **complete** — P0-11: independent equilibrium validator;
+- **complete** — P0-12: validation reports and end-to-end examples.
 
 ### P1 — required for a useful research prototype
 
-- P1-01: multiple contingencies;
-- P1-02: preventive versus corrective modes;
-- P1-03: epsilon continuation;
-- P1-04: exact-versus-smooth curve replay;
-- P1-05: result serialization;
-- P1-06: multiple initial points;
-- P1-07: PGLib-based base-case regression tests;
-- P1-08: timing and memory measurements.
+- **complete** — P1-01: multiple contingencies;
+- **complete** — P1-02: preventive versus corrective modes;
+- **complete** — P1-03: epsilon continuation;
+- **complete** — P1-04: exact-versus-smooth curve replay;
+- **complete** — P1-05: versioned result serialization;
+- **complete** — P1-06: systematic named M2 state and M3 design-parameter starts
+  retain their inputs, solver outputs, independent reports, objective
+  classification, and parameter spread;
+- **complete** — P1-07: two pinned PGLib-OPF v23.07 cases exercise the normal
+  adapter, solver, serialization, and independent-validation path;
+- **complete** — P1-08: reproducible measurements record environment, actual
+  JuMP model size, elapsed time, Julia allocations, objective, and validity.
 
 ### P2 — scale-up
 
-- P2-01: contingency ranking;
-- P2-02: PTDF/LODF screening;
-- P2-03: fast AC contingency evaluation;
-- P2-04: constraint generation;
-- P2-05: warm starts;
-- P2-06: threaded contingency evaluation;
-- P2-07: MadNLP backend;
-- P2-08: ExaModels backend;
-- P2-09: large GO Challenge benchmark;
-- P2-10: distributed decomposition.
+- **pending** — P2-01: contingency ranking;
+- **pending** — P2-02: PTDF/LODF screening;
+- **pending** — P2-03: benchmark-driven fast AC contingency evaluation;
+- **pending** — P2-04: violation-driven constraint generation;
+- **partial** — P2-05: scenario and neighbouring-design warm starts exist,
+  but effectiveness at scale has not been measured;
+- **pending** — P2-06: threaded contingency evaluation;
+- **complete** — P2-07: MadNLP backend with M1–M3 compatibility tests and a
+  documented validated-warm-start requirement for the M2/M3 fixture;
+- **pending** — P2-08: ExaModels backend;
+- **pending** — P2-09: large GO Challenge benchmark;
+- **pending** — P2-10: distributed decomposition.
 
 ### P3 — broader model scope
 
-- P3-01: frequency/active-power droop;
-- P3-02: converter controls;
-- P3-03: storage;
-- P3-04: multi-period scenarios;
-- P3-05: PSS/E and PowerSystems adapters;
-- P3-06: island-specific frequency response;
-- P3-07: dynamic initialization and small-signal validation.
+- **deferred** — P3-01: frequency/active-power droop;
+- **deferred** — P3-02: converter controls;
+- **deferred** — P3-03: storage;
+- **deferred** — P3-04: multi-period scenarios;
+- **deferred** — P3-05: PSS/E and PowerSystems adapters;
+- **deferred** — P3-06: island-specific frequency response;
+- **deferred** — P3-07: dynamic initialization and small-signal validation.
 
 ## 7. Definition of ready
 
@@ -395,7 +457,13 @@ The test is not complete unless it also includes one deliberately invalid result
 
 ## 12. Scale-up gate
 
-Do not begin P2 work until the following are true:
+Current status: **closed without passage to P2**. M4 supplied reproducible
+profiling and public small-case evidence, but found no bottleneck at the
+validated scale. The correct decision is therefore to retain full enumeration
+and the existing JuMP formulation rather than pre-emptively add a scaling
+algorithm.
+
+Do not begin the remaining P2 scale-up algorithms until the following are true:
 
 - the POC acceptance test is reproducible;
 - exact and smoothed controls are both tested;

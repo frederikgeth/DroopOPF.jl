@@ -159,13 +159,13 @@ function _droop_parameter_bounds(bounds, reference, name; positive = false)
     return lower, upper
 end
 
-function _droop_design_variable(model, name, bounds, reference)
+function _droop_design_variable(model, name, bounds, initial)
     lower, upper = bounds
     lower == upper && return lower
     variable = @variable(model, base_name = name)
     set_lower_bound(variable, lower)
     set_upper_bound(variable, upper)
-    set_start_value(variable, clamp(Float64(reference), lower, upper))
+    set_start_value(variable, Float64(initial))
     return variable
 end
 
@@ -196,6 +196,7 @@ function optimize_droop_parameters(
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
     silent::Bool = true,
     reference_result::Union{Nothing,SCOPFResult} = nothing,
+    initial_settings::Union{Nothing,DroopSettings} = nothing,
 )
     study = _validated_study(study)
     1 <= control_id <= length(study.case.controls) ||
@@ -237,6 +238,16 @@ function optimize_droop_parameters(
         throw(ArgumentError("bounds permit a nonpositive lower deadband edge"))
     deadband_low_range[1] + deadband_high_range[1] > 0 ||
         throw(ArgumentError("bounds permit a zero-width deadband"))
+    initial = isnothing(initial_settings) ? DroopSettings(
+        clamp(reference.slope, slope_range...), clamp(reference.v_ref, v_ref_range...),
+        clamp(reference.deadband_low, deadband_low_range...),
+        clamp(reference.deadband_high, deadband_high_range...)) : initial_settings
+    initial_values = (initial.slope, initial.v_ref, initial.deadband_low, initial.deadband_high)
+    parameter_ranges = (slope_range, v_ref_range, deadband_low_range, deadband_high_range)
+    all(value -> isfinite(value), initial_values) ||
+        throw(ArgumentError("initial droop settings must be finite"))
+    all(pair -> pair[2][1] <= pair[1] <= pair[2][2], zip(initial_values, parameter_ranges)) ||
+        throw(ArgumentError("initial droop settings must lie within the design bounds"))
     reference_result = isnothing(reference_result) ?
         solve_scopf(
             study;
@@ -260,19 +271,19 @@ function optimize_droop_parameters(
     model = Model(optimizer_factory)
     silent && set_silent(model)
     parameters = (
-        slope = _droop_design_variable(model, "m3_slope", slope_range, reference.slope),
-        v_ref = _droop_design_variable(model, "m3_v_ref", v_ref_range, reference.v_ref),
+        slope = _droop_design_variable(model, "m3_slope", slope_range, initial.slope),
+        v_ref = _droop_design_variable(model, "m3_v_ref", v_ref_range, initial.v_ref),
         deadband_low = _droop_design_variable(
             model,
             "m3_deadband_low",
             deadband_low_range,
-            reference.deadband_low,
+            initial.deadband_low,
         ),
         deadband_high = _droop_design_variable(
             model,
             "m3_deadband_high",
             deadband_high_range,
-            reference.deadband_high,
+            initial.deadband_high,
         ),
     )
     ids = [:base; [contingency.id for contingency in study.contingencies]]

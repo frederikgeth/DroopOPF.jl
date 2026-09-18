@@ -37,3 +37,12 @@ The staged development plan is maintained in
 - M2: security-constrained AC OPF — complete in `0.2.0`; see [the response contract](scopf.md);
 - M3: complete in `0.3.0` — validated fixed-slope search, bounded
   standard-droop optimization, exact replay, and held-out validation.
+- M4: complete in `0.4.0` — named M2 multi-start comparison, near-breakpoint distance,
+  device-level binding findings, and critical-contingency classification are
+  implemented, together with M3 design-parameter starts and parameter-spread
+  reporting, two pinned public PGLib regressions, reproducible model-size/time/
+  allocation measurements, and an evidence-based scale-up decision.
+
+The scale-up gate is not yet passed. Contingency screening, constraint
+generation, parallel evaluation, ExaModels, and large benchmark work remain
+deferred because M4 did not identify a bottleneck at the validated small scale.

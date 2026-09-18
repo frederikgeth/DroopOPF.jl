@@ -54,6 +54,7 @@ function solve_scopf(study::Study;
     silent::Bool = true,
     initial_states::AbstractDict = Dict(),
     fixed_base_state::Union{Nothing,ACState} = nothing,
+    _model_hook::Union{Nothing,Function} = nothing,
 )
     study = _validated_study(study)
     encoding in (:smooth, :complementarity) || throw(ArgumentError("unknown control encoding"))
@@ -129,6 +130,7 @@ function solve_scopf(study::Study;
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
     end
+    isnothing(_model_hook) || _model_hook(model)
     if length(ids) == 1 && !isnothing(fixed_base_state)
         return SCOPFResult(Dict{Symbol,Union{Nothing,ACState{Float64}}}(:base =>
             ACState(Float64.(fixed_base_state.vm),Float64.(fixed_base_state.va),

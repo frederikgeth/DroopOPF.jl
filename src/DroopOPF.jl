@@ -12,16 +12,24 @@ include("complementarity.jl")
 include("scopf.jl")
 include("validation.jl")
 include("scopf_validation.jl")
+include("multistart.jl")
+include("diagnostics.jl")
 include("scopf_io.jl")
+include("benchmarking.jl")
 include("plotting.jl")
 include("scopf_plotting.jl")
 include("droop_sweep.jl")
 include("droop_optimization.jl")
+include("droop_design_multistart.jl")
 include("droop_design_plotting.jl")
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
+export write_scopf_multistart, write_scopf_diagnostics
 export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
+export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
+export DroopBreakpointDiagnostic, SCOPFFinding, SCOPFDiagnostics, scopf_diagnostics
+export SCOPFBenchmarkSample, SCOPFBenchmarkReport, benchmark_scopf, write_scopf_benchmark
 export PiecewiseLinearCurve, evaluate, slope_at
 export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop
 export droop_response, droop_curve
@@ -45,6 +53,8 @@ export write_droop_slope_sweep, read_droop_slope_sweep, write_droop_slope_sweep_
 export DroopSettings, DroopDesignResult, with_droop_settings
 export optimize_droop_parameters, validate_droop_design, evaluate_held_out_contingencies
 export write_droop_design, read_droop_design
+export DroopDesignMultiStartRun, DroopParameterSpread, DroopDesignMultiStartResult
+export optimize_droop_multistart, write_droop_design_multistart
 export write_droop_design_comparison_plot
 
 end
