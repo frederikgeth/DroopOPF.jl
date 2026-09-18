@@ -17,6 +17,7 @@ include("plotting.jl")
 include("scopf_plotting.jl")
 include("droop_sweep.jl")
 include("droop_optimization.jl")
+include("droop_design_plotting.jl")
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
 export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
@@ -44,5 +45,6 @@ export write_droop_slope_sweep, read_droop_slope_sweep, write_droop_slope_sweep_
 export DroopSettings, DroopDesignResult, with_droop_settings
 export optimize_droop_parameters, validate_droop_design, evaluate_held_out_contingencies
 export write_droop_design, read_droop_design
+export write_droop_design_comparison_plot
 
 end

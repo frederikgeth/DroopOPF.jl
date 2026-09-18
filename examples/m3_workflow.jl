@@ -47,11 +47,12 @@ write_scopf_report(joinpath(output, "training_report.json"), training_report)
 write_study(joinpath(held_out_output, "study.json"), held_out.study)
 write_scopf_result(joinpath(held_out_output, "result.json"), held_out.result)
 write_scopf_report(joinpath(held_out_output, "report.json"), held_out.report)
-write_scopf_droop_plot(
-    joinpath(output, "optimized_training_droop.svg"),
-    optimized_training,
-    design.result;
-    title = "M3 optimized droop: training scenarios",
+write_droop_design_comparison_plot(
+    joinpath(output, "m3_droop_design_comparison.svg"),
+    training,
+    design;
+    held_out_study = held_out.study,
+    held_out_result = held_out.result,
 )
 write_scopf_validation_plots(held_out_output, held_out.study, held_out.result)
 

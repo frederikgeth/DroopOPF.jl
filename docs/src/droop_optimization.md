@@ -99,6 +99,27 @@ The returned study, result, and report retain the normal M2 data and validation
 contracts. `write_droop_design` and `read_droop_design` provide a versioned JSON
 round trip for the optimized settings and training result.
 
+## Visual validation
+
+`write_droop_design_comparison_plot` overlays the reference and optimized exact
+PWL curves with the optimized training operating points. Held-out study and
+result pairs may be supplied to add their non-base scenarios in a distinct
+colour:
+
+```julia
+write_droop_design_comparison_plot(
+    "m3_droop_design_comparison.svg",
+    study,
+    design;
+    held_out_study = held_out.study,
+    held_out_result = held_out.result,
+)
+```
+
+The function intentionally covers only the domain-specific curve comparison.
+The workflow composes it with the existing M2 scenario plots rather than
+introducing a separate plotting framework or dependency.
+
 ## Acceptance gates
 
 M3 requires all of the following:

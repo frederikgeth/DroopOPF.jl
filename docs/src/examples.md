@@ -77,4 +77,5 @@ training states are independently replayed against its exact PWL curve. A
 line-33 outage excluded from training is solved from the optimized base dispatch
 and must also pass the independent report. The committed `m3_validation/`
 bundle contains versioned design/study/result/report JSON, a Markdown summary,
-and SVG diagnostics for training and held-out scenarios.
+an exact reference-versus-optimized droop comparison, and the existing M2 SVG
+diagnostics for the held-out scenarios.

@@ -79,6 +79,28 @@
     )
     @test held_out.report.valid
     @test held_out.report.physical_valid
+    mktempdir() do directory
+        path = write_droop_design_comparison_plot(
+            joinpath(directory, "design-comparison.svg"),
+            study,
+            generalized;
+            held_out_study = held_out.study,
+            held_out_result = held_out.result,
+        )
+        svg = read(path, String)
+        @test startswith(svg, "<svg")
+        @test endswith(strip(svg), "</svg>")
+        @test occursin("Reference control 2", svg)
+        @test occursin("Optimized control 2", svg)
+        @test occursin("line_33 (held-out)", svg)
+        @test occursin("generator_9 (training; no operating point)", svg)
+        @test_throws ArgumentError write_droop_design_comparison_plot(
+            joinpath(directory, "incomplete.svg"),
+            study,
+            generalized;
+            held_out_study = held_out.study,
+        )
+    end
     @test_throws ArgumentError evaluate_held_out_contingencies(
         study,
         generalized,

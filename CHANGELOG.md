@@ -7,6 +7,11 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Exact reference-versus-optimized droop visualization with explicit training,
+  held-out, and unavailable-control scenario annotations.
+
 ## [0.3.0] - 2026-09-18
 
 ### Added
