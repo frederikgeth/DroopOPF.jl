@@ -3,10 +3,11 @@ import JSON
 _json_data(x::Union{Nothing,Bool,AbstractString,Integer}) = x
 _json_data(x::Symbol) = string(x)
 _json_data(x::AbstractFloat) = isfinite(x) ? x : nothing
+_json_data(x::Tuple) = [_json_data(v) for v in x]
 _json_data(x::AbstractVector) = [_json_data(v) for v in x]
 _json_data(x::AbstractDict) = Dict(string(k) => _json_data(v) for (k,v) in x)
 _json_data(x::NamedTuple) = Dict(string(k) => _json_data(v) for (k,v) in pairs(x))
-function _json_data(x::Union{Bus,Branch,Load,Generator,RegulatedLocation,VoltageSchedule,
+function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,RegulatedLocation,VoltageSchedule,
     ReactiveCapability,GeneratorControlAttachment,ACNetwork,Case,Contingency,Study,
     ACState,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
@@ -21,7 +22,7 @@ end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        JSON.json(io, Dict("schema_version"=>(kind == "DroopOPF.Study" ? 2 : 1), "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
+        JSON.json(io, Dict("schema_version"=>(kind == "DroopOPF.Study" ? 4 : 1), "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
     return path
@@ -50,11 +51,25 @@ write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
     version = get(document,"schema_version",nothing)
-    supported = kind == "DroopOPF.Study" ? (1, 2) : (1,)
+    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4) : (1,)
     version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
     data = document["data"]
     if kind == "DroopOPF.Study"
+        network = data["case"]["network"]
+        if version < 4
+            isempty(get(network,"banks",[])) || throw(ArgumentError("bank data requires study schema v4"))
+            network["banks"] = []
+        else
+            haskey(network,"banks") || throw(ArgumentError("v4 study requires network.banks"))
+        end
+        if version < 3
+            isempty(get(network, "shunts", [])) ||
+                throw(ArgumentError("fixed shunt data requires study schema v3"))
+            network["shunts"] = []
+        else
+            haskey(network, "shunts") || throw(ArgumentError("v3 study requires network.shunts"))
+        end
         for b in data["case"]["network"]["branches"]
             if version == 1
                 # Never silently discard contradictory transformer data labelled v1.
@@ -77,10 +92,15 @@ function read_study(path::AbstractString)
     c = data["case"]
     n = c["network"]
     buses = [Bus(b["id"]; v_min=Float64(b["v_min"]), v_max=Float64(b["v_max"]), reference=b["reference"]) for b in n["buses"]]
-    branches = [Branch(b["id"],b["from_bus"],b["to_bus"]; resistance=Float64(b["resistance"]),
+    branches = Branch[Branch(b["id"],b["from_bus"],b["to_bus"]; resistance=Float64(b["resistance"]),
         reactance=Float64(b["reactance"]), charging=Float64(b["charging"]),
         thermal_limit=Float64(b["thermal_limit"]), available=b["available"],
         tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"])) for b in n["branches"]]
+    shunts = FixedShunt[FixedShunt(s["id"],s["bus_id"]; conductance=Float64(s["conductance"]),
+        susceptance=Float64(s["susceptance"]), available=s["available"]) for s in n["shunts"]]
+    banks = ShuntBank[ShuntBank(b["id"],b["bus_id"]; step_conductances=Float64.(b["step_conductances"]),
+        step_susceptances=Float64.(b["step_susceptances"]),legal_states=b["legal_states"],
+        state=b["state"],nominal_state=b["nominal_state"],available=b["available"]) for b in n["banks"]]
     generators = [Generator(g["id"],g["bus_id"]; available=g["available"],
         p_min=Float64(g["p_min"]), p_max=Float64(g["p_max"]), q_min=Float64(g["q_min"]),
         q_max=Float64(g["q_max"]), initial_p=Float64(g["initial_p"]), initial_q=Float64(g["initial_q"])) for g in c["generators"]]
@@ -100,7 +120,7 @@ function read_study(path::AbstractString)
         push!(attachments,GeneratorControlAttachment(a["generator_id"],a["control_id"],location; priority=Symbol(a["priority"])))
     end
     case = Case(c["id"]; base_power=Float64(c["base_power"]),base_frequency=Float64(c["base_frequency"]),
-        network=ACNetwork(buses,branches),loads=loads,generators=generators,controls=controls,attachments=attachments)
+        network=ACNetwork(buses,branches;shunts=shunts,banks=banks),loads=loads,generators=generators,controls=controls,attachments=attachments)
     contingencies = [Contingency(Symbol(k["id"]); generator_ids=Int.(k["generator_ids"]),
         branch_ids=Int.(k["branch_ids"])) for k in data["contingencies"]]
     return Study(case; contingencies=contingencies,mode=Symbol(data["mode"]),

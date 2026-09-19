@@ -642,10 +642,10 @@ The design is informed by:
 
 ## 17a. Transformer/shunt planning boundaries
 
-[ROADMAP.md](ROADMAP.md) owns completed M5 and pending M6-M10; [TRANSFORMER_SHUNT_PLAN.md](TRANSFORMER_SHUNT_PLAN.md)
+[ROADMAP.md](ROADMAP.md) owns implementation status for M5-M10; [TRANSFORMER_SHUNT_PLAN.md](TRANSFORMER_SHUNT_PLAN.md)
 defines the validation slices and required reporting/visualization bundles.
-M5 fixed-transformer data and physics are implemented; the M6-M10 contracts
-remain planned. The confirmed
+M5 fixed-transformer physics and all M6 fixed-shunt/bank slices are implemented;
+M7-M10 remain planned. The confirmed
 [pre-M5.1 architecture review](TRANSFORMER_SHUNT_PLAN.md#pre-m51-architecture-review--confirmed)
 records the starting decisions approved by the user on 2026-09-18.
 
@@ -675,6 +675,13 @@ visuals with independent numerical acceptance. Reporting is part of implementati
 not an optional final-stage task. No broad public-class rewrite is required merely
 to preserve these conceptual boundaries.
 
+M6.1 represents fixed bus admittance as `FixedShunt` records in `ACNetwork.shunts`,
+separate from constant-power loads and branch charging. Ybus construction and
+independent current-based validation each account for the shunt once. Study schema
+v4 preserves fixed shunts and explicit banks; v1/v2 migrate to no shunts, and
+v1-v3 migrate to no banks. Bank positions,
+optimization policies and automatic shunt controls are not inferred from GS/BS.
+
 ### Decision gates after M5.1
 
 - Before M7, settle supplied/initial/solved setting ownership with stable equipment
@@ -700,3 +707,14 @@ When choosing between implementations:
 5. prefer explicit diagnostics over silent fallback behavior;
 6. benchmark before introducing a new backend;
 7. require tests for every new formulation or control mode.
+
+### M6 bank state ownership
+
+`ShuntBank` stores immutable step admittances, explicit legal count tuples,
+current and nominal states, and availability. `with_bank_state` returns a new
+validated device. `ACNetwork.banks` owns the supplied equipment state; M6 builders
+hold it fixed in every scenario. Ybus aggregates its admittance while independent
+validation sums individual step currents. Fixed shunts and banks share a unique
+equipment ID namespace and must not duplicate the same physical admittance.
+No bank switching trajectory, automatic control or bank optimization is inferred.
+This preserves the boundary between physical data, optimization policy and validation.

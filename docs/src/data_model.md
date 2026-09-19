@@ -69,9 +69,10 @@ conversion, control attachment and contingency copies preserve both settings.
 
 MATPOWER `TAP=0` becomes unity; `SHIFT` is converted once from degrees to radians.
 No physical tap bounds or legal positions are inferred from those fields.
-Nonzero bus `GS`/`BS` is rejected until M6 supports shunts.
+M6.1 imports nonzero bus `GS`/`BS` as aggregate fixed shunts (see below).
 
-Study JSON now writes schema v2 with both settings required. The reader migrates
+M5 introduced study schema v2 with both transformer settings required; M6.1
+introduced v3 with an explicit fixed-shunt list; M6.2 writes v4 with banks. The reader migrates
 line-only v1 studies to unity/zero and rejects contradictory transformer metadata
 labelled v1. Unchanged result/report document kinds retain schema v1. Older
 readers reject v2, rather than silently losing transformer physics.
@@ -128,7 +129,8 @@ per-solver reports, ratio/phase reference plots, both-terminal loading panels,
 voltage profiles, exact-droop plots and residual plots. Failed runs remain in the
 JSON/report and cause a nonzero exit. Existing line-only M1–M4 tests remain part
 of the regression gate. No three-winding or separate magnetizing branch model
-is introduced; MATPOWER GS/BS remain explicitly unsupported until M6.
+is introduced. M6.1 adds MATPOWER aggregate fixed GS/BS; switched-bank data are
+a separate later capability.
 
 
 The M5 evidence declares proportional-regime initial states rather than flat
@@ -138,3 +140,79 @@ example requests `ProportionalRelaxationUpdate(sigma_min=1e-12)`,
 its default relaxation floor left exact-droop errors above the 1e-5 acceptance
 tolerance. These are example-specific solver settings, not equipment parameters
 or relaxed acceptance criteria. Diagnostic failures are retained with the evidence.
+
+
+## Fixed bus shunts (M6.1)
+
+`FixedShunt` is network equipment, separate from `Load` and branch charging:
+
+```julia
+shunt = FixedShunt(8, 10; conductance=0.02, susceptance=0.1, available=true)
+network = ACNetwork([Bus(10; reference=true)], Branch[]; shunts=[shunt])
+```
+
+IDs and bus references must be positive; IDs are unique within the shunt list.
+Admittance is finite and in per unit on the case base. Conductance G must be
+nonnegative; susceptance B may have either sign. Positive B is capacitive.
+Complex terminal consumption is `S = (G - j*B)*|V|²`: positive P consumes active
+power, negative Q injects reactive power. Several distinct devices may share a
+bus and their contributions sum once. `available=false` contributes zero while
+preserving supplied data. An empty list preserves the previous network model.
+
+The optimizer adds `G+j*B` to the bus diagonal in Ybus. The independent evaluator
+`shunt_powers(network, state)` computes `V*conj((G+j*B)*V)` per device in
+`network.shunts` order. `power_balance` sums these powers alongside branch terminal
+powers. Bus shunts do not enter `branch_flows` or duplicate line charging.
+
+MATPOWER GS is MW consumed at unit voltage; BS is MVAr injected at unit voltage.
+Import divides both by baseMVA, with no sign reversal: `G=GS/baseMVA`,
+`B=BS/baseMVA`. Nonzero aggregate rows become one fixed record using the bus ID
+as shunt ID; zero rows add none. No bank identity, legal step, nominal schedule
+or automatic controller is inferred. Negative GS is rejected because this passive
+equipment model does not represent active-power injection.
+
+Study JSON v3 requires `network.shunts`; each record includes ID, bus ID, G, B
+and availability. Readers retain v1/v2 support with empty shunts and reject
+nonempty shunts misleadingly labelled with an older schema. New writers use v4
+even when the list is empty, so old readers fail explicitly. Other document kinds
+keep their existing versions. Numeric promotion, case/control copies and existing
+branch/generator contingency overlays preserve fixed shunts. Dedicated shunt
+contingencies are not introduced in M6.1.
+
+Run the evidence workflow with Python/Matplotlib available:
+
+```sh
+PYTHON=/path/to/python-with-matplotlib julia --project=. examples/m6_1_fixed_shunts.jl /tmp/m61-evidence
+```
+
+It generates a GS/BS conversion table, expected/computed P(V) and Q(V) curves,
+availability and round-trip checks, and deliberate omission/double-count/sign
+errors. A one-bus OPF checks safe use of the shared Ybus path. Switched-bank
+states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [M6 evidence](../../artifacts/m6/report.md).
+
+## Supplied switched-bank states (M6.2–M6.3)
+
+```julia
+bank = ShuntBank(201, 30;
+    step_susceptances=(0.02, -0.01),
+    step_conductances=(0.001, 0.0005),
+    legal_states=((0,0), (1,0), (2,0), (0,1), (1,1)),
+    state=(1,0), nominal_state=(1,0))
+changed = with_bank_state(bank, (2,0))
+network = ACNetwork(buses, branches; shunts=fixed_shunts, banks=[changed])
+```
+Each state is a tuple of nonnegative integer counts for the corresponding step
+admittances. Legal combinations must be explicitly supplied, nonempty and unique;
+both current and nominal states must be legal even when the bank is unavailable.
+Metadata are copied into immutable tuples. Unavailability produces zero admittance
+without erasing the installed state. `bank_admittance` returns aggregate G+jB;
+`bank_powers` independently computes consumption P+jQ by summing step currents.
+Positive B is capacitive, so Q is negative consumption. Fixed shunts and banks
+share a unique ID namespace. Do not represent the same physical aggregate in both.
+MATPOWER GS/BS remains fixed admittance and does not infer bank identities or states.
+
+Study schema v4 requires `network.banks` and preserves all metadata. Readers
+migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas.
+Existing branch/generator contingencies preserve supplied bank states. M6 uses
+fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization
+of equipment is M7; a bank state is not an automatic switching policy or trajectory.

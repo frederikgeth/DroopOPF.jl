@@ -13,6 +13,8 @@ using DroopOPF
     include("test_matpower.jl")
     include("test_transformer_data.jl")
     include("test_transformer_physics.jl")
+    include("test_fixed_shunts.jl")
+    include("test_shunt_banks.jl")
     include("test_plotting.jl")
     include("test_droop_sweep.jl")
     include("test_droop_optimization.jl")

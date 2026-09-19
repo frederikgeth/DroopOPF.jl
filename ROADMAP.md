@@ -164,7 +164,7 @@ no P2 scaling algorithm is justified by the validated small-case measurements.
 
 M1-M4 remain released and unchanged. The following M5-M10 milestones record the
 agreed planning direction on branch `transformers`; M5.1-M5.4 are implemented and
-validated on this branch, while M6-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
+validated on this branch. M6 is also complete; M7-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
 small validation slices and acceptance evidence. This roadmap owns sequencing.
 
 **M5 complete on `transformers` (unreleased, 2026-09-18):** transformer
@@ -178,13 +178,24 @@ tests. See the [M5 evidence report](artifacts/m5/report.md) and
 The synthetic integration fixture uses declared proportional-regime starts and
 explicit CCOpt accuracy settings. Failed flat-start/default-CCOpt diagnostics
 are retained; convergence from arbitrary starts is not claimed. Tap optimization,
-AVR and shunt physics remain in their existing later milestones. Order is unchanged.
+AVR and switched-bank modeling remain in their existing later milestones. Order is unchanged.
+
+
+**M6 complete on `transformers` (unreleased, 2026-09-19):** fixed bus shunts,
+MATPOWER GS/BS import, explicit banks with immutable legal step-count states,
+nominal/current states and availability. Independent current-based validation
+checks signs, V-squared scaling and accounting. Fixed states are integrated in
+OPF, preventive/corrective SCOPF and bounded droop design, including backend
+agreement. Study schema v4 preserves banks and reads v1-v3 with migration.
+See [M6 numerical report and plots](artifacts/m6/report.md) and
+[fixed-shunt/import evidence](artifacts/m6_1/report.md). Next: M7 continuous
+equipment optimization. Full regression: **691/691 tests pass**. Milestone order is unchanged.
 
 
 | Milestone | Small validation slices | Dependency / central evidence |
 |---|---|---|
 | M5 — Transformer reference physics **complete** | M5.1 data/import; M5.2 fixed ratio; M5.3 fixed phase/availability; M5.4 OPF/SCOPF integration | M1-M4 foundation; analytical currents/powers, flow curves, outages and round trips |
-| M6 — Shunt reference physics | M6.1 fixed admittance; M6.2 supplied bank states; M6.3 OPF/SCOPF integration | Independent of M5; signs, V-squared curves and reactive accounting |
+| M6 — Shunt reference physics **complete** | M6.1 fixed admittance **complete**; M6.2 supplied bank states **complete**; M6.3 OPF/SCOPF integration **complete** | Independent of M5; signs, V-squared curves and reactive accounting |
 | M7 — Continuous equipment optimization | M7.1 tap ratio; M7.2 susceptance; M7.3 joint equipment/droop | Applicable M5/M6 physics; fixed-bound equivalence, sweeps and setting extraction |
 | M8 — Steady-state transformer AVR | M8.1 target plus saturation; M8.2 deadband/selection; M8.3 fixed/OPF/AVR comparisons | Can start after M5.4; voltage-target tracking, tap limits and explicit equilibrium-selection semantics |
 | M9 — Equipment/AVR-aware SCOPF | M9.1 preventive sharing; M9.2 bounded corrective action; M9.3 before-response versus AVR-settled security | M7 and, for AVR cases, M8; independent coupling and stage-specific margin checks |

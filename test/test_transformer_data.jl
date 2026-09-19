@@ -52,7 +52,7 @@ using JSON
         study = Study(c; contingencies=[outage], participation=Dict(1=>1.))
         write_study(path,study)
         doc = JSON.parsefile(path)
-        @test doc["schema_version"] == 2
+        @test doc["schema_version"] == 4
         restored = read_study(path)
         @test restored.case.network.branches == c.network.branches
         @test scenario_case(restored.case,restored.contingencies[1]).network.branches == overlay.network.branches
@@ -78,7 +78,7 @@ using JSON
         for replacement in ("0.0 0.0 1 0 1", "0.0 0.0 0 1 1")
             path = joinpath(dir,"shunt.m")
             write(path,replace(source,"0.0 0.0 0 0 1"=>replacement))
-            @test_throws ArgumentError load_matpower_case(path)
+            @test length(load_matpower_case(path).network.shunts) == 1
         end
     end
 end

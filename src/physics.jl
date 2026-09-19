@@ -23,7 +23,52 @@ function _admittance_matrix(network::ACNetwork{T}) where {T<:Real}
         Y[i, j] += yft
         Y[j, i] += ytf
     end
+    for shunt in network.shunts
+        shunt.available || continue
+        i = indices[shunt.bus_id]
+        Y[i, i] += complex(shunt.conductance, shunt.susceptance)
+    end
+    for bank in network.banks
+        i = indices[bank.bus_id]
+        Y[i, i] += bank_admittance(bank)
+    end
     return Y
+end
+
+"""Bank terminal consumption in network.banks order, independently summed per step."""
+function bank_powers(network::ACNetwork,state::ACState)
+    length(state.vm) == length(network.buses) || throw(ArgumentError("state voltages must follow bus order"))
+    indices = _bus_indices(network)
+    powers = zeros(Complex{eltype(state.vm)},length(network.banks))
+    for (i,bank) in enumerate(network.banks)
+        bank.available || continue
+        k = indices[bank.bus_id]
+        voltage = state.vm[k]*cis(state.va[k])
+        for j in eachindex(bank.state)
+            current = complex(bank.step_conductances[j],bank.step_susceptances[j])*voltage
+            powers[i] += bank.state[j]*voltage*conj(current)
+        end
+    end
+    return powers
+end
+
+"""Complex consumption at each fixed shunt, in network.shunts order.
+Capacitors have negative reactive consumption. Unavailable shunts return zero.
+This evaluator uses terminal voltage/current, independently of optimizer Ybus.
+"""
+function shunt_powers(network::ACNetwork, state::ACState)
+    length(state.vm) == length(network.buses) ||
+        throw(ArgumentError("state voltage vectors must follow network bus order"))
+    indices = _bus_indices(network)
+    powers = zeros(Complex{eltype(state.vm)}, length(network.shunts))
+    for (k, shunt) in enumerate(network.shunts)
+        shunt.available || continue
+        i = indices[shunt.bus_id]
+        voltage = state.vm[i] * cis(state.va[i])
+        current = complex(shunt.conductance, shunt.susceptance) * voltage
+        powers[k] = voltage * conj(current)
+    end
+    return powers
 end
 
 function power_balance(
@@ -60,6 +105,14 @@ function power_balance(
     for (k, branch) in enumerate(network.branches)
         network_injection[bus_indices[branch.from_bus]] += flows.from[k]
         network_injection[bus_indices[branch.to_bus]] += flows.to[k]
+    end
+    shunt_consumption = shunt_powers(network, state)
+    for (k, shunt) in enumerate(network.shunts)
+        network_injection[bus_indices[shunt.bus_id]] += shunt_consumption[k]
+    end
+    bank_consumption = bank_powers(network,state)
+    for (k, bank) in enumerate(network.banks)
+        network_injection[bus_indices[bank.bus_id]] += bank_consumption[k]
     end
     p_residual = p_inj .- real.(network_injection)
     q_residual = q_inj .- imag.(network_injection)

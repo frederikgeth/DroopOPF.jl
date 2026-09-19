@@ -147,6 +147,8 @@ function Case(
     if !isnothing(network)
         append!(numeric_types, (typeof(b.v_min) for b in network.buses))
         append!(numeric_types, (typeof(br.resistance) for br in network.branches))
+        append!(numeric_types, (typeof(s.conductance) for s in network.shunts))
+        append!(numeric_types, (typeof(first(b.step_conductances)) for b in network.banks))
     end
     T = promote_type(numeric_types...)
     # The explicit conversion keeps the public case homogeneous and avoids
@@ -176,6 +178,10 @@ function Case(
                     T(br.reactance), T(br.charging), T(br.thermal_limit), br.available,
                     T(br.tap_ratio), T(br.phase_shift))
                     for br in network.branches],
+                FixedShunt{T}[FixedShunt{T}(s.id, s.bus_id, T(s.conductance),
+                    T(s.susceptance), s.available) for s in network.shunts],
+                ShuntBank{T}[ShuntBank{T}(b.id,b.bus_id,b.step_conductances,
+                    b.step_susceptances,b.legal_states,b.state,b.nominal_state,b.available) for b in network.banks],
             ),
         ][1]
     end

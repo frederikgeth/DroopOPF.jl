@@ -35,7 +35,8 @@ export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop
 export droop_response, droop_curve
 export Generator, GeneratorControlAttachment, Case, validate_case
 export load_matpower_case, attach_controls
-export Bus, Branch, Load, ACNetwork, ACState
+export Bus, Branch, Load, FixedShunt, ShuntBank, ACNetwork, ACState, shunt_powers
+export with_bank_state, bank_admittance, bank_powers
 export power_balance, branch_flows, operating_margins
 export droop_residual, equilibrium_residual
 export ACOPFResult, ACOPFContinuationResult, solve, solve_opf, solve_opf_continuation

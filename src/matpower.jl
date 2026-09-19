@@ -50,8 +50,8 @@ end
 
 Load the core bus, generator, load, and branch tables from a MATPOWER v2 case
 file. Values are normalized to the case base power. TAP=0 maps to unity;
-SHIFT is converted from degrees to radians. Nonzero bus GS/BS are rejected
-until M6 shunt support; they must not silently disappear. Other unsupported
+SHIFT is converted from degrees to radians. Nonzero bus GS/BS become aggregate
+fixed shunts with G=GS/baseMVA and B=BS/baseMVA. Other unsupported
 fields (including costs and angle-difference limits) remain outside this adapter.
 Fixed ratios and phase shifts are supported by AC evaluation and OPF/SCOPF.
 
@@ -78,11 +78,15 @@ function load_matpower_case(
 
     buses = Bus[]
     loads = Load[]
+    shunts = FixedShunt[]
     for row in eachrow(bus_table)
-        (iszero(row[5]) && iszero(row[6])) ||
-            throw(ArgumentError("bus $(row[1]): nonzero MATPOWER GS/BS requires M6 shunt support"))
         bus_id = round(Int, row[1])
         bus_type = round(Int, row[2])
+        if !iszero(row[5]) || !iszero(row[6])
+            # MATPOWER supplies aggregate admittance, not physical bank steps.
+            push!(shunts, FixedShunt(bus_id, bus_id; conductance=row[5]/base_power,
+                susceptance=row[6]/base_power))
+        end
         v_max, v_min = row[12], row[13]
         push!(buses, Bus(bus_id; v_min = v_min, v_max = v_max, reference = bus_type == 3))
         if !iszero(row[3]) || !iszero(row[4])
@@ -135,7 +139,7 @@ function load_matpower_case(
         )
     end
 
-    network = ACNetwork(buses, branches)
+    network = ACNetwork(buses, branches; shunts=shunts)
     return Case(
         isnothing(id) ? _matpower_case_id(path) : id;
         base_power = base_power,

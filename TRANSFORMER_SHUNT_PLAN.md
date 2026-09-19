@@ -1,8 +1,8 @@
 # Transformer and switched-shunt extension
 
-Updated planning scope, 2026-09-18. Branch `transformers` starts at local `main`
+Updated planning scope, 2026-09-19. Branch `transformers` starts at local `main`
 commit `e4d68ed` (v0.4.0). This revision records the agreed continuous-first direction and the AVR extension;
-M5.1-M5.4 are implemented and validated below; M6-M10 remain planned.
+M5.1-M5.4 and M6.1-M6.3 are implemented and validated below; later slices remain planned.
 ROADMAP.md owns sequencing and status; this branch is not a new release.
 This is a selective extension of current main, not a copy of the earlier
 brainstorming worktree's M5-M13 numbering.
@@ -10,7 +10,7 @@ brainstorming worktree's M5-M13 numbering.
 ## Pre-M5.1 architecture review — confirmed
 
 Confirmed by the user on 2026-09-18 as the architecture baseline for M5.1.
-M5.1-M5.4 are implemented and validated on this branch; M6-M10 remain pending.
+M5.1-M5.4 and M6.1-M6.3 are implemented and validated on this branch; later slices remain pending.
 Milestone order is unchanged. Preserve the four
 boundaries: data, optimization problem, formulation, and independent validation.
 
@@ -79,10 +79,11 @@ transformer data/import, preservation, study schema migration and support guards
 the extended suite passed 386/386 tests. The audit above describes the original
 main commit, not the extended branch. See [M5.1 evidence](artifacts/m5_1/report.md)
 and `examples/m5_1_transformer_data.jl`. M5.2-M5.4 now add fixed transformer AC physics,
-both-terminal limits and OPF/SCOPF/droop-design integration. The current full suite
+both-terminal limits and OPF/SCOPF/droop-design integration. At M5 completion, the full suite
 passed 440/440 tests; [M5 evidence](artifacts/m5/report.md) includes analytical
-sweeps, scenario plots and independent checks. Nonzero imported bus shunts are
-still explicitly rejected pending M6.
+sweeps, scenario plots and independent checks. M6.1 subsequently added fixed shunt import, separate equipment records and
+current-based validation (2026-09-19), with 568/568 full-suite checks passing.
+See [M6.1 evidence](artifacts/m6_1/report.md). Switched-bank and integration evidence is in [M6](artifacts/m6/report.md).
 
 ## Required boundaries
 
@@ -138,6 +139,14 @@ unsupported combinations rejected without silently using line equations.
 
 ## M6: fixed and switched-shunt reference physics
 
+M6.1 is complete: `FixedShunt`, `ACNetwork.shunts`, MATPOWER GS/BS conversion,
+independent `shunt_powers`, preservation and schema migration. M6.2 and M6.3
+are also complete: explicit legal bank states and fixed-state OPF/SCOPF integration.
+See [M6 evidence](artifacts/m6/report.md). `examples/m6_1_fixed_shunts.jl` generates conversion tables,
+analytical/computed voltage curves and error-detection plots. No switching state,
+bank grid or controller is inferred. Study v4 supersedes earlier writers while retaining v1-v3 readers. Negative conductance is rejected for passive equipment.
+
+
 Represent fixed bus admittance plus identified switchable banks with supplied
 positions. Specify B positive capacitive and G positive consuming: network shunt
 consumption is P=G V^2, Q=-B V^2. Injection signs follow from the declared balance
@@ -164,9 +173,9 @@ visuals make the physical behavior and failures inspectable.
 | M5.2 | Fixed magnitude ratio, zero phase shift | Hand-calculated terminal currents/powers; reference-versus-computed flow plot; unity-ratio regression |
 | M5.3 | Fixed phase shift and availability | Signed flow versus phase shift; both-end limits; outage zero-flow checks and deliberate sign error |
 | M5.4 | Fixed transformer in existing OPF/SCOPF | Base/contingency voltage and terminal-flow panels; independent residuals and exact droop checks |
-| M6.1 | Fixed shunt admittance and import | GS/BS conversion table; analytical and computed P(V), Q(V) curves; sign and double-count checks |
-| M6.2 | Bank data at supplied legal states | Bank-state/admittance table and Q-by-state plot; invalid/unavailable state checks |
-| M6.3 | Fixed shunts in existing OPF/SCOPF | Voltage profiles and reactive-balance breakdown; scenario residuals; zero-shunt regression |
+| M6.1 **complete** | Fixed shunt admittance and import | GS/BS conversion table; analytical and computed P(V), Q(V) curves; sign and double-count checks |
+| M6.2 **complete** | Bank data at supplied legal states | Bank-state/admittance table and Q-by-state plot; invalid/unavailable state checks |
+| M6.3 **complete** | Fixed shunts in existing OPF/SCOPF | Voltage profiles and reactive-balance breakdown; scenario residuals; zero-shunt regression |
 
 ## M7: continuous equipment optimization — primary path
 
@@ -299,7 +308,7 @@ comparisons assemble these bundles rather than invent a second evaluation path.
 
 ## Scope and readiness
 
-M5.1-M5.4 are implemented and validated; M6-M10 are agreed direction / pending
+M5.1-M5.4 and M6.1-M6.3 are implemented and validated; later slices are agreed direction / pending
 implementation. For each next slice, choose its fixtures, tolerances and supported
 solver combinations; settle AVR encoding when approaching M8. Each issue lists
 data, optimization-problem, formulation and validation changes separately.

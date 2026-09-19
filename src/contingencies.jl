@@ -55,7 +55,7 @@ function scenario_case(case::Case{T}, contingency::Contingency) where {T}
         b.tap_ratio, b.phase_shift)
         for b in case.network.branches]
     overlay = Case{T}(case.id * "/" * string(contingency.id), case.base_power,
-        case.base_frequency, ACNetwork(case.network.buses, branches), case.loads,
+        case.base_frequency, ACNetwork(case.network.buses, branches; shunts=case.network.shunts, banks=case.network.banks), case.loads,
         generators, case.controls, case.attachments)
     _check_connected(overlay)
     return overlay
