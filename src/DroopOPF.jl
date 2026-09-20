@@ -22,6 +22,15 @@ include("droop_sweep.jl")
 include("droop_optimization.jl")
 include("droop_design_multistart.jl")
 include("droop_design_plotting.jl")
+include("tap_optimization.jl")
+include("shunt_optimization.jl")
+include("joint_design.jl")
+export DroopControl, JointDesignResult, optimize_joint_design, with_joint_settings
+export validate_joint_design, joint_design_metrics, write_joint_design, read_joint_design
+export ShuntControl, ShuntOPFResult, optimize_shunts, with_shunt_settings
+export validate_shunt_design, shunt_design_metrics, write_shunt_design, read_shunt_design
+export TapControl, TapOPFResult, optimize_taps, with_tap_settings, validate_tap_design
+export write_tap_design, read_tap_design, tap_design_metrics
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
 export write_scopf_multistart, write_scopf_diagnostics

@@ -1,0 +1,233 @@
+{
+  "data": {
+    "case": {
+      "attachments": [
+        {
+          "control_id": 1,
+          "generator_id": 7,
+          "location": {
+            "bus_id": 10,
+            "kind": "bus",
+            "side": null
+          },
+          "priority": "unit"
+        },
+        {
+          "control_id": 2,
+          "generator_id": 9,
+          "location": {
+            "bus_id": 20,
+            "kind": "bus",
+            "side": null
+          },
+          "priority": "unit"
+        }
+      ],
+      "base_frequency": 50.0,
+      "base_power": 100.0,
+      "controls": [
+        {
+          "capability": {
+            "p_max": 1.2,
+            "p_min": 0.0,
+            "q_max": 1.0,
+            "q_min": -1.0
+          },
+          "q_at_deadband": 0.0,
+          "schedule": {
+            "unit": "pu",
+            "v_db_high": 1.01,
+            "v_db_low": 0.99,
+            "v_ref": 1.0
+          },
+          "slope": 0.05
+        },
+        {
+          "capability": {
+            "p_max": 1.2,
+            "p_min": 0.0,
+            "q_max": 1.0,
+            "q_min": -1.0
+          },
+          "q_at_deadband": 0.0,
+          "schedule": {
+            "unit": "pu",
+            "v_db_high": 1.01,
+            "v_db_low": 0.99,
+            "v_ref": 1.0
+          },
+          "slope": 0.075
+        }
+      ],
+      "generators": [
+        {
+          "available": true,
+          "bus_id": 10,
+          "id": 7,
+          "initial_p": 0.3,
+          "initial_q": 0.0,
+          "p_max": 1.2,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 20,
+          "id": 9,
+          "initial_p": 0.3,
+          "initial_q": 0.0,
+          "p_max": 1.2,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        }
+      ],
+      "id": "m72-simple-banks",
+      "loads": [
+        {
+          "bus_id": 30,
+          "id": 1,
+          "p": 0.6,
+          "q": 0.15
+        }
+      ],
+      "network": {
+        "banks": [
+          {
+            "available": true,
+            "bus_id": 30,
+            "id": 201,
+            "legal_states": [
+              [
+                0
+              ],
+              [
+                1
+              ],
+              [
+                2
+              ],
+              [
+                3
+              ]
+            ],
+            "nominal_state": [
+              1
+            ],
+            "state": [
+              1
+            ],
+            "step_conductances": [
+              0.001
+            ],
+            "step_susceptances": [
+              0.02
+            ]
+          },
+          {
+            "available": true,
+            "bus_id": 20,
+            "id": 202,
+            "legal_states": [
+              [
+                0
+              ],
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "nominal_state": [
+              1
+            ],
+            "state": [
+              1
+            ],
+            "step_conductances": [
+              0.0005
+            ],
+            "step_susceptances": [
+              -0.01
+            ]
+          }
+        ],
+        "branches": [
+          {
+            "available": true,
+            "charging": 0.02,
+            "from_bus": 10,
+            "id": 11,
+            "phase_shift": 0.02,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.02,
+            "thermal_limit": 2.0,
+            "to_bus": 20
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 20,
+            "id": 22,
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 30
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 10,
+            "id": 33,
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 30
+          }
+        ],
+        "buses": [
+          {
+            "id": 10,
+            "reference": true,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 20,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 30,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          }
+        ],
+        "shunts": [
+          {
+            "available": true,
+            "bus_id": 30,
+            "conductance": 0.002,
+            "id": 101,
+            "susceptance": 0.01
+          }
+        ]
+      }
+    },
+    "contingencies": [],
+    "mode": "preventive",
+    "participation": {},
+    "redispatch_limits": {}
+  },
+  "kind": "DroopOPF.Study",
+  "schema_version": 4
+}

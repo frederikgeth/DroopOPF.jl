@@ -46,6 +46,7 @@ reactive clipping directly as complementarity pairs.
   breakpoint, limit, and critical-scenario findings.
 - [M4 scale-up decision](scale_up_decision.md) — inspect measured model-size,
   timing, and allocation evidence before choosing a scaling algorithm.
+- [M7 equipment optimization](equipment_optimization.md) — tables and plots for tap, simple-bank and joint droop design.
 - [Examples](examples.md) — reproduce the M1 regime and solver studies.
 - [API reference](api.md) — generated documentation for exported
   types and functions.

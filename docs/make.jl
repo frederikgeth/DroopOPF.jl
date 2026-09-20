@@ -24,6 +24,7 @@ makedocs(
         "M3 droop optimization" => "droop_optimization.md",
         "M4 robustness" => "robustness.md",
         "M4 scale-up decision" => "scale_up_decision.md",
+        "M7 equipment optimization" => "equipment_optimization.md",
         "Examples" => "examples.md",
         "API reference" => "api.md",
         "Development" => "development.md",

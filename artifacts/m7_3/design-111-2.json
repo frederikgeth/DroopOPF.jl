@@ -1,0 +1,87 @@
+{
+  "continuous_relaxation": true,
+  "droop_controls": [
+    {
+      "bounds": {
+        "deadband_high": null,
+        "deadband_low": null,
+        "slope": [
+          0.04,
+          0.1
+        ],
+        "v_ref": null
+      },
+      "control_id": 2,
+      "initial": {
+        "deadband_high": 0.010000000000000009,
+        "deadband_low": 0.010000000000000009,
+        "slope": 0.095,
+        "v_ref": 1.0
+      }
+    }
+  ],
+  "droops": {
+    "2": {
+      "deadband_high": 0.010000000000000009,
+      "deadband_low": 0.010000000000000009,
+      "slope": 0.04644190726138936,
+      "v_ref": 1.0
+    }
+  },
+  "kind": "DroopOPF.JointDesignResult",
+  "opf": {
+    "objective": 2.1808096613298398e-5,
+    "primal_status": "FEASIBLE_POINT",
+    "smooth_epsilon": 1.0e-5,
+    "smooth_reactive_epsilon": null,
+    "smooth_reactive_relative_epsilon": 1.0e-5,
+    "state": {
+      "pg": [
+        0.30226281916947056,
+        0.30226285372962935
+      ],
+      "qg": [
+        0.07590453447038281,
+        0.07619541104747321
+      ],
+      "va": [
+        0.0,
+        -0.013373967007855963,
+        -0.03723970274326893
+      ],
+      "vm": [
+        0.9862047732764808,
+        0.9864613397856654,
+        0.9755657702750772
+      ]
+    },
+    "termination_status": "LOCALLY_SOLVED"
+  },
+  "schema_version": 1,
+  "shunt_controls": [
+    {
+      "bank_id": 201,
+      "initial": 0.04,
+      "lower": null,
+      "nominal": null,
+      "upper": null
+    }
+  ],
+  "susceptances": {
+    "201": 1.4809856103495975e-7
+  },
+  "tap_controls": [
+    {
+      "branch_id": 11,
+      "initial": 1.0,
+      "lower": 0.95,
+      "nominal": null,
+      "upper": 1.05
+    }
+  ],
+  "taps": {
+    "11": 0.9993227909505692,
+    "22": 1.0,
+    "33": 1.0
+  }
+}

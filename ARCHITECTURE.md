@@ -645,7 +645,7 @@ The design is informed by:
 [ROADMAP.md](ROADMAP.md) owns implementation status for M5-M10; [TRANSFORMER_SHUNT_PLAN.md](TRANSFORMER_SHUNT_PLAN.md)
 defines the validation slices and required reporting/visualization bundles.
 M5 fixed-transformer physics and all M6 fixed-shunt/bank slices are implemented;
-M7-M10 remain planned. The confirmed
+M7 base-case tap, simple-bank and joint droop optimization is implemented; M8-M10 remain planned. The confirmed
 [pre-M5.1 architecture review](TRANSFORMER_SHUNT_PLAN.md#pre-m51-architecture-review--confirmed)
 records the starting decisions approved by the user on 2026-09-18.
 
@@ -718,3 +718,60 @@ validation sums individual step currents. Fixed shunts and banks share a unique
 equipment ID namespace and must not duplicate the same physical admittance.
 No bank switching trajectory, automatic control or bank optimization is inferred.
 This preserves the boundary between physical data, optimization policy and validation.
+
+### M7.1 tap settings contract (implemented)
+
+- Data: `Branch.tap_ratio` is the supplied physical setting; it is never overwritten by a solve.
+- Problem: `TapControl` selects optimized branches and explicit positive bounds. Omitted branches are fixed. Equal bounds fix a selected ratio. The supplied ratio is the default start; a start outside bounds requires an explicit replacement. A nominal reference affects metrics only.
+- Formulation: the smooth base-case NLP computes terminal powers with variable inverse tap ratios, including charging, fixed phase shifts and both-terminal ratings. Fixed Ybus builders remain the established path for existing solves.
+- Results: `TapOPFResult` records every branch ratio, the policy and the ordinary AC OPF result. Versioned result JSON supports replay; no input mutation or implicit rounding occurs.
+- Validation: reconstruct the network at solved ratios and use M5/M6 independent currents and powers. Solver success, policy compliance and physical validity are distinct. `tap_design_metrics` reports supplied/nominal deviations, branch active losses and shunt active consumption without altering the objective.
+
+This slice supports the existing smooth NLP and its optimizer factory; it does not
+add a complementarity tap-design encoding. Phase shift and droop parameters stay
+fixed. Equipment decision sharing across contingencies remains M9.
+
+### M7.2 simple-bank contract (implemented)
+
+`ShuntControl` is problem configuration keyed by installed bank ID; imported fixed
+shunts cannot be selected. Only one nonzero step susceptance is supported. Legal
+counts define a continuous interval; positive B is capacitive and negative B is
+inductive. Optional narrower bounds must lie inside this interval. Initial B is a
+numerical start (default supplied state); nominal B is a metric reference (default
+bank nominal state). Neither silently changes the baseline objective.
+
+The smooth base-case builder removes selected supplied admittances from constant
+Ybus before adding variable G(B)V² and −BV² consumption. G=(Gstep/Bstep)B, so G
+cannot be optimized independently. All taps, phases, droop curves and unselected
+equipment remain fixed. `ShuntOPFResult` holds solved B separately. Independent
+replay replaces selected banks with equivalent fixed shunts, preserving IDs and
+avoiding double counting; this is an evaluation case, not an edit to installed data.
+Solver, physical and policy statuses remain separate. Fractional counts are metrics,
+not legal positions, schedules or switching counts. Joint controls are M7.3; SCOPF
+equipment sharing is M9. Heterogeneous optimization is explicitly behind the later
+simple-bank/transformer/droop scaling gate.
+
+### M7.3 joint design contract (implemented)
+
+`optimize_joint_design` accepts separate lists of `TapControl`, `ShuntControl` and
+`DroopControl`. A selected droop has independently bounded slope, reference and
+lower/upper deadband width; omitted fields keep supplied values. As in M3, the
+total deadband must stay positive. Supplied values are default starts, and an
+explicit start is required when bounds exclude them. The joint path reuses M3's
+parameter helpers and the existing smooth droop expressions, together with the
+M7 variable-tap terminal equations and simple-bank G/B mapping. It does not add a
+new objective or a hidden nominal-design penalty.
+
+`JointDesignResult` retains the ordinary AC result, all branch ratios, selected
+bank susceptances, selected droop settings and their policies. Input data remain
+unchanged. `with_joint_settings` reconstructs all families before independent
+equilibrium validation. Policy checks cover fixed equipment and each selected
+parameter bound. Metrics recompute objective components and physical losses.
+Versioned JSON preserves results and policies. Existing standalone entry points
+continue to work. Multi-start experiments are an evidence runner, not an implicit
+change to the optimizer or a global-optimality certificate.
+
+The research comparison uses all eight fixed/free combinations and matched
+conditional benefits. Retain every start, failure and parameter spread; differences
+in benefit with equipment freedom represent interactions, not additive isolated
+attribution. M7 is base-case only. `Study` inputs are explicitly rejected until M9.

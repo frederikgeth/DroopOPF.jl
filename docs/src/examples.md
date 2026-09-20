@@ -117,3 +117,22 @@ julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark
 It excludes one warm-up, records three measurements per study, and writes
 actual JuMP model size, elapsed time, allocations, environment identity,
 objective, validity, and copied PGLib provenance.
+
+## M7 equipment and joint droop optimization
+
+[The M7 results gallery](equipment_optimization.md) embeds comparison tables and
+plots for all three slices. Reproduce the evidence from the repository root:
+
+```sh
+julia --project=. examples/m7_1_taps.jl artifacts/m7_1
+python3 examples/plot_m7_1_taps.py artifacts/m7_1
+julia --project=. examples/m7_2_shunts.jl artifacts/m7_2
+python3 examples/plot_m7_2_shunts.py artifacts/m7_2
+julia --project=. examples/m7_3_joint.jl artifacts/m7_3
+python3 examples/plot_m7_3_joint.py artifacts/m7_3
+```
+
+Python plotting requires Matplotlib. Julia solves retain versioned input/design
+JSON and independent validation evidence. All M7 cases are base-case continuous
+optimizations; equipment SCOPF is reserved for M9. Complex bank optimization stays
+in the post-scaling backlog.

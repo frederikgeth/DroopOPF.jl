@@ -2,7 +2,7 @@
 
 Status: agile development plan with proof-of-concept priority.
 
-Last updated: 2026-09-18
+Last updated: 2026-09-20
 
 ## 1. Product goal
 
@@ -164,7 +164,7 @@ no P2 scaling algorithm is justified by the validated small-case measurements.
 
 M1-M4 remain released and unchanged. The following M5-M10 milestones record the
 agreed planning direction on branch `transformers`; M5.1-M5.4 are implemented and
-validated on this branch. M6 is also complete; M7-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
+validated on this branch. M6 and M7.1-M7.3 are also complete; M8-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
 small validation slices and acceptance evidence. This roadmap owns sequencing.
 
 **M5 complete on `transformers` (unreleased, 2026-09-18):** transformer
@@ -178,7 +178,7 @@ tests. See the [M5 evidence report](artifacts/m5/report.md) and
 The synthetic integration fixture uses declared proportional-regime starts and
 explicit CCOpt accuracy settings. Failed flat-start/default-CCOpt diagnostics
 are retained; convergence from arbitrary starts is not claimed. Tap optimization,
-AVR and switched-bank modeling remain in their existing later milestones. Order is unchanged.
+AVR remains a later milestone; supplied switched-bank modeling is now complete in M6. Order is unchanged.
 
 
 **M6 complete on `transformers` (unreleased, 2026-09-19):** fixed bus shunts,
@@ -188,15 +188,49 @@ checks signs, V-squared scaling and accounting. Fixed states are integrated in
 OPF, preventive/corrective SCOPF and bounded droop design, including backend
 agreement. Study schema v4 preserves banks and reads v1-v3 with migration.
 See [M6 numerical report and plots](artifacts/m6/report.md) and
-[fixed-shunt/import evidence](artifacts/m6_1/report.md). Next: M7 continuous
-equipment optimization. Full regression: **691/691 tests pass**. Milestone order is unchanged.
+[fixed-shunt/import evidence](artifacts/m6_1/report.md). Next: M8 steady-state transformer AVR. Full regression: **691/691 tests pass**. Milestone order is unchanged.
+
+
+**M7.1 complete on `transformers` (unreleased, 2026-09-20):** explicit per-branch
+tap policies, continuous base-case OPF, separate solved settings and physical
+reconstruction. Phase shifts, shunts and droop curves remain fixed. Fixed-bound
+equivalence, a 41-point ratio sweep, independent replay, multiple selected taps,
+Ipopt/MadNLP agreement and result serialization are covered. See
+[M7.1 numerical report and plots](artifacts/m7_1/report.md).
+Full regression: **750/750 tests pass**. Optimized equipment SCOPF is explicitly reserved for M9.
+
+
+**M7.2 complete on `transformers` (unreleased, 2026-09-20):** simple capacitor/reactor
+banks with one nonzero step type, continuous B within the legal-count envelope,
+and G tied to the same fractional count. Explicit selection, fixed-bound and
+empty-policy equivalence, independent V-squared accounting, capacitor/reactor
+sweeps, multiple simple banks, serialization and backend comparison are covered.
+Taps and droops remain fixed. Full regression: **840/840 tests pass**. See [M7.2 report and plots](artifacts/m7_2/report.md).
+
+**Post-scaling backlog:** heterogeneous-bank relaxation, multiple step types and
+complex switching combinations. Revisit only after benchmarks demonstrate adequate
+scaling of simple banks together with transformer and droop models. The existing
+M6 support for supplied fixed heterogeneous states remains available. This backlog
+is not a prerequisite for M7.3-M10 and is not a claim that scaling is already proven.
+
+
+**M7.3 complete on `transformers` (unreleased, 2026-09-20):** one base-case joint
+design entry point with independent tap, simple-bank and droop parameter policies,
+separate solved settings, versioned JSON and independent physical/policy validation.
+The eight fixed/free configurations use the same objective with zero design penalty.
+Two-start comparisons retain attempts and parameter/objective spread; standalone
+equivalence is checked with matched starts. References and independent deadband
+widths reuse the M3 family and are additionally tested. See
+[M7.3 evidence](artifacts/m7_3/report.md) and the
+[M7 documentation results gallery](docs/src/equipment_optimization.md).
+Full regression: **916/916 tests pass**. This completes the base-case M7 scope; coordinated equipment SCOPF is M9.
 
 
 | Milestone | Small validation slices | Dependency / central evidence |
 |---|---|---|
 | M5 — Transformer reference physics **complete** | M5.1 data/import; M5.2 fixed ratio; M5.3 fixed phase/availability; M5.4 OPF/SCOPF integration | M1-M4 foundation; analytical currents/powers, flow curves, outages and round trips |
 | M6 — Shunt reference physics **complete** | M6.1 fixed admittance **complete**; M6.2 supplied bank states **complete**; M6.3 OPF/SCOPF integration **complete** | Independent of M5; signs, V-squared curves and reactive accounting |
-| M7 — Continuous equipment optimization | M7.1 tap ratio; M7.2 susceptance; M7.3 joint equipment/droop | Applicable M5/M6 physics; fixed-bound equivalence, sweeps and setting extraction |
+| M7 — Continuous equipment optimization **complete** | M7.1 tap ratio **complete**; M7.2 simple-bank susceptance **complete**; M7.3 joint equipment/droop **complete** | Applicable M5/M6 physics; fixed-bound equivalence, sweeps and setting extraction |
 | M8 — Steady-state transformer AVR | M8.1 target plus saturation; M8.2 deadband/selection; M8.3 fixed/OPF/AVR comparisons | Can start after M5.4; voltage-target tracking, tap limits and explicit equilibrium-selection semantics |
 | M9 — Equipment/AVR-aware SCOPF | M9.1 preventive sharing; M9.2 bounded corrective action; M9.3 before-response versus AVR-settled security | M7 and, for AVR cases, M8; independent coupling and stage-specific margin checks |
 | M10 — Comparative validation gate | M10.1 external physics references; M10.2 matched studies; M10.3 regression/performance evidence | M5-M9; held-out conditions, interactions, multi-starts and reproducible reports |

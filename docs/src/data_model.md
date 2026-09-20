@@ -188,7 +188,7 @@ PYTHON=/path/to/python-with-matplotlib julia --project=. examples/m6_1_fixed_shu
 It generates a GS/BS conversion table, expected/computed P(V) and Q(V) curves,
 availability and round-trip checks, and deliberate omission/double-count/sign
 errors. A one-bus OPF checks safe use of the shared Ybus path. Switched-bank
-states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [M6 evidence](../../artifacts/m6/report.md).
+states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [M6 evidence](https://github.com/frederikgeth/DroopOPF.jl/blob/transformers/artifacts/m6/report.md).
 
 ## Supplied switched-bank states (M6.2–M6.3)
 
@@ -216,3 +216,102 @@ migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas
 Existing branch/generator contingencies preserve supplied bank states. M6 uses
 fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization
 of equipment is M7; a bank state is not an automatic switching policy or trajectory.
+
+## Continuous transformer tap design (M7.1)
+
+```julia
+policy = [TapControl(11; lower=0.95, upper=1.05, nominal=1.0)]
+result = optimize_taps(case, policy; initial_state=state, smooth_epsilon=1e-5)
+report = validate_tap_design(case, result)
+physical_case = with_tap_settings(case, result.taps)
+metrics = tap_design_metrics(case, result)
+write_tap_design("tap-design.json", result)
+reloaded = read_tap_design("tap-design.json")
+```
+
+Bounds are required; no range is inferred from imported taps. Branch IDs must be
+unique, known and available. Omitted branches remain at their supplied ratios.
+Set `lower == upper` to fix a selected device, and supply `initial` if the supplied
+ratio is outside the bounds. Initial values are numerical starts; `nominal` is a
+positive reference for reporting, defaulting to the supplied ratio, and need not
+lie in the optimization envelope. Neither introduces a penalty in the objective.
+
+The baseline objective remains generator dispatch deviation. Phase shifts, shunts
+and droop curves stay fixed. Ratios enter nonlinear balances and both-terminal
+thermal constraints; input case data remain unchanged. Results are continuous
+relaxations, without discrete-position recovery or switching-count interpretation.
+`report.physical` evaluates the reconstructed physical network; `policy_valid`
+separately checks bounds and fixed settings. A failed solve can have no state or
+ratios; physical validation is then unavailable and overall validity is false.
+
+The public entry point accepts a base `Case`; a `Study` is rejected until M9 adds
+scenario policy coupling. The current implementation uses the smooth encoding
+with Ipopt by default and supports the existing optimizer-factory interface.
+See [M7.1 evidence](equipment_optimization.md) for sweeps and comparisons.
+
+## Simple continuous shunt design (M7.2)
+
+```julia
+bank = ShuntBank(201, 30; step_susceptances=(0.02,),
+    step_conductances=(0.001,), legal_states=((0,), (1,), (2,), (3,)), state=(1,))
+# After adding bank to case.network.banks:
+policy = [ShuntControl(201)] # B bounds default to [0, 0.06] pu
+result = optimize_shunts(case, policy; initial_state=state)
+report = validate_shunt_design(case, result)
+metrics = shunt_design_metrics(case, result)
+physical_case = with_shunt_settings(case, result.susceptances)
+write_shunt_design("shunt-design.json", result)
+reloaded = read_shunt_design("shunt-design.json")
+```
+
+A reactor uses negative step B, e.g. −0.02 gives an interval [−0.06, 0]. G is tied
+to B through their common fractional count; here G=0.001(B/Bstep). Banks with
+multiple step types or zero step B are rejected when selected, as are unavailable
+or unknown banks and fixed-shunt IDs. Unselected heterogeneous banks remain fixed.
+
+Optional `lower`, `upper`, `initial` and `nominal` are all B in pu. Bounds must
+lie in the legal-count envelope; equal bounds fix B. The default initial B is the
+supplied bank setting, so narrowing bounds past it requires an explicit start.
+The default nominal B comes from the bank's nominal state. Nominal B must lie in
+the physical envelope but may lie outside a narrower optimization interval.
+
+Taps, phase shifts and droop settings stay fixed; multiple simple banks can be
+selected independently. The baseline dispatch objective remains unchanged.
+Metrics include fractional count, B deviations, G, active consumption, reactive
+injection and branch losses. The result is explicitly continuous, not a recovered
+switching position. `with_shunt_settings` creates an evaluation case by replacing
+selected banks with equivalent fixed shunts; the original case retains bank metadata.
+Policy bounds are checked separately by `validate_shunt_design`. JSON stores
+settings and policy; retain the input study alongside it for reproducible replay.
+
+[Validation evidence](equipment_optimization.md) includes capacitor/reactor
+sweeps and plots. Heterogeneous optimization is post-scaling backlog; the gate
+requires evidence that simple banks, transformers and droops scale adequately first.
+
+## Joint equipment and droop design (M7.3)
+
+```julia
+result = optimize_joint_design(case;
+    tap_controls=[TapControl(11; lower=0.95, upper=1.05)],
+    shunt_controls=[ShuntControl(201)],
+    droop_controls=[DroopControl(2; slope_bounds=(0.04, 0.10))],
+    initial_state=state)
+report = validate_joint_design(case, result)
+physical_case = with_joint_settings(case, result)
+metrics = joint_design_metrics(case, result)
+write_joint_design("joint-design.json", result)
+reloaded = read_joint_design("joint-design.json")
+```
+
+Omit a control list to keep that family fixed; select devices independently within
+each list. `DroopControl` additionally accepts `v_ref_bounds`,
+`deadband_low_bounds`, `deadband_high_bounds` and `initial::DroopSettings`. Missing
+bounds fix a parameter to its supplied value. Bounds preserve the M3 positive-slope,
+positive-reference and positive-total-deadband contract. No free-knot curve family
+is introduced. Multiple attached available droop controls may be selected.
+
+The objective is identical across fixed/free configurations. Reports distinguish
+solver success, parameter/equipment policy compliance and reconstructed physical
+validity. Ratios and bank settings remain continuous relaxations. See
+[M7 results and visualizations](equipment_optimization.md) for the complete grid,
+multi-start variability, objective components and matched conditional benefits.

@@ -113,6 +113,8 @@ function _build_acopf_model(
     scenario_prefix::String = "",
     set_objective::Bool = true,
     droop_parameter_variables::AbstractDict = Dict(),
+    tap_controls = nothing,
+    shunt_controls = nothing,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -174,32 +176,44 @@ function _build_acopf_model(
         load_p[bus_index] += load.p
         load_q[bus_index] += load.q
     end
-    Y = _admittance_matrix(network)
-    conductance_matrix = real.(Y)
-    susceptance_matrix = imag.(Y)
+    taps = Dict{Int,VariableRef}()
+    shunts = Dict{Int,VariableRef}()
+    if isnothing(tap_controls)
+        Y = _admittance_matrix(network)
+        if !isnothing(shunt_controls)
+            shunts = _shunt_variables!(model,case,shunt_controls,Y)
+        end
+        conductance_matrix = real.(Y)
+        susceptance_matrix = imag.(Y)
 
-    for i in 1:nbus
-        p_generation = sum(pg[k] for k in generators_at_bus[i]; init = 0.0)
-        q_generation = sum(qg[k] for k in generators_at_bus[i]; init = 0.0)
-        @NLconstraint(
-            model,
-            p_generation - load_p[i] ==
-            vm[i] * sum(
-                vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
-                         susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
-            ),
-        )
-        @NLconstraint(
-            model,
-            q_generation - load_q[i] ==
-            vm[i] * sum(
-                vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
-                         susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
-            ),
-        )
+        for i in 1:nbus
+            p_generation = sum(pg[k] for k in generators_at_bus[i]; init = 0.0)
+            q_generation = sum(qg[k] for k in generators_at_bus[i]; init = 0.0)
+            selected = [b for b in network.banks if haskey(shunts,b.id) && bus_indices[b.bus_id]==i]
+            variable_g = sum((only(b.step_conductances)/only(b.step_susceptances))*shunts[b.id] for b in selected; init=0.)
+            variable_b = sum(shunts[b.id] for b in selected; init=0.)
+            @NLconstraint(
+                model,
+                p_generation - load_p[i] - variable_g*vm[i]^2 ==
+                vm[i] * sum(
+                    vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
+                             susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
+                ),
+            )
+            @NLconstraint(
+                model,
+                q_generation - load_q[i] + variable_b*vm[i]^2 ==
+                vm[i] * sum(
+                    vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
+                             susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
+                ),
+            )
+        end
+
+        _add_branch_thermal_limits!(model, network, vm, va)
+    else
+        taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,tap_controls,shunt_controls)
     end
-
-    _add_branch_thermal_limits!(model, network, vm, va)
 
     for attachment in case.attachments
         generator_index = findfirst(g -> g.id == attachment.generator_id, case.generators)
@@ -285,7 +299,7 @@ function _build_acopf_model(
                 1.0e-3 * (qg[i] - case.generators[i].initial_q)^2 for i in 1:ngen),
         )
     end
-    return model, (vm = vm, va = va, pg = pg, qg = qg)
+    return model, (vm = vm, va = va, pg = pg, qg = qg, taps = taps, shunts = shunts)
 end
 
 function solve_opf(

@@ -179,19 +179,32 @@ visuals make the physical behavior and failures inspectable.
 
 ## M7: continuous equipment optimization — primary path
 
+M7.1-M7.3 are implemented on `transformers`.
+The [validation report](artifacts/m7_1/report.md) compares fixed, one-free-tap and
+two-free-tap cases with a 41-point fixed-tap sweep. Each case uses fixed shunts,
+droop curves and phase shifts. `TapControl` selects a branch with explicit bounds,
+optional initial ratio and nominal reference. Unselected branches stay fixed.
+`TapOPFResult` stores solved settings separately; `with_tap_settings` reconstructs
+physical data for independent validation. `optimize_taps(Study, ...)` rejects
+optimized equipment SCOPF until M9. Ratios are continuous relaxed outputs.
+
+
 Preserve discrete equipment data, but optimize tap ratio tau and shunt susceptance
 B continuously within declared physical envelopes by default. Fixed modes remain
 available independently for every device and droop setting. Phase shift remains
 fixed in this scope. Document whether conductance stays fixed or follows a bank
 mapping; arbitrary independent G/B freedom must not be introduced by relaxation.
-For heterogeneous bank combinations, define the admissible relaxed envelope
-explicitly rather than assume one continuously adjustable physical bank exists.
+M7.2 is restricted to one nonzero capacitor/reactor step type per bank. Its legal
+counts define the continuous B interval and G follows the same fractional count.
+Heterogeneous relaxation and complex switching combinations are post-scaling
+backlog: first benchmark simple banks, transformers and droops together. Existing
+fixed heterogeneous states remain supported; their optimization is not part of M7.2.
 
 | Slice | Small change | Validation and required visual |
 |---|---|---|
-| M7.1 | Continuous tap optimization; shunts/droop fixed | Fixed-bound equivalence; bound checks; objective/feasibility versus ratio sweep and selected solution |
-| M7.2 | Continuous shunt optimization; taps/droop fixed | V-squared injection and bounds; objective/feasibility versus susceptance sweep |
-| M7.3 | Joint equipment and existing M3 droop design | Independent fixed/free flags; matched configuration grid with selected settings, validity and objective components |
+| M7.1 **complete** | Continuous tap optimization; shunts/droop fixed | Fixed-bound equivalence; bound checks; objective/feasibility versus ratio sweep and selected solution |
+| M7.2 **complete** | Simple capacitor/reactor banks; taps/droop fixed | V-squared injection and bounds; objective/feasibility versus susceptance sweep |
+| M7.3 **complete** | Joint equipment and existing M3 droop design | Independent fixed/free flags; matched configuration grid with selected settings, validity and objective components |
 
 Reuse the existing NLP path and baseline objective first. Add only needed
 quantities with independently evaluated raw values and explicit normalization.
@@ -319,3 +332,26 @@ AVR with a deadband does not implement that runner. Automatic shunt regulation,
 multi-period schedules, sensitivity synthesis, adjustable phase-shift control
 and full observed-state reconciliation remain outside this equipment branch.
 ROADMAP.md is authoritative; this proposal does not replace delivered M1-M4.
+
+### M7.2 evidence and scope
+
+[Report and plots](artifacts/m7_2/report.md) retain 31-point capacitor and reactor
+sweeps, fixed/one-free/two-free comparisons and admittance-envelope plots. A
+`ShuntControl` selects a bank, with optional bounds inside its legal-count envelope,
+and separate initial/nominal B. Unselected banks and fixed shunts remain unchanged.
+Mixed step types are rejected for optimization. One variable B determines both
+reactive injection and conductance loss. Result JSON preserves the problem policy
+and solved relaxed B. Independent replay substitutes selected banks with equivalent
+fixed admittances once; original equipment metadata are preserved in the input.
+
+### M7.3 evidence
+
+The [joint-design report](artifacts/m7_3/report.md) records all eight tap/shunt/droop
+fixed/free configurations, two starts per configuration, objective decomposition,
+physical metrics, setting/parameter spread and matched droop benefits at each
+equipment freedom. The objective has no design penalty in any configuration.
+`DroopControl` reuses the M3 parameter family with independent bounds; omitted
+parameters are fixed. Base-case standalone comparisons use matched starts because
+local optima can depend on initialization. [The documentation gallery](docs/src/equipment_optimization.md)
+embeds numerical tables and figures for all M7 slices. Results are continuous and
+local; M9 adds security-constrained equipment decisions.

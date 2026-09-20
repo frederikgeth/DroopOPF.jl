@@ -9,7 +9,7 @@ _json_data(x::AbstractDict) = Dict(string(k) => _json_data(v) for (k,v) in x)
 _json_data(x::NamedTuple) = Dict(string(k) => _json_data(v) for (k,v) in pairs(x))
 function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,RegulatedLocation,VoltageSchedule,
     ReactiveCapability,GeneratorControlAttachment,ACNetwork,Case,Contingency,Study,
-    ACState,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
+    ACState,ACOPFResult,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
     SCOPFFinding,SCOPFDiagnostics})
     return Dict(string(k) => _json_data(getfield(x,k)) for k in fieldnames(typeof(x)))
