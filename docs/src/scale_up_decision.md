@@ -64,3 +64,42 @@ julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark
 The workflow writes JSON and Markdown per study plus the copied PGLib provenance
 record. Timing values above are evidence from one machine and should not be used
 as portable performance promises.
+
+## Post-M7 update: scaling is now the active investigation
+
+The original M4 decision remains valid for its tiny cases. M7's base-case equipment
+models are implemented, but their small validation cases do not establish scalable
+joint optimization. AVR and complex-bank optimization are now deferred pending
+measured scaling of simple banks, transformer taps and many droop controls.
+
+Run `julia --project=. examples/scaling_workflow.jl artifacts/scaling_initial`,
+then `python3 examples/plot_scaling.py artifacts/scaling_initial`. This first
+experiment connects synthetic modules and perturbs loads. It records fixed versus
+joint optimization, repeated solves, model size, phase timing, allocation and
+independent feasibility. It is not a substitute for medium public networks,
+load/initial-condition robustness or contingency scaling. M9.1/M9.2 remain the
+next security capabilities; M8 and M9.3 are deferred. See the repository roadmap
+for the S1 and S2 acceptance gates.
+
+## S1 convergence correction
+
+The historical synthetic stalls have been traced to missing exact Hessians when
+droop parameters were free. Equivalent scalar composition restores second
+derivatives. All eight control combinations now converge and validate at 12 and
+96 buses; full joint runs take 16 iterations. The fixed-equipment public 118-bus
+baseline also validates. See [S1 evidence](s1_evidence.md) and the
+[implemented equations](joint_formulation.md).
+
+This addresses the reproduced numerical failure, not the full scaling gate.
+Control-count sweeps, multiple starts, medium-case solver comparisons, public
+control overlays and 300-bus acceptance remain before M9.
+
+
+## Extended public-case checkpoint
+
+The [extended S1 evidence](s1_extension.md) covers independent device counts,
+both solvers, multiple starts and public 118-/300-bus networks. Synthetic
+robustness passes 35/35 attempts; the initial public pilot passes 13/30.
+Public joint solutions exist at both sizes/loading levels, but reliability and
+comparable solution quality are not established. S1 remains open before M9
+while equivalent scaling, primal/dual warm starts and restart policies are tested.

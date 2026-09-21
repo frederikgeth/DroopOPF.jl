@@ -20,3 +20,22 @@ The regression attaches a local droop control and uses DroopOPF's dispatch
 deviation objective. Generator costs and branch angle-difference constraints
 are not used by this adapter. These are modified problem formulations and
 their objective values must not be compared to PGLib economic OPF baselines.
+
+## S1 IEEE 118-bus source
+
+The v23.07 IEEE 118 file is preserved without transformations, including its
+original inline comments. Separate provenance is in
+[provenance118.json](v23.07/provenance118.json). Copyright (c) 1999 Richard D.
+Christie, University of Washington; CC BY 4.0, as retained in its header.
+Its S1 baseline has no added droops or adjustable-bank overlay and uses the
+project dispatch-deviation objective. Source angle bounds are audited after
+solving, although the adapter does not impose them as optimization constraints.
+
+
+## S1 IEEE 300-bus source
+
+The v23.07 IEEE 300 file is preserved without transformations, with separate
+[provenance300.json](v23.07/provenance300.json). Copyright (c) 1999 Richard D.
+Christie, University of Washington; CC BY 4.0. Both public control studies use
+separately recorded synthetic overlays, not inferred bank/tap specifications.
+Original aggregate shunts and generator capabilities remain unchanged.

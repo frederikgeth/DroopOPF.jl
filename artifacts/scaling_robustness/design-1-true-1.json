@@ -1,0 +1,109 @@
+{
+  "continuous_relaxation": true,
+  "droop_controls": [
+    {
+      "bounds": {
+        "deadband_high": null,
+        "deadband_low": null,
+        "slope": [
+          0.04,
+          0.1
+        ],
+        "v_ref": null
+      },
+      "control_id": 1,
+      "initial": null
+    },
+    {
+      "bounds": {
+        "deadband_high": null,
+        "deadband_low": null,
+        "slope": [
+          0.04,
+          0.1
+        ],
+        "v_ref": null
+      },
+      "control_id": 2,
+      "initial": null
+    }
+  ],
+  "droops": {
+    "1": {
+      "deadband_high": 0.010000000000000009,
+      "deadband_low": 0.010000000000000009,
+      "slope": 0.04000585574771631,
+      "v_ref": 1.0
+    },
+    "2": {
+      "deadband_high": 0.010000000000000009,
+      "deadband_low": 0.010000000000000009,
+      "slope": 0.040003737009014814,
+      "v_ref": 1.0
+    }
+  },
+  "kind": "DroopOPF.JointDesignResult",
+  "opf": {
+    "objective": 0.001518471189670979,
+    "primal_status": "FEASIBLE_POINT",
+    "smooth_epsilon": 1.0e-6,
+    "smooth_reactive_epsilon": null,
+    "smooth_reactive_relative_epsilon": 1.0e-6,
+    "state": {
+      "pg": [
+        0.3274398473872679,
+        0.3274400749414563
+      ],
+      "qg": [
+        0.07982111945686726,
+        0.07872001734203558
+      ],
+      "va": [
+        0.0,
+        -0.013385222072292037,
+        -0.03980394941780079
+      ],
+      "vm": [
+        0.9868066878093994,
+        0.9868509051288978,
+        0.9750689819713104
+      ]
+    },
+    "termination_status": "LOCALLY_SOLVED"
+  },
+  "schema_version": 1,
+  "shunt_controls": [
+    {
+      "bank_id": 201,
+      "initial": null,
+      "lower": null,
+      "nominal": null,
+      "upper": null
+    },
+    {
+      "bank_id": 202,
+      "initial": null,
+      "lower": null,
+      "nominal": null,
+      "upper": null
+    }
+  ],
+  "susceptances": {
+    "201": 4.1911799742019585e-9,
+    "202": -3.537354853351018e-9
+  },
+  "tap_controls": [
+    {
+      "branch_id": 11,
+      "initial": null,
+      "lower": 0.95,
+      "nominal": null,
+      "upper": 1.05
+    }
+  ],
+  "taps": {
+    "11": 1.0000950521394831,
+    "22": 1.0,
+    "33": 1.0
+  }
+}

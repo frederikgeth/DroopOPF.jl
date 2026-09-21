@@ -5,8 +5,11 @@ function _matpower_array(text::AbstractString, name::AbstractString)
     match_result === nothing &&
         throw(ArgumentError("MATPOWER case is missing mpc.$name"))
     rows = Vector{Vector{Float64}}()
-    for raw_row in split(match_result.captures[1], ';')
-        row = strip(split(raw_row, '%'; limit = 2)[1])
+    # Strip comments line by line before splitting records; a trailing comment
+    # after a semicolon must not swallow the next data row.
+    table_text = replace(match_result.captures[1], r"%[^\r\n]*" => "")
+    for raw_row in split(table_text, ';')
+        row = strip(raw_row)
         isempty(row) && continue
         tokens = filter(!isempty, split(row, r"[\s,]+"))
         values = try

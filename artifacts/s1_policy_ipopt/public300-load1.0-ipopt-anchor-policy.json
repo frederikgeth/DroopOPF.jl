@@ -1,0 +1,114 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.016745083,
+      "buses": 300,
+      "elapsed_seconds": 7.256159458,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.253427625,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 388,
+      "julia_allocated_bytes": 148456240,
+      "model": {
+        "constraints": 3324,
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 934
+      },
+      "name": "public300-load1.0-ipopt-anchor-attempt1",
+      "objective": 89.22604414212765,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 3.2218672174622043e-13,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.622944356682865e-08,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 0.0,
+        "generator_q_min_margin": 0.022080365492805676,
+        "power_balance_max": 3.115285807098189e-13,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 1.6229443788873255e-08,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 2.360334150353083e-13,
+        "voltage_min_margin": 4.29101199017623e-13
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1233420288,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 6.985983625,
+      "solver": "ipopt",
+      "solver_valid": true,
+      "status": "ALMOST_LOCALLY_SOLVED",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "97ac98ee52ee32f1316dbd982a16b65b50c4cd0f66175b5d005e8039c4fa730f",
+        "dual_reset": "none; solver default initialization",
+        "load_factor": 1.0,
+        "policy": "one-reset-v1",
+        "start": "anchor"
+      },
+      "valid": true,
+      "validate_seconds": 0.058911
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "buses": 300,
+  "elapsed_seconds": 7.379905416,
+  "events": [
+    "accept"
+  ],
+  "iterations": 388,
+  "name": "public300-load1.0-ipopt-anchor",
+  "selected": "public300-load1.0-ipopt-anchor-attempt1",
+  "solver": "ipopt",
+  "source_audit": {
+    "droop_regions": {
+      "deadband": 19,
+      "saturated": 3,
+      "sloping": 13
+    },
+    "source_angle_violation_degrees": 0.0
+  },
+  "tags": {
+    "load_factor": 1.0,
+    "start": "anchor"
+  },
+  "valid": true,
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  }
+}

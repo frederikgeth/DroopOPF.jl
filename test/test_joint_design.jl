@@ -48,6 +48,8 @@ end
     end
     bad=copy(r.taps);bad[22]=1.01
     @test !validate_joint_design(c,JointDesignResult(r.opf,bad,r.susceptances,r.droops,r.tap_controls,r.shunt_controls,r.droop_controls)).tap_policy_valid
+    tiny=copy(r.susceptances);tiny[201]=-1e-10
+    @test !validate_joint_design(c,JointDesignResult(r.opf,r.taps,tiny,r.droops,r.tap_controls,r.shunt_controls,r.droop_controls)).valid
     bads=copy(r.susceptances);bads[201]=.08
     @test !validate_joint_design(c,JointDesignResult(r.opf,r.taps,bads,r.droops,r.tap_controls,r.shunt_controls,r.droop_controls)).shunt_policy_valid
     badd=copy(r.droops);badd[2]=DroopSettings(.2,1.,.01,.01)

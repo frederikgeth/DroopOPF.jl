@@ -159,9 +159,22 @@ function _droop_parameter_bounds(bounds, reference, name; positive = false)
     return lower, upper
 end
 
-function _droop_design_variable(model, name, bounds, initial)
+# Equivalent affine coordinates for finite free controller intervals.
+function _normalized_control_variable(model, name, lower, upper, initial)
+    width=upper-lower
+    isfinite(width) && width>0 || throw(ArgumentError("normalization requires a finite positive interval"))
+    z=@variable(model,lower_bound=0.,upper_bound=1.,base_name=name*"_normalized")
+    set_start_value(z,(initial-lower)/width)
+    physical=lower+width*z
+    maps=get!(model.ext,:control_normalization_maps,Any[])
+    push!(maps,(name=name,coordinate=z,physical=physical,lower=lower,width=width))
+    physical
+end
+
+function _droop_design_variable(model, name, bounds, initial;normalize=false)
     lower, upper = bounds
     lower == upper && return lower
+    normalize && return _normalized_control_variable(model,name,lower,upper,Float64(initial))
     variable = @variable(model, base_name = name)
     set_lower_bound(variable, lower)
     set_upper_bound(variable, upper)
@@ -171,6 +184,7 @@ end
 
 _droop_design_value(value::Real) = Float64(value)
 _droop_design_value(value::VariableRef) = JuMP.value(value)
+_droop_design_value(value::AffExpr) = JuMP.value(value)
 
 """
     optimize_droop_parameters(study, control_id; slope_bounds, ...)

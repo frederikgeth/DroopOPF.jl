@@ -36,24 +36,44 @@ function _joint_droop_policy(case,c)
     (ranges=ranges,initial=initial)
 end
 
+"""Optimize joint base-case controls; `control_normalization=:bounds` optionally uses
+unit-interval affine coordinates for free settings. `droop_q_bounds=:implied`
+omits generator-Q bounds already implied in exact arithmetic by the smoothed
+droop saturation and nested control capability. `droop_q_formulation=:reduced`
+substitutes that response into balance and objective expressions, eliminating
+the controlled-generator Q variable and droop equality. These options preserve
+the physical equations, objective and returned settings; their defaults preserve
+the original formulation.
+"""
 function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_controls=ShuntControl[],
-    droop_controls=DroopControl[],initial_state=nothing,smooth_epsilon=1e-5,
-    optimizer_factory=Ipopt.Optimizer,silent=true,optimizer_attributes=Dict())
+    droop_controls=DroopControl[],initial_state=nothing,smooth_epsilon=1e-5,control_normalization=:none,
+    droop_q_bounds=:explicit,droop_q_formulation=:explicit,
+    optimizer_factory=Ipopt.Optimizer,silent=true,optimizer_attributes=Dict(),_measurement_hook=nothing)
+    control_normalization in (:none,:bounds) || throw(ArgumentError("control_normalization must be :none or :bounds"))
+    droop_q_bounds in (:explicit,:implied) || throw(ArgumentError("droop_q_bounds must be :explicit or :implied"))
+    droop_q_formulation in (:explicit,:reduced) || throw(ArgumentError("droop_q_formulation must be :explicit or :reduced"))
+    droop_q_formulation==:reduced && droop_q_bounds!=:explicit &&
+        throw(ArgumentError("reduced droop Q has no separate Q bound; use droop_q_bounds=:explicit"))
+    normalize_controls=control_normalization==:bounds
     validate_case(case);_check_tap_controls(case,tap_controls);_check_shunt_controls(case,shunt_controls)
     length(unique(c.control_id for c in droop_controls))==length(droop_controls) || throw(ArgumentError("duplicate droop controls"))
     isfinite(smooth_epsilon) && smooth_epsilon>0 || throw(ArgumentError("invalid smoothing"))
     model=Model(optimizer_factory);parameters=Dict{Int,NamedTuple}()
     for c in droop_controls
         p=_joint_droop_policy(case,c); names=keys(p.ranges)
-        parameters[c.control_id]=NamedTuple{names}(Tuple(_droop_design_variable(model,"design_$(c.control_id)_$k",getfield(p.ranges,k),getfield(p.initial,k)) for k in names))
+        parameters[c.control_id]=NamedTuple{names}(Tuple(_droop_design_variable(model,"design_$(c.control_id)_$k",getfield(p.ranges,k),getfield(p.initial,k);normalize=normalize_controls) for k in names))
     end
     _,v=_build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
         reactive_epsilon=nothing,silent,optimizer_factory,initial_state,shared_model=model,
-        tap_controls,shunt_controls,droop_parameter_variables=parameters)
+        tap_controls,shunt_controls,droop_parameter_variables=parameters,normalize_controls,
+        droop_q_bounds,droop_q_formulation)
     for (k,x) in optimizer_attributes
         set_optimizer_attribute(model,k,x)
     end
-    optimize!(model);present=has_values(model)
+    isnothing(_measurement_hook) || _measurement_hook(:built,model)
+    optimize!(model)
+    isnothing(_measurement_hook) || _measurement_hook(:solved,model)
+    present=has_values(model)
     state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
     opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),smooth_epsilon,smooth_epsilon,nothing)
     taps=present ? Dict(b.id=>Float64(haskey(v.taps,b.id) ? value(v.taps[b.id]) : b.tap_ratio) for b in case.network.branches) : Dict{Int,Float64}()
@@ -64,7 +84,9 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
             droops[id]=DroopSettings((_droop_design_value(getfield(p,k)) for k in keys(p))...)
         end
     end
-    JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls))
+    result=JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls))
+    isnothing(_measurement_hook) || _measurement_hook(:extracted,model)
+    result
 end
 optimize_joint_design(::Study;kwargs...)=throw(ArgumentError("joint equipment SCOPF belongs to M9; supply a base Case"))
 
@@ -94,7 +116,8 @@ function validate_joint_design(case::Case,result::JointDesignResult;setting_tole
     shunt=validate_shunt_design(case,ShuntOPFResult(empty_opf,result.susceptances,result.shunt_controls);setting_tolerance)
     policy=droop_policy && tap.policy_valid && shunt.policy_valid
     physical=nothing
-    if policy && !isnothing(result.opf.state)
+    reconstructable=all(isfinite(x) && x>0 for x in values(result.taps)) && all(isfinite(x) && x/only(_simple_bank(case,id).step_susceptances)>=0 for (id,x) in result.susceptances)
+    if policy && reconstructable && !isnothing(result.opf.state)
         physical=validate_equilibrium(with_joint_settings(case,result),result.opf;kwargs...)
     end
     solver=result.opf.termination_status in (:LOCALLY_SOLVED,:ALMOST_LOCALLY_SOLVED,:OPTIMAL)

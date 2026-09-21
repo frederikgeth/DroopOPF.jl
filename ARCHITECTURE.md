@@ -775,3 +775,118 @@ The research comparison uses all eight fixed/free combinations and matched
 conditional benefits. Retain every start, failure and parameter spread; differences
 in benefit with equipment freedom represent interactions, not additive isolated
 attribution. M7 is base-case only. `Study` inputs are explicitly rejected until M9.
+
+### Scaling-first scope revision (2026-09-20)
+
+Transformer AVR and its M9.3 staged-security comparisons are deferred alongside
+complex-bank optimization. The active controls remain fixed or OPF-optimized taps,
+single-step-type banks and existing droop curves. First measure joint base-case
+construction, solve, extraction and independent validation; then add M9.1 shared
+preventive and M9.2 bounded corrective equipment policies. Scaling remains an
+experimental gate, not an assumption established by the M7 three-bus studies.
+The joint solver exposes a private observational measurement hook; it does not
+alter equations, objectives, result semantics or solver options. Benchmark runners
+own synthetic fixtures, timing aggregation and failure retention. Public-case and
+contingency scaling are still required before selecting a new scaling algorithm.
+
+### S1 model-change and formulation-review contract
+
+S1 is the dedicated reliability/scaling milestone before equipment SCOPF. Begin
+with an explicit mathematical description of the implemented joint model and an
+equation-to-code/validator mapping. Keep data, problem configuration, formulation,
+solver execution and independent validation distinct in the diagnosis.
+
+User instruction: do not change equipment models without telling the user first.
+Before implementing a physical-model correction or change, explain the equation,
+assumption or capability change and its consequences. Do not silently alter the
+objective, add regularization, relax equipment limits or loosen physical validation.
+Numerical experiments must record their starts, solver settings, smoothing and
+any equivalent variable/objective scaling; interpret residuals in original units.
+The [formulation contract](docs/src/joint_formulation.md) documents the implemented
+model and does not authorize new physical models. AVR and complex-bank optimization remain deferred.
+
+### S1 derivative representation
+
+The existing smoothed design curve is now composed from scalar softplus
+operators and ordinary arithmetic. This preserves exact sparse Hessian support
+in the legacy JuMP nonlinear evaluator when droop parameters are free, including
+the shared M3 builder. The former five-argument registered function disabled
+Hessian availability and caused Ipopt to use limited-memory approximation.
+This is an equivalent numerical representation: no control law, physical limit,
+objective or smoothing width changes. Independent exact-curve replay remains
+separate. Diagnostics and benchmark reporting stay in examples, using the private
+observational hook; they add no domain-model dependencies.
+
+
+### S1 experiment ownership and public-network gate
+
+Experiment runners own deterministic control subsets, starting states/designs,
+solver options, continuation and synthetic public-case overlays. The core physics
+is unchanged. Each attempt retains its start, policy, source study, native residual
+convention and independent validation. MadNLP and Ipopt residuals are labelled
+separately. Process high-water memory is not attributed to individual cases;
+pilot timing is not a performance guarantee.
+
+Smoothing calibration is an example-level policy, not a new default. A uniform
+curve-error bound uses the minimum allowed slope and Q scale; reducing the error
+can increase numerical stiffness. Public cases expose weak local design
+sensitivities and solver/start variation. Equivalent scaling and primal/dual
+restart support are next; penalties or equipment changes require separate review.
+
+
+S1 numerical probes and failure localization remain in examples: `s1_scaling_probe.jl` varies solver scaling only; `s1_failure_details.jl` produces physical-unit equipment locations without changing the core validation report schema or acceptance decisions. `s1_audit_retained.jl` checks category agreement against the independent validator on historical evidence. Explicit variable normalization and primal/dual restart state are still pending architectural work.
+
+
+S1 restart experiments keep numerical seeds separate from physical designs. `examples/s1_warm_start.jl` captures finite primal values and JuMP/MOI constraint/bound multipliers. It checks a model-layout signature, explicit formulation context and array dimensions before applying any values. These seeds are same-formulation Ipopt experiments, not portable solutions across changing equipment, smoothing, topology, periods or contingencies. Builder start records explicitly identify persisted seeds that override them. The optional example-runner hook owns numerical initialization; independent validation retains sole authority for physical acceptance. No core model/API or physical equation changes are introduced.
+
+
+The experimental `examples/s1_restart_policy.jl` runner owns bounded recovery, outside the physical builders. It accepts the first independently validated result; otherwise a finite compatible seed after selected numerical failures can receive one multiplier-reset attempt. Converged-but-invalid results stop for diagnosis. There is no automatic solver switch, smoothing change, constraint relaxation or objective polishing. Context hashes cover physical case data, declared controls, smoothing, solver identity/version, and are combined with layout and finite-value guards.
+
+The runner shares iteration and cooperative wall-time budgets across attempts. Callbacks can stop iterations at deadlines, but construction, validation and an in-progress solver step are not forcibly preempted; overruns are reported. Ipopt resets constraint/bound dual starts through its warm initializer. MadNLP resets constraint multipliers with `dual_initialized=true` and rebuilds bound multipliers using its native initialization. Full saved-bound-dual restoration in MadNLP, cross-model transfer and a public core API remain outside this increment. Attempt records preserve both solver termination and independent physical/policy validation.
+
+
+S1 now offers opt-in controller coordinates through `optimize_joint_design(...; control_normalization=:bounds)`. A shared affine helper maps free droop parameters, tap ratios and bank susceptances from unit intervals into the existing physical expressions. Fixed settings bypass the transformation. Returned designs, independent validators and serialized physical result schemas are unchanged. The default remains `:none`. Experiment metadata records coordinate maps; restart context hashes include the coordinate mode, preventing mismatched seed reuse. Solver-bound pushes and raw stationarity norms are coordinate-dependent and must be interpreted accordingly. No equipment law or objective changes accompany this option.
+
+
+### S1 staged initialization boundary
+
+`examples/s1_staged_initialization.jl` composes existing joint-design solves in two independent experimental workflows: fixed controls → free equipment → free joint design, or nominal → intermediate → target demand. Temporary preparation policies restrict the original design domain; they do not change equipment equations. Load continuation changes only demand, preserving dispatch and droop references. All stages share a cooperative wall deadline and iteration budget, including the final bounded restart policy.
+
+Only independently validated stages with settings inside the strict initialization domain supply physical primal seeds. Changed formulations receive no transferred duals. Unsuccessful stages preserve the last accepted seed. Restricted-stage feasible points are recorded separately; final acceptance still requires a solve of the full target problem. The default optimizer API and restart policy are unchanged. Stage diagnostics retain actual free-controller counts, seed lineage, failure details and budget charges. The [staged evidence](docs/src/s1_staged.md) compares each workflow with its frozen direct-solve baseline.
+
+
+### S1 solution-quality diagnostics
+
+`examples/s1_kkt.jl` reads the solved JuMP model to reconstruct physical-coordinate Lagrangian-gradient terms, complementarity and inequality-dual signs. The original native-plus-physical acceptance rule remains authoritative; diagnostic quality is a separate report. `s1_kkt_geometry.jl` rebuilds the same formulation and evaluates retained final-point Jacobians without solving, checking variable and regular-constraint layouts before reading saved multipliers. It reports near-parallel saturated-droop/active-Q-bound rows and cancellation-sensitive multiplier contributions without claiming exact rank deficiency.
+
+Hypothetical positive row scaling is analyzed through the corresponding inverse multiplier transformation; it is not applied to a solver. Any future numerical treatment must retain physical validation and account for transformed tolerances. Local numerical dependence must be investigated before adopting blanket row equilibration. No equipment constraints are removed or changed by this diagnostic layer. See the [stationarity evidence](docs/src/s1_kkt.md).
+
+### Experimental implied droop-Q bounds
+
+`optimize_joint_design(...; droop_q_bounds=:implied)` provides an opt-in numerical formulation for S1 experiments. For available generators with an attached volt-var controller, it omits the generator-Q variable bounds already implied in exact arithmetic by the smoothed saturation and the validated nesting of controller capability inside generator limits. Unattached and unavailable generators retain their ordinary bounds. The `qg` variable, droop equality, power balance, objective, smoothing and result schema remain unchanged.
+
+The default is `:explicit`. Model metadata records the selected mode and generator IDs whose bounds were omitted. Restart-context hashes include the mode so a seed cannot cross formulations silently. Independent physical validation remains mandatory and catches generator/control-limit excursions, including floating-point endpoint effects. The [S1 comparison](docs/src/s1_implied_q.md) shows mixed reliability, so this option is not promoted into normal execution or M9.
+
+### Experimental reduced droop-Q formulation
+
+`optimize_joint_design(...; droop_q_formulation=:reduced)` is a second opt-in
+S1 formulation. For each available generator with an attached volt-var
+controller, it eliminates the generator-Q variable and droop equality and
+substitutes the same smoothed response into reactive-power balance and the
+reactive objective term. Unattached and unavailable generator-Q variables remain
+explicit. Extracted results reconstruct the eliminated Q values, so result and
+validator interfaces stay unchanged.
+
+This substitution is valid only after the existing case checks establish that
+controller capability is nested inside generator capability. The reduced model
+therefore has no separate controlled-generator Q bound; it cannot be combined
+with `droop_q_bounds=:implied`. The formulation changes numerical initialization,
+objective representation and derivative sparsity even though it preserves the
+physical feasible set and objective on the declared domain. Model metadata and
+restart-context hashes record the mode.
+
+The explicit formulation remains the default. Independent validation still
+checks reconstructed Q, AC balance, equipment limits and the exact droop curve.
+The [paired S1 evidence](docs/src/s1_reduced_q.md) improves MadNLP but regresses
+Ipopt and loses one prior MadNLP success, so reduced space remains experimental
+and is not used by M9.

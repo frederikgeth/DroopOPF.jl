@@ -47,14 +47,19 @@ function with_tap_settings(case::Case,taps::AbstractDict)
 end
 
 # Terminal powers depend on tau inside the NLP; phase shift stays fixed.
-function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,controls,shunt_controls=nothing)
+function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,controls,shunt_controls=nothing;normalize_controls=false)
     net=case.network; indices=_bus_indices(net); n=length(net.buses)
-    taps=Dict{Int,VariableRef}()
+    taps=Dict{Int,Union{VariableRef,AffExpr}}()
     for c in controls
         b=only(filter(b->b.id==c.branch_id,net.branches))
-        x=@variable(model,base_name="tap_$(c.branch_id)")
-        c.lower==c.upper ? fix(x,c.lower;force=true) : _set_bound!(x,c.lower,c.upper)
-        set_start_value(x,isnothing(c.initial) ? b.tap_ratio : c.initial)
+        initial=isnothing(c.initial) ? b.tap_ratio : c.initial
+        if normalize_controls && c.lower<c.upper
+            x=_normalized_control_variable(model,"tap_$(c.branch_id)",c.lower,c.upper,initial)
+        else
+            x=@variable(model,base_name="tap_$(c.branch_id)")
+            c.lower==c.upper ? fix(x,c.lower;force=true) : _set_bound!(x,c.lower,c.upper)
+            set_start_value(x,initial)
+        end
         taps[c.branch_id]=x
     end
     ps=[Any[] for _ in 1:n]; qs=[Any[] for _ in 1:n]
@@ -73,7 +78,7 @@ function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_
             @NLconstraint(model,p^2+q^2 <= b.thermal_limit^2)
         end
     end
-    shunt_vars=isnothing(shunt_controls) ? Dict{Int,VariableRef}() : _shunt_variables!(model,case,shunt_controls,nothing)
+    shunt_vars=isnothing(shunt_controls) ? Dict{Int,VariableRef}() : _shunt_variables!(model,case,shunt_controls,nothing;normalize_controls)
     shunt=zeros(ComplexF64,n)
     for s in net.shunts
         s.available && (shunt[indices[s.bus_id]]+=complex(s.conductance,s.susceptance))

@@ -48,3 +48,25 @@
     @test report.power_balance_max < 1.0e-6
     @test report.smooth_exact_droop_gap <= 5.0e-3
 end
+
+@testset "MATPOWER comments and public-case import" begin
+    text = """
+    mpc.gen = [
+    % generator header
+    1, 2, 3; % trailing comment must not hide the next record
+    4 5 6; % another inline comment
+    % standalone comment with a semicolon ; and numbers 99 99
+    7 8 9; % last record
+    ];
+    """
+    @test DroopOPF._matpower_array(text, "gen") == [1. 2. 3.; 4. 5. 6.; 7. 8. 9.]
+    @test_throws ArgumentError DroopOPF._matpower_array("mpc.gen = [1 2; 3;];", "gen")
+    source = joinpath(@__DIR__, "data", "pglib", "v23.07", "pglib_opf_case118_ieee.m")
+    case = load_matpower_case(source; base_frequency=60.)
+    @test length(case.network.buses) == 118
+    @test length(case.generators) == 54
+    @test length(case.network.branches) == 186
+    @test count(b->b.reference, case.network.buses) == 1
+    @test case.generators[end].bus_id == 116
+    @test length(case.network.shunts) == 14
+end

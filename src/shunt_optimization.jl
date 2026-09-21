@@ -68,13 +68,18 @@ function with_shunt_settings(case::Case,susceptances::AbstractDict)
 end
 
 # Remove selected supplied admittances before inserting variable G(B), B.
-function _shunt_variables!(model,case,controls,Y)
-    vars=Dict{Int,VariableRef}(); indices=_bus_indices(case.network)
+function _shunt_variables!(model,case,controls,Y;normalize_controls=false)
+    vars=Dict{Int,Union{VariableRef,AffExpr}}(); indices=_bus_indices(case.network)
     for c in controls
         p=_shunt_policy(case,c); bank=p.bank; i=indices[bank.bus_id]
-        x=@variable(model,base_name="shunt_B_$(c.bank_id)")
-        p.lower==p.upper ? fix(x,p.lower;force=true) : _set_bound!(x,p.lower,p.upper)
-        set_start_value(x,p.initial); vars[c.bank_id]=x
+        if normalize_controls && p.lower<p.upper
+            x=_normalized_control_variable(model,"shunt_B_$(c.bank_id)",p.lower,p.upper,p.initial)
+        else
+            x=@variable(model,base_name="shunt_B_$(c.bank_id)")
+            p.lower==p.upper ? fix(x,p.lower;force=true) : _set_bound!(x,p.lower,p.upper)
+            set_start_value(x,p.initial)
+        end
+        vars[c.bank_id]=x
         isnothing(Y) || (Y[i,i]-=bank_admittance(bank))
     end
     vars

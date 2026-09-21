@@ -1,0 +1,142 @@
+[
+  {
+    "build_seconds": 3.0069215,
+    "buses": 300,
+    "elapsed_seconds": 36.674088875,
+    "epsilon": 1.0e-6,
+    "extract_seconds": 0.374081709,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 2000,
+    "julia_allocated_bytes": 1134068080,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.05-uninterrupted",
+    "objective": 141.0438487899309,
+    "options": {
+      "bound_frac": 1.0e-8,
+      "bound_push": 1.0e-8,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 120.0,
+      "max_iter": 2000,
+      "mu_strategy": "adaptive",
+      "tol": 1.0e-8
+    },
+    "physical": {
+      "branch_thermal_min_margin": 1.215582532054782e-5,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.07857913461038107,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 3.6210219950677525e-5,
+      "generator_q_min_margin": 0.03072935502352593,
+      "power_balance_max": 0.0013086168791775488,
+      "smooth_epsilon": 1.0e-6,
+      "smooth_exact_droop_gap": 6.151633676232393e-6,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1.0e-6,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 1.833511800186649e-5,
+      "voltage_min_margin": 1.429795709284587e-5
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 23, regulated bus 230",
+        "equipment": "generator",
+        "exceedance_pu": 0.07856913461038108,
+        "id": 38,
+        "tolerance_pu": 1.0e-5,
+        "violation_pu": 0.07857913461038107
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0013076168791775488,
+        "id": 230,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 0.0013086168791775488
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0012711006208649689,
+        "id": 229,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 0.0012721006208649688
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.0002974063915558721,
+        "id": 230,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 0.0002984063915558721
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.00029593014253506786,
+        "id": 229,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 0.0002969301425350679
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 5.0809885120693965e-6,
+        "id": 190,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 6.080988512069396e-6
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.595228605112198e-7,
+        "id": 234,
+        "tolerance_pu": 1.0e-6,
+        "violation_pu": 1.3595228605112197e-6
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1505542144,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 33.293076541,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "comparison": "1000+1000 iterations and 60+60 CPU seconds for source plus one restart",
+      "load_factor": 1.05,
+      "study": "equal_total_budget"
+    },
+    "valid": false,
+    "validate_seconds": 0.309821791
+  }
+]

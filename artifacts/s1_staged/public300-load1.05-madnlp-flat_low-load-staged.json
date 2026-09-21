@@ -1,0 +1,518 @@
+{
+  "budget": {
+    "clock": "shared cooperative wall deadline; preparation and final attempts included",
+    "iterations": 2000,
+    "preparation_cap": 500,
+    "seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "elapsed_seconds": 52.70017275,
+  "final": {
+    "attempts": [
+      {
+        "build_seconds": 0.035407792,
+        "buses": 300,
+        "control_normalization": "none",
+        "elapsed_seconds": 4.278849667,
+        "epsilon": 1e-06,
+        "extract_seconds": 0.232327708,
+        "free_counts": {
+          "droop": 35,
+          "shunt": 32,
+          "tap": 129
+        },
+        "iterations": 165,
+        "julia_allocated_bytes": 167603216,
+        "model": {
+          "constraints": 3324,
+          "control_coordinate_maps": [],
+          "final_native": {
+            "complementarity": 2.3620854001107136e-10,
+            "dual": 8.363254593429686e-14,
+            "iterations": 165,
+            "primal": 1.8189894035458565e-12
+          },
+          "nonlinear_derivative_features": [
+            "Grad",
+            "Jac",
+            "JacVec",
+            "Hess",
+            "HessVec",
+            "ExprGraph"
+          ],
+          "variables": 934
+        },
+        "name": "public300-load1.05-madnlp-flat_low-load-joint-attempt1",
+        "objective": 148.8555569947227,
+        "options": {
+          "bound_frac": 1e-08,
+          "bound_push": 1e-08,
+          "bound_relax_factor": 0.0,
+          "max_iter": 1000,
+          "max_wall_time": 60.0,
+          "tol": 1e-08
+        },
+        "physical": {
+          "branch_thermal_min_margin": 0.0019712057771292812,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 1.9984014443252818e-14,
+          "generator_p_max_margin": 0.0,
+          "generator_p_min_margin": 0.0,
+          "generator_q_max_margin": 0.0,
+          "generator_q_min_margin": 0.024644488261859734,
+          "power_balance_max": 8.387734951043058e-13,
+          "smooth_epsilon": 1e-06,
+          "smooth_exact_droop_gap": 7.993605777301127e-15,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 1e-06,
+          "unavailable_generator_max": 0.0,
+          "valid": true,
+          "violations": [],
+          "voltage_max_margin": 0.0018238027210220054,
+          "voltage_min_margin": 0.0016749368230876138
+        },
+        "physical_check_status": "evaluated",
+        "physical_failures": [],
+        "physical_valid": true,
+        "policy_valid": true,
+        "process_lifetime_peak_rss_bytes": 1696776192,
+        "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+        "solve_seconds": 4.01109725,
+        "solver": "madnlp",
+        "solver_valid": true,
+        "status": "LOCALLY_SOLVED",
+        "tags": {
+          "attempt": 1,
+          "builder_start_overridden": false,
+          "context": "9a04c90d9e05b0556e44a2f9d617f82eae38961f5e33593716bfa6acd150c99d",
+          "dual_reset": "none; solver default initialization",
+          "load_factor": 1.05,
+          "policy": "one-reset-v1",
+          "seed_source": "declared_initialization",
+          "start": "supplied",
+          "strategy": "load",
+          "study": "staged_final"
+        },
+        "valid": true,
+        "validate_seconds": 0.082375334
+      }
+    ],
+    "budget": {
+      "attempt_iterations": 1000,
+      "attempt_seconds": 60.0,
+      "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+      "total_iterations": 1000,
+      "total_seconds": 71.878218248
+    },
+    "budget_exceeded": {
+      "iterations": false,
+      "wall": false
+    },
+    "buses": 300,
+    "control_normalization": "none",
+    "elapsed_seconds": 4.450473083,
+    "events": [
+      "accept"
+    ],
+    "iterations": 165,
+    "name": "public300-load1.05-madnlp-flat_low-load-joint",
+    "selected": "public300-load1.05-madnlp-flat_low-load-joint-attempt1",
+    "solver": "madnlp",
+    "tags": {
+      "load_factor": 1.05,
+      "seed_source": "declared_initialization",
+      "strategy": "load",
+      "study": "staged_final"
+    },
+    "valid": true
+  },
+  "iterations": 1165,
+  "load_factor": 1.05,
+  "name": "public300-load1.05-madnlp-flat_low-load",
+  "preparations": [
+    {
+      "build_seconds": 0.025507166,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 22.028701208,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.006441208,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 500,
+      "julia_allocated_bytes": 289488960,
+      "model": {
+        "constraints": 3324,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 8.829998320149709e-11,
+          "dual": 171278.22482862475,
+          "iterations": 500,
+          "primal": 5.995331093799905e-06
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 934
+      },
+      "name": "public300-load1.05-madnlp-flat_low-load-prep1",
+      "objective": 96.35844078442337,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.003235361803865411,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.493396113439905e-06,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 2.220446049250313e-16,
+        "generator_q_min_margin": 0.02387800343308841,
+        "power_balance_max": 2.4967458257529884e-06,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 7.105427357601002e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance"
+        ],
+        "voltage_max_margin": 0.0038256048320566283,
+        "voltage_min_margin": 0.0030610242980836366
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.4967458257529885e-06,
+          "id": 139,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 2.4967458257529884e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.0475458023527793e-06,
+          "id": 182,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 2.0475458023527793e-06
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1696776192,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "solve_seconds": 21.996682834,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "ITERATION_LIMIT",
+      "tags": {
+        "load_factor": 1.0,
+        "seed_source": "declared_initialization",
+        "stage": 1,
+        "strategy": "load",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.119970334
+    },
+    {
+      "build_seconds": 0.042845291,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 25.598172625,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.006866583,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 500,
+      "julia_allocated_bytes": 292638400,
+      "model": {
+        "constraints": 3324,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 2.6050558248050426e-11,
+          "dual": 151067.81164760672,
+          "iterations": 500,
+          "primal": 3.1242229930228405e-05
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 934
+      },
+      "name": "public300-load1.05-madnlp-flat_low-load-prep2",
+      "objective": 122.08657074262221,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.003319120596528613,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.027957314078288e-05,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 2.220446049250313e-16,
+        "generator_q_min_margin": 0.024051383735444458,
+        "power_balance_max": 6.985043929742807e-06,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 7.105427357601002e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance",
+          "droop"
+        ],
+        "voltage_max_margin": 0.006128998812504616,
+        "voltage_min_margin": 0.0025594738486544033
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 18, regulated bus 190",
+          "equipment": "generator",
+          "exceedance_pu": 1.027957314078288e-05,
+          "id": 30,
+          "tolerance_pu": 1e-05,
+          "violation_pu": 2.027957314078288e-05
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.985043929742807e-06,
+          "id": 126,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 6.985043929742807e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.414515236390472e-06,
+          "id": 12,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 5.414515236390471e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.153400226913906e-06,
+          "id": 127,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 4.153400226913906e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.952316599442618e-06,
+          "id": 10,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 3.952316599442618e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.516805611836205e-06,
+          "id": 232,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 3.5168056118362045e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.2345230543674433e-06,
+          "id": 7024,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 2.2345230543674433e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 9.702585498659886e-07,
+          "id": 231,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.9702585498659886e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.282590970557621e-07,
+          "id": 151,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.728259097055762e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.251743659712048e-07,
+          "id": 237,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.6251743659712048e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.035522578788318e-07,
+          "id": 21,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.4035522578788318e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.845470753226508e-07,
+          "id": 219,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.3845470753226508e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.5586960267320973e-07,
+          "id": 160,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.2558696026732097e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.537370694953865e-07,
+          "id": 24,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.2537370694953864e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.2991893608249687e-07,
+          "id": 217,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.1299189360824968e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.268560961022335e-08,
+          "id": 124,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.0826856096102233e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.886722129826642e-08,
+          "id": 20,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.0488672212982664e-06
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.8628110170246143e-09,
+          "id": 7130,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.0028628110170246e-06
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1696776192,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "solve_seconds": 25.548440209,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "ITERATION_LIMIT",
+      "tags": {
+        "load_factor": 1.025,
+        "seed_source": "declared_initialization",
+        "stage": 2,
+        "strategy": "load",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.105538583
+    }
+  ],
+  "restricted_feasible_fallbacks": [],
+  "solver": "madnlp",
+  "source_audit": {
+    "droop_regions": {
+      "deadband": 2,
+      "saturated": 7,
+      "sloping": 26
+    },
+    "source_angle_violation_degrees": 0.0
+  },
+  "strategy": "load",
+  "tags": {
+    "start": "flat_low"
+  },
+  "valid": true
+}

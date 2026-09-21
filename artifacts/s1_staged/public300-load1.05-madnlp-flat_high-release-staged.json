@@ -1,0 +1,718 @@
+{
+  "budget": {
+    "clock": "shared cooperative wall deadline; preparation and final attempts included",
+    "iterations": 2000,
+    "preparation_cap": 500,
+    "seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "elapsed_seconds": 33.051754459,
+  "final": {
+    "attempts": [
+      {
+        "build_seconds": 0.021362,
+        "buses": 300,
+        "control_normalization": "none",
+        "elapsed_seconds": 7.793933666,
+        "epsilon": 1e-06,
+        "extract_seconds": 0.230320167,
+        "free_counts": {
+          "droop": 35,
+          "shunt": 32,
+          "tap": 129
+        },
+        "iterations": 298,
+        "julia_allocated_bytes": 214700320,
+        "model": {
+          "constraints": 3324,
+          "control_coordinate_maps": [],
+          "final_native": {
+            "complementarity": 9781.059349294075,
+            "dual": 12.661139564955622,
+            "iterations": 298,
+            "primal": 1.9895196601282805e-11
+          },
+          "nonlinear_derivative_features": [
+            "Grad",
+            "Jac",
+            "JacVec",
+            "Hess",
+            "HessVec",
+            "ExprGraph"
+          ],
+          "variables": 934
+        },
+        "name": "public300-load1.05-madnlp-flat_high-release-joint-attempt1",
+        "objective": 148.89041854349566,
+        "options": {
+          "bound_frac": 1e-08,
+          "bound_push": 1e-08,
+          "bound_relax_factor": 0.0,
+          "max_iter": 1000,
+          "max_wall_time": 60.0,
+          "tol": 1e-08
+        },
+        "physical": {
+          "branch_thermal_min_margin": 0.0019709582030289496,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 1.0826894936144527e-12,
+          "generator_p_max_margin": 0.0,
+          "generator_p_min_margin": 0.0,
+          "generator_q_max_margin": 1.1102230246251565e-16,
+          "generator_q_min_margin": 0.02465717275714142,
+          "power_balance_max": 3.2606306543669916e-11,
+          "smooth_epsilon": 1e-06,
+          "smooth_exact_droop_gap": 7.993605777301127e-15,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 1e-06,
+          "unavailable_generator_max": 0.0,
+          "valid": true,
+          "violations": [],
+          "voltage_max_margin": 0.0018237898781365836,
+          "voltage_min_margin": 0.0016778820670866335
+        },
+        "physical_check_status": "evaluated",
+        "physical_failures": [],
+        "physical_valid": true,
+        "policy_valid": true,
+        "process_lifetime_peak_rss_bytes": 1576796160,
+        "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+        "solve_seconds": 7.542232083,
+        "solver": "madnlp",
+        "solver_valid": false,
+        "status": "SLOW_PROGRESS",
+        "tags": {
+          "attempt": 1,
+          "builder_start_overridden": false,
+          "context": "05dbbd3f019c9b9e48d2f1dbe9c5d394c802c031fc8d48978d36f21ab19faed5",
+          "dual_reset": "none; solver default initialization",
+          "load_factor": 1.05,
+          "policy": "one-reset-v1",
+          "seed_source": "declared_initialization",
+          "start": "supplied",
+          "strategy": "release",
+          "study": "staged_final"
+        },
+        "valid": false,
+        "validate_seconds": 0.431903791
+      },
+      {
+        "build_seconds": 0.034149791,
+        "buses": 300,
+        "control_normalization": "none",
+        "elapsed_seconds": 9.774212167,
+        "epsilon": 1e-06,
+        "extract_seconds": 0.23942825,
+        "free_counts": {
+          "droop": 35,
+          "shunt": 32,
+          "tap": 129
+        },
+        "iterations": 197,
+        "julia_allocated_bytes": 198110352,
+        "model": {
+          "constraints": 3324,
+          "control_coordinate_maps": [],
+          "final_native": {
+            "complementarity": 6748.590340438091,
+            "dual": 12.493652811359883,
+            "iterations": 197,
+            "primal": 2.2737367544323206e-13
+          },
+          "nonlinear_derivative_features": [
+            "Grad",
+            "Jac",
+            "JacVec",
+            "Hess",
+            "HessVec",
+            "ExprGraph"
+          ],
+          "variables": 934
+        },
+        "name": "public300-load1.05-madnlp-flat_high-release-joint-attempt2",
+        "objective": 143.20735639938437,
+        "options": {
+          "bound_frac": 1e-08,
+          "bound_push": 1e-08,
+          "bound_relax_factor": 0.0,
+          "dual_initialized": true,
+          "max_iter": 1000,
+          "max_wall_time": 60.0,
+          "tol": 1e-08
+        },
+        "physical": {
+          "branch_thermal_min_margin": 0.00043274026146056244,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 1.0622004840810106e-05,
+          "generator_p_max_margin": 0.0,
+          "generator_p_min_margin": 0.0,
+          "generator_q_max_margin": 0.0,
+          "generator_q_min_margin": 0.026860703187640278,
+          "power_balance_max": 9.14823772291129e-13,
+          "smooth_epsilon": 1e-06,
+          "smooth_exact_droop_gap": 1.0622004841698285e-05,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 1e-06,
+          "unavailable_generator_max": 0.0,
+          "valid": false,
+          "violations": [
+            "droop"
+          ],
+          "voltage_max_margin": 0.0005709396790398724,
+          "voltage_min_margin": 0.0004777914974893882
+        },
+        "physical_check_status": "evaluated",
+        "physical_failures": [
+          {
+            "category": "droop",
+            "component": "control 4, regulated bus 108",
+            "equipment": "generator",
+            "exceedance_pu": 6.220048408101056e-07,
+            "id": 10,
+            "tolerance_pu": 1e-05,
+            "violation_pu": 1.0622004840810106e-05
+          }
+        ],
+        "physical_valid": false,
+        "policy_valid": true,
+        "process_lifetime_peak_rss_bytes": 1576796160,
+        "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+        "solve_seconds": 9.500613,
+        "solver": "madnlp",
+        "solver_valid": false,
+        "status": "SLOW_PROGRESS",
+        "tags": {
+          "attempt": 2,
+          "builder_start_overridden": true,
+          "context": "05dbbd3f019c9b9e48d2f1dbe9c5d394c802c031fc8d48978d36f21ab19faed5",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "load_factor": 1.05,
+          "policy": "one-reset-v1",
+          "seed_file": "public300-load1.05-madnlp-flat_high-release-joint-recovery-seed.json",
+          "seed_source": "declared_initialization",
+          "start": "supplied",
+          "strategy": "release",
+          "study": "staged_final"
+        },
+        "valid": false,
+        "validate_seconds": 0.113708625
+      }
+    ],
+    "budget": {
+      "attempt_iterations": 1000,
+      "attempt_seconds": 60.0,
+      "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+      "total_iterations": 1575,
+      "total_seconds": 105.41779596
+    },
+    "budget_exceeded": {
+      "iterations": false,
+      "wall": false
+    },
+    "buses": 300,
+    "control_normalization": "none",
+    "elapsed_seconds": 18.351936125,
+    "events": [
+      "reset_multipliers",
+      "reset_multipliers",
+      "retry_limit_reached"
+    ],
+    "iterations": 495,
+    "name": "public300-load1.05-madnlp-flat_high-release-joint",
+    "selected": null,
+    "solver": "madnlp",
+    "tags": {
+      "load_factor": 1.05,
+      "seed_source": "declared_initialization",
+      "strategy": "release",
+      "study": "staged_final"
+    },
+    "valid": false
+  },
+  "iterations": 920,
+  "load_factor": 1.05,
+  "name": "public300-load1.05-madnlp-flat_high-release",
+  "preparations": [
+    {
+      "build_seconds": 0.024302375,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 12.431375584,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.005431417,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 0,
+        "tap": 0
+      },
+      "iterations": 350,
+      "julia_allocated_bytes": 200454528,
+      "model": {
+        "constraints": 3093,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 6.464862700836111e-10,
+          "dual": 22.091057423724177,
+          "iterations": 350,
+          "primal": 1.151111296205465
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 899
+      },
+      "name": "public300-load1.05-madnlp-flat_high-release-prep1",
+      "objective": 530.9492282058059,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 1.5232259897857148e-12,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.03583870019064439,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 7.127631818093505e-13,
+        "generator_q_min_margin": 1.7785549656721064e-11,
+        "power_balance_max": 1.7208804816627667,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 2.6645352591003757e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance",
+          "droop"
+        ],
+        "voltage_max_margin": 2.2648549702353193e-14,
+        "voltage_min_margin": 2.853273173286652e-14
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.7208794816627668,
+          "id": 9001,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.7208804816627667
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.3807106177023702,
+          "id": 133,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.3807116177023702
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.3594075597931388,
+          "id": 231,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.3594085597931387
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.3564326832358353,
+          "id": 166,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.3564336832358352
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1511102962054716,
+          "id": 170,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.1511112962054715
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1005543400906668,
+          "id": 117,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 1.1005553400906667
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.7950928706028236,
+          "id": 178,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.7950938706028237
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.3832998611523412,
+          "id": 163,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.3833008611523412
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.1370257983485395,
+          "id": 156,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.1370267983485395
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.11413691043453437,
+          "id": 154,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.11413791043453438
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.039367660344556604,
+          "id": 27,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.039368660344556605
+        },
+        {
+          "category": "droop",
+          "component": "control 15, regulated bus 185",
+          "equipment": "generator",
+          "exceedance_pu": 0.03582870019064439,
+          "id": 27,
+          "tolerance_pu": 1e-05,
+          "violation_pu": 0.03583870019064439
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.03311414196618137,
+          "id": 149,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.03311514196618137
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.03183915910554938,
+          "id": 185,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.03184015910554938
+        },
+        {
+          "category": "droop",
+          "component": "control 10, regulated bus 149",
+          "equipment": "generator",
+          "exceedance_pu": 0.03165132373450099,
+          "id": 19,
+          "tolerance_pu": 1e-05,
+          "violation_pu": 0.03166132373450099
+        },
+        {
+          "category": "droop",
+          "component": "control 13, regulated bus 170",
+          "equipment": "generator",
+          "exceedance_pu": 0.024088273545591243,
+          "id": 23,
+          "tolerance_pu": 1e-05,
+          "violation_pu": 0.024098273545591242
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.013264285717666352,
+          "id": 183,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.013265285717666352
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.010236055319148634,
+          "id": 9038,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.010237055319148633
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00839409353062669,
+          "id": 9033,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.00839509353062669
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.008030034457114586,
+          "id": 9031,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.008031034457114585
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.007087979821736834,
+          "id": 9022,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.007088979821736834
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.006488946735354635,
+          "id": 173,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.006489946735354635
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.006084555684488233,
+          "id": 9036,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.006085555684488233
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0055953750962809265,
+          "id": 9035,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.005596375096280927
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0052383383201422195,
+          "id": 9032,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.00523933832014222
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0049774987514731184,
+          "id": 9037,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.004978498751473119
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.004816059048474495,
+          "id": 9024,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.0048170590484744955
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0034157860492067212,
+          "id": 9026,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.0034167860492067214
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0033856264957222316,
+          "id": 9042,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.0033866264957222317
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.003349472311111856,
+          "id": 9025,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.003350472311111856
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0023939150347066828,
+          "id": 9043,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.002394915034706683
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.002109258877548177,
+          "id": 9041,
+          "tolerance_pu": 1e-06,
+          "violation_pu": 0.002110258877548177
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1576796160,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "solve_seconds": 12.401619583,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "LOCALLY_INFEASIBLE",
+      "tags": {
+        "load_factor": 1.05,
+        "seed_source": "declared_initialization",
+        "stage": 1,
+        "strategy": "release",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.108420042
+    },
+    {
+      "build_seconds": 0.034768541,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 1.749898333,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.003219584,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 75,
+      "julia_allocated_bytes": 120175328,
+      "model": {
+        "constraints": 3254,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 9.462596482693195e-11,
+          "dual": 29134.242134767308,
+          "iterations": 75,
+          "primal": 9.208633855450898e-12
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 899
+      },
+      "name": "public300-load1.05-madnlp-flat_high-release-prep2",
+      "objective": 149.43035299475278,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.001827252103366206,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 3.019806626980426e-14,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 2.220446049250313e-16,
+        "generator_q_min_margin": 0.02481674256404996,
+        "power_balance_max": 6.5574212726460246e-12,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 7.105427357601002e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.006879030682364284,
+        "voltage_min_margin": 0.001657679125998679
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1576796160,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "solve_seconds": 1.7119085,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "SLOW_PROGRESS",
+      "tags": {
+        "load_factor": 1.05,
+        "seed_source": "declared_initialization",
+        "stage": 2,
+        "strategy": "release",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.081454458
+    }
+  ],
+  "restricted_feasible_fallbacks": [],
+  "solver": "madnlp",
+  "strategy": "release",
+  "tags": {
+    "start": "flat_high"
+  },
+  "valid": false
+}
