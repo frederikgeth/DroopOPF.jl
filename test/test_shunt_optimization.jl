@@ -55,6 +55,15 @@ include(joinpath(@__DIR__,"..","examples","m7_2_case.jl"))
     other=optimize_shunts(c,[ctrl,ShuntControl(202)];initial_state=joint.opf.state,optimizer_factory=MadNLP.Optimizer)
     @test validate_shunt_design(c,other).valid
     @test other.opf.objective ≈ joint.opf.objective atol=1e-8
+    exact=optimize_shunts(c,[ctrl,ShuntControl(202)];encoding=:complementarity,
+        initial_state=joint.opf.state,optimizer_attributes=m5_ccopt_options())
+    @test exact.encoding == :complementarity
+    @test exact.opf.smooth_epsilon === nothing
+    @test exact.complementarity_residual_max < 1e-5
+    @test validate_shunt_design(c,exact).valid
+    @test_throws ArgumentError optimize_shunts(c,[ctrl];encoding=:bad)
+    @test_throws ArgumentError optimize_shunts(c,[ctrl];encoding=:complementarity,
+        optimizer_factory=MadNLP.Optimizer)
     bad=copy(joint.susceptances);bad[201]=.08
     @test !validate_shunt_design(c,ShuntOPFResult(joint.opf,bad,joint.controls)).policy_valid
     bad=copy(joint.susceptances);delete!(bad,202)
@@ -68,5 +77,12 @@ include(joinpath(@__DIR__,"..","examples","m7_2_case.jl"))
         replay=with_shunt_settings(case,Dict(201=>B))
         state=ACState(fill(v,3),zeros(3),zeros(2),zeros(2))
         @test shunt_powers(replay.network,state)[2] ≈ complex(.0015,-B)*v^2
+    end
+    mktempdir() do dir
+        path=joinpath(dir,"exact-shunt.json");write_shunt_design(path,exact)
+        loaded=read_shunt_design(path)
+        @test loaded.encoding == :complementarity
+        @test loaded.complementarity_residual_max == exact.complementarity_residual_max
+        @test validate_shunt_design(c,loaded).valid
     end
 end

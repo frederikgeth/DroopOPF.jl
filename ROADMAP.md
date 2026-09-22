@@ -745,3 +745,21 @@ the explicit droop-Q row affects numerical behavior, but the backend-dependent
 regressions fail the no-loss reliability gate. S1 remains open and M9 remains
 gated. Next, test an alternative smooth-saturation or targeted equality treatment
 on the minimal reproducer and frozen matrix before expanding to holdout cases.
+
+### S1 cross-solver physical warm-start checkpoint (2026-09-21)
+
+MadNLP was initialized from the AC state and optimized tap, shunt and droop
+settings of each of the eight independently validated explicit-formulation Ipopt
+cases. Ipopt multipliers were intentionally not transferred. The unchanged
+one-reset policy and independent validator accepted **5/8** warm starts, versus
+**3/8** direct MadNLP results on this Ipopt-accepted subset: four cases were
+gained, two were lost and one was retained. All accepted MadNLP objectives remain
+higher than the Ipopt source objective. Two transferred points have small physical
+residuals but terminate as `SLOW_PROGRESS`, so they remain rejected under the
+native-plus-physical rule. The [comparison report](artifacts/s1_ipopt_to_madnlp/report.md)
+and machine-readable records retain all attempts.
+
+**Interpretation:** a validated physical primal point improves coverage but does
+not transfer the solver's local optimality or convergence certificate. Cross-solver
+dual transfer remains out of scope. S1 stays open; use these paired gains and
+losses to distinguish initialization sensitivity from formulation sensitivity.

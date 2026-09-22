@@ -38,6 +38,51 @@ end
     mad=optimize_joint_design(c;tap_controls=tap,shunt_controls=shunt,droop_controls=droop,initial_state=r.opf.state,optimizer_factory=MadNLP.Optimizer)
     @test validate_joint_design(c,mad).valid
     @test mad.opf.objective ≈ r.opf.objective atol=1e-8
+    exact=optimize_joint_design(c;tap_controls=tap,shunt_controls=shunt,
+        encoding=:complementarity,initial_state=r.opf.state,
+        optimizer_attributes=m5_ccopt_options())
+    @test exact.encoding == :complementarity
+    @test exact.opf.smooth_epsilon === nothing
+    @test exact.complementarity_residual_max < 1e-5
+    @test validate_joint_design(c,exact).valid
+    @test validate_equilibrium(with_joint_settings(c,exact),exact.opf).valid
+    exact_audit=exact_droop_audit(c,exact)
+    @test exact_audit["max_residual_pu"] < 1e-5
+    @test exact_audit["max_ratio_to_tolerance"] < 1
+    @test exact_audit["worst"]["within_tolerance"]
+    @test Set(keys(exact.taps)) == Set(b.id for b in c.network.branches)
+    @test Set(keys(exact.susceptances)) == Set([201])
+    @test_throws ArgumentError optimize_joint_design(c;encoding=:bad)
+    exact_droop=[DroopControl(2;slope_bounds=(.04,.1),v_ref_bounds=(.995,1.005),
+        deadband_low_bounds=(.005,.015),deadband_high_bounds=(.005,.015))]
+    exact_diagnostics=Ref{Any}(nothing);exact_model=Ref{Any}(nothing)
+    exact_all=optimize_joint_design(c;tap_controls=tap,shunt_controls=shunt,
+        droop_controls=exact_droop,encoding=:complementarity,initial_state=r.opf.state,
+        optimizer_attributes=m5_ccopt_options(),
+        _measurement_hook=(phase,model)->phase==:solved && begin
+            exact_model[]=model;exact_diagnostics[]=ccopt_diagnostics(model)
+        end)
+    @test exact_all.encoding == :complementarity
+    @test Set(keys(exact_all.droops)) == Set([2])
+    @test .04 <= exact_all.droops[2].slope <= .1
+    @test .995 <= exact_all.droops[2].v_ref <= 1.005
+    @test .005 <= exact_all.droops[2].deadband_low <= .015
+    @test .005 <= exact_all.droops[2].deadband_high <= .015
+    @test exact_all.complementarity_residual_max < 1e-5
+    @test validate_joint_design(c,exact_all).valid
+    @test exact_diagnostics[]["inner_iterations"] > 0
+    @test exact_diagnostics[]["outer_iterations"] === nothing
+    @test exact_diagnostics[]["complementarity_pairs"] == 8
+    @test exact_diagnostics[]["complementarity_feasibility"] < 1e-5
+    encoding_audit=ccopt_encoding_audit(exact_model[])
+    @test encoding_audit["max_exact_droop_error_pu"] < 1e-5
+    @test encoding_audit["max_raw_droop_error_pu"] < 1e-5
+    @test_throws ArgumentError optimize_joint_design(c;encoding=:complementarity,
+        droop_q_bounds=:implied)
+    @test_throws ArgumentError optimize_joint_design(c;encoding=:complementarity,
+        droop_q_formulation=:reduced)
+    @test_throws ArgumentError optimize_joint_design(c;encoding=:complementarity,
+        optimizer_factory=MadNLP.Optimizer)
     # Independently selectable references and widths, including more than one controller.
     for field in (:v_ref_bounds,:deadband_low_bounds,:deadband_high_bounds)
         bounds=field==:v_ref_bounds ? (.995,1.005) : (.005,.015)
@@ -63,5 +108,12 @@ end
         @test loaded.droops[2].slope==r.droops[2].slope
         d=JSON.parsefile(path);d["schema_version"]=99;write(path,JSON.json(d))
         @test_throws ArgumentError read_joint_design(path)
+    end
+    mktempdir() do dir
+        path=joinpath(dir,"exact-joint.json");write_joint_design(path,exact)
+        loaded=read_joint_design(path)
+        @test loaded.encoding == :complementarity
+        @test loaded.complementarity_residual_max == exact.complementarity_residual_max
+        @test validate_joint_design(c,loaded).valid
     end
 end

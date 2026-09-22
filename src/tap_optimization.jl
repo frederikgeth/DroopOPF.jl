@@ -18,7 +18,11 @@ struct TapOPFResult
     opf::ACOPFResult{Float64}
     taps::Dict{Int,Float64}
     controls::Vector{TapControl}
+    encoding::Symbol
+    complementarity_residual_max::Union{Nothing,Float64}
 end
+
+TapOPFResult(opf,taps,controls)=TapOPFResult(opf,taps,controls,:smooth,nothing)
 
 function _check_tap_controls(case,controls)
     isnothing(case.network) && throw(ArgumentError("tap optimization requires a network"))
@@ -99,23 +103,33 @@ function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_
     taps,shunt_vars
 end
 
-"""Base-case smooth AC OPF with explicitly selected continuous tap ratios."""
+"""Base-case AC OPF with explicitly selected continuous tap ratios."""
 function optimize_taps(case::Case,controls::AbstractVector{TapControl};smooth_epsilon=1e-5,
-    initial_state=nothing,optimizer_factory=Ipopt.Optimizer,silent=true,optimizer_attributes=Dict())
+    encoding=:smooth,initial_state=nothing,optimizer_factory=Ipopt.Optimizer,
+    silent=true,optimizer_attributes=Dict())
     validate_case(case); _check_tap_controls(case,controls)
+    encoding in (:smooth,:complementarity) || throw(ArgumentError("encoding must be :smooth or :complementarity"))
     isfinite(smooth_epsilon) && smooth_epsilon>0 || throw(ArgumentError("invalid smoothing epsilon"))
-    model,v=_build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
-        reactive_epsilon=nothing,silent,optimizer_factory,initial_state,tap_controls=controls)
+    encoding==:complementarity && optimizer_factory !== Ipopt.Optimizer &&
+        throw(ArgumentError("encoding=:complementarity uses CCOpt; omit optimizer_factory"))
+    model,v = if encoding==:smooth
+        _build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
+            reactive_epsilon=nothing,silent,optimizer_factory,initial_state,tap_controls=controls)
+    else
+        _build_complementarity_opf_model(case;silent,initial_state,tap_controls=controls)
+    end
     for (k,x) in optimizer_attributes
         set_optimizer_attribute(model,k,x)
     end
     optimize!(model)
     present=has_values(model)
     state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
+    epsilon=encoding==:smooth ? Float64(smooth_epsilon) : nothing
     opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,
-        Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),smooth_epsilon,smooth_epsilon,nothing)
+        Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,nothing)
     taps=present ? Dict(b.id=>Float64(haskey(v.taps,b.id) ? value(v.taps[b.id]) : b.tap_ratio) for b in case.network.branches) : Dict{Int,Float64}()
-    TapOPFResult(opf,taps,collect(controls))
+    residual=present && encoding==:complementarity ? _complementarity_residual(v) : nothing
+    TapOPFResult(opf,taps,collect(controls),encoding,residual)
 end
 optimize_taps(::Study,args...;kwargs...)=throw(ArgumentError("optimized equipment SCOPF is reserved for M9; supply a base Case"))
 
@@ -141,6 +155,7 @@ end
 
 function write_tap_design(path,result::TapOPFResult)
     data=Dict("schema_version"=>1,"kind"=>"DroopOPF.TapOPFResult","continuous_relaxation"=>true,
+        "encoding"=>String(result.encoding),"complementarity_residual_max"=>result.complementarity_residual_max,
         "opf"=>_json_data(result.opf),"taps"=>_json_data(result.taps),
         "controls"=>[Dict(string(k)=>getfield(c,k) for k in fieldnames(TapControl)) for c in result.controls])
     write(path,JSON.json(data;pretty=true)*"\n"); path
@@ -152,7 +167,8 @@ function read_tap_design(path)
     state=isnothing(s) ? nothing : ACState(Float64.(s["vm"]),Float64.(s["va"]),Float64.(s["pg"]),Float64.(s["qg"]))
     opf=ACOPFResult{Float64}(state,isnothing(o["objective"]) ? NaN : o["objective"],Symbol(o["termination_status"]),Symbol(o["primal_status"]),o["smooth_epsilon"],o["smooth_reactive_relative_epsilon"],o["smooth_reactive_epsilon"])
     controls=[TapControl(c["branch_id"];lower=c["lower"],upper=c["upper"],initial=c["initial"],nominal=c["nominal"]) for c in d["controls"]]
-    TapOPFResult(opf,Dict(parse(Int,k)=>Float64(v) for (k,v) in d["taps"]),controls)
+    TapOPFResult(opf,Dict(parse(Int,k)=>Float64(v) for (k,v) in d["taps"]),controls,
+        Symbol(get(d,"encoding","smooth")),get(d,"complementarity_residual_max",nothing))
 end
 
 """Raw physical and setting metrics; none implicitly adds an objective term."""

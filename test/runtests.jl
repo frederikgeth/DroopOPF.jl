@@ -19,6 +19,7 @@ using DroopOPF
     include("test_shunt_optimization.jl")
     include("test_joint_design.jl")
     include("test_s1_diagnostics.jl")
+    include("test_s1_ccopt_matrix.jl")
     include("test_s1_experiments.jl")
     include("test_s1_warm_start.jl")
     include("test_s1_restart_policy.jl")

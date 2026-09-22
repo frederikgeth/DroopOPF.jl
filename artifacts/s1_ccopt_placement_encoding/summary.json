@@ -1,0 +1,150 @@
+{
+  "bank_colocated": {
+    "bank_id": 100059,
+    "bus_id": 59
+  },
+  "bank_remote": {
+    "bank_id": 100076,
+    "bus_id": 76
+  },
+  "groups": {
+    "tap_remote": {
+      "attempts": 2,
+      "ratio_to_criterion": 0.0,
+      "valid": 0,
+      "worst_exact_droop_residual_pu": 0.0
+    },
+    "tap_terminal": {
+      "attempts": 3,
+      "ratio_to_criterion": 0.0,
+      "valid": 0,
+      "worst_exact_droop_residual_pu": 0.0
+    }
+  },
+  "rows": [
+    {
+      "backend": "ccopt",
+      "budget": {
+        "inner_iterations": 1000,
+        "note": "CCOpt does not expose a separate outer-homotopy budget/count through MOI",
+        "outer_iterations": null,
+        "wall_seconds": 60.0
+      },
+      "encoding": "complementarity",
+      "error": "FieldError: type NamedTuple has no field `raw_q`, available fields: `vm`, `va`, `pg`, `qg`, `taps`, `shunts`, `voltage_lower`, `voltage_lower_complement`, `voltage_upper`, `voltage_upper_complement`, `q_lower_slack`, `q_lower_multiplier`, `q_upper_slack`, `q_upper_multiplier`",
+      "name": "placement-tap_terminal-anchor",
+      "tags": {
+        "load_factor": 1.05,
+        "network": 118,
+        "placement": "tap_terminal",
+        "same_budget": true,
+        "same_overlay": true,
+        "start": "anchor",
+        "study": "ccopt_placement"
+      },
+      "valid": false
+    },
+    {
+      "backend": "ccopt",
+      "budget": {
+        "inner_iterations": 1000,
+        "note": "CCOpt does not expose a separate outer-homotopy budget/count through MOI",
+        "outer_iterations": null,
+        "wall_seconds": 60.0
+      },
+      "encoding": "complementarity",
+      "error": "FieldError: type NamedTuple has no field `raw_q`, available fields: `vm`, `va`, `pg`, `qg`, `taps`, `shunts`, `voltage_lower`, `voltage_lower_complement`, `voltage_upper`, `voltage_upper_complement`, `q_lower_slack`, `q_lower_multiplier`, `q_upper_slack`, `q_upper_multiplier`",
+      "name": "placement-tap_terminal-flat_low",
+      "tags": {
+        "load_factor": 1.05,
+        "network": 118,
+        "placement": "tap_terminal",
+        "same_budget": true,
+        "same_overlay": true,
+        "start": "flat_low",
+        "study": "ccopt_placement"
+      },
+      "valid": false
+    },
+    {
+      "backend": "ccopt",
+      "budget": {
+        "inner_iterations": 1000,
+        "note": "CCOpt does not expose a separate outer-homotopy budget/count through MOI",
+        "outer_iterations": null,
+        "wall_seconds": 60.0
+      },
+      "encoding": "complementarity",
+      "error": "FieldError: type NamedTuple has no field `raw_q`, available fields: `vm`, `va`, `pg`, `qg`, `taps`, `shunts`, `voltage_lower`, `voltage_lower_complement`, `voltage_upper`, `voltage_upper_complement`, `q_lower_slack`, `q_lower_multiplier`, `q_upper_slack`, `q_upper_multiplier`",
+      "name": "placement-tap_terminal-flat_high",
+      "tags": {
+        "load_factor": 1.05,
+        "network": 118,
+        "placement": "tap_terminal",
+        "same_budget": true,
+        "same_overlay": true,
+        "start": "flat_high",
+        "study": "ccopt_placement"
+      },
+      "valid": false
+    },
+    {
+      "backend": "ccopt",
+      "budget": {
+        "inner_iterations": 1000,
+        "note": "CCOpt does not expose a separate outer-homotopy budget/count through MOI",
+        "outer_iterations": null,
+        "wall_seconds": 60.0
+      },
+      "encoding": "complementarity",
+      "error": "FieldError: type NamedTuple has no field `raw_q`, available fields: `vm`, `va`, `pg`, `qg`, `taps`, `shunts`, `voltage_lower`, `voltage_lower_complement`, `voltage_upper`, `voltage_upper_complement`, `q_lower_slack`, `q_lower_multiplier`, `q_upper_slack`, `q_upper_multiplier`",
+      "name": "placement-tap_remote-anchor",
+      "tags": {
+        "load_factor": 1.05,
+        "network": 118,
+        "placement": "tap_remote",
+        "same_budget": true,
+        "same_overlay": true,
+        "start": "anchor",
+        "study": "ccopt_placement"
+      },
+      "valid": false
+    },
+    {
+      "backend": "ccopt",
+      "budget": {
+        "inner_iterations": 1000,
+        "note": "CCOpt does not expose a separate outer-homotopy budget/count through MOI",
+        "outer_iterations": null,
+        "wall_seconds": 60.0
+      },
+      "encoding": "complementarity",
+      "error": "FieldError: type NamedTuple has no field `raw_q`, available fields: `vm`, `va`, `pg`, `qg`, `taps`, `shunts`, `voltage_lower`, `voltage_lower_complement`, `voltage_upper`, `voltage_upper_complement`, `q_lower_slack`, `q_lower_multiplier`, `q_upper_slack`, `q_upper_multiplier`",
+      "name": "placement-tap_remote-flat_low",
+      "tags": {
+        "load_factor": 1.05,
+        "network": 118,
+        "placement": "tap_remote",
+        "same_budget": true,
+        "same_overlay": true,
+        "start": "flat_low",
+        "study": "ccopt_placement"
+      },
+      "valid": false
+    }
+  ],
+  "scope": "same IEEE 118 overlay, +5% load, three starts and fixed CCOpt budget; only one free control location varies",
+  "tap_remote": {
+    "branch_id": 36,
+    "from_bus": 30,
+    "to_bus": 17
+  },
+  "tap_terminal": {
+    "branch_id": 8,
+    "from_bus": 8,
+    "terminal_droop_controls": [
+      3
+    ],
+    "to_bus": 5
+  }
+}

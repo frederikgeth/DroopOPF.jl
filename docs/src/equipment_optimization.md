@@ -2,6 +2,26 @@
 
 These synthetic three-bus studies demonstrate base-case continuous optimization. They do not establish security-constrained equipment performance, discrete implementability or scalability. All three slices use the same dispatch-deviation objective; losses and setting deviations are separate metrics.
 
+The joint API also accepts `encoding=:complementarity` to optimize the same
+continuous tap, simple-bank and bounded droop-parameter variables with CCOpt's
+exact droop graph.
+This provides an exact-versus-smoothed droop comparison without changing the
+equipment relaxation, bounds, or objective. Omitted droop parameter bounds keep
+those parameters fixed, as in the smooth path. The returned result records both
+`encoding` and `complementarity_residual_max`. Discrete tap positions and
+switched-shunt selection are not part of this comparison.
+
+A reproducible matched run is provided by
+`examples/m7_ccopt_comparison.jl`. It writes each solver's complete design,
+independent physical residuals, setting differences and objective differences
+to `artifacts/m7_ccopt_comparison`.
+
+The dedicated `optimize_taps` and `optimize_shunts` APIs accept the same
+`encoding=:complementarity` option. Their result records include `encoding` and
+`complementarity_residual_max`, matching joint-design reporting. As with joint
+design, omit `optimizer_factory` in exact mode and pass CCOpt settings through
+`optimizer_attributes`.
+
 The numerical tables and figures below are generated from retained evidence. Reproduce the solve and plot workflows in [Examples](examples.md), then run `python3 examples/build_m7_gallery.py`. Input studies, versioned designs, detailed reports and regression logs remain under `artifacts/m7_1`, `artifacts/m7_2` and `artifacts/m7_3`.
 
 ## M7.1 — Transformer taps

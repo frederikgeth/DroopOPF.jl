@@ -7,6 +7,24 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- CCOpt parity for base-case continuous joint design: exact complementarity
+  droop with the same tap-ratio, simple-bank, and bounded droop-parameter
+  variables used by the Ipopt/MadNLP formulation, including independent replay,
+  complementarity residuals, serialization, and a matched solver benchmark.
+- Exact CCOpt encoding in the dedicated continuous tap and simple-bank design
+  APIs, with the same physical replay and solver-residual metadata.
+- An explicitly separate S1 CCOpt pilot with cumulative inner-iteration budgets,
+  relaxation diagnostics, two-start synthetic and IEEE 118 evidence, and
+  retained standard-accuracy exact-droop failures plus tighter follow-ups.
+- A machine-checked IEEE 118/300 feasibility audit separating validated model
+  witnesses from solver failures and clarifying that the +5% cases are fixed
+  robustness stresses rather than loadability-boundary calculations.
+- A resumable, per-attempt checkpointed CCOpt S1 control-family matrix and
+  matched 12-cell frozen lane, including direct exact-droop audits, cross-seed,
+  conditional droop-only feasibility, and IEEE-300 continuation evidence.
+
 ## [0.4.0] - 2026-09-18
 
 ### Added

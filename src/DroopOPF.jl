@@ -26,7 +26,7 @@ include("tap_optimization.jl")
 include("shunt_optimization.jl")
 include("joint_design.jl")
 export DroopControl, JointDesignResult, optimize_joint_design, with_joint_settings
-export validate_joint_design, joint_design_metrics, write_joint_design, read_joint_design
+export validate_joint_design, exact_droop_audit, joint_design_metrics, write_joint_design, read_joint_design
 export ShuntControl, ShuntOPFResult, optimize_shunts, with_shunt_settings
 export validate_shunt_design, shunt_design_metrics, write_shunt_design, read_shunt_design
 export TapControl, TapOPFResult, optimize_taps, with_tap_settings, validate_tap_design
@@ -51,6 +51,7 @@ export droop_residual, equilibrium_residual
 export ACOPFResult, ACOPFContinuationResult, solve, solve_opf, solve_opf_continuation
 export reactive_smoothing_epsilon
 export ComplementarityOPFResult, solve_opf_complementarity
+export ccopt_diagnostics, ccopt_encoding_audit
 export EquilibriumValidationReport, EquilibriumReport, validate_equilibrium
 export equilibrium_report, markdown_report
 export DroopOperatingPoint, droop_regime, droop_operating_point, droop_operating_points

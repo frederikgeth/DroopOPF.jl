@@ -7,11 +7,10 @@ validation, and solver-comparison tooling.
 
 !!! note "Current status"
 
-    Version `0.3.0` delivers milestone M3: validated parameter sweeps, bounded
-    standard-droop design, exact PWL replay, and held-out contingency checks.
-
-    Version `0.4.0` adds M4 robustness, public-case regressions, timing,
-    allocation and process peak RSS measurements, and the scale-up decision.
+    M1–M7 are implemented. M7 delivers continuous transformer-tap,
+    simple-shunt-bank, and joint droop design in the declared base-case scope.
+    S1 is the active IEEE 118/300 reliability investigation and remains open;
+    it is not presented as a completed reliability release.
 
 ## Formulations
 
@@ -47,6 +46,8 @@ reactive clipping directly as complementarity pairs.
 - [M4 scale-up decision](scale_up_decision.md) — inspect measured model-size,
   timing, and allocation evidence before choosing a scaling algorithm.
 - [M7 equipment optimization](equipment_optimization.md) — tables and plots for tap, simple-bank and joint droop design.
+- [Milestones and S1 status](milestones.md) — release status, reliability gate,
+  and direct links to retained solver evidence.
 - [Examples](examples.md) — reproduce the M1 regime and solver studies.
 - [API reference](api.md) — generated documentation for exported
   types and functions.

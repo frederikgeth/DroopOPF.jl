@@ -1,0 +1,78 @@
+{
+  "all_groups_have_validated_witness": true,
+  "groups": {
+    "public118_baseline": {
+      "attempts": 1,
+      "feasibility_established": true,
+      "validated_witnesses": 1,
+      "witnesses": [
+        "public118-baseline"
+      ]
+    },
+    "public118_load1.0": {
+      "attempts": 6,
+      "converged_but_rejected": 0,
+      "feasibility_established": true,
+      "numerical_or_iteration_failures": 3,
+      "stress": "nominal demand",
+      "validated_witnesses": 3,
+      "witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ]
+    },
+    "public118_load1.05": {
+      "attempts": 6,
+      "converged_but_rejected": 1,
+      "feasibility_established": true,
+      "numerical_or_iteration_failures": 3,
+      "stress": "+5% active and reactive demand with unchanged generation/control bounds",
+      "validated_witnesses": 2,
+      "witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ]
+    },
+    "public300_baseline": {
+      "attempts": 1,
+      "feasibility_established": true,
+      "validated_witnesses": 1,
+      "witnesses": [
+        "public300-baseline"
+      ]
+    },
+    "public300_load1.0": {
+      "attempts": 6,
+      "converged_but_rejected": 0,
+      "feasibility_established": true,
+      "numerical_or_iteration_failures": 5,
+      "stress": "nominal demand",
+      "validated_witnesses": 1,
+      "witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ]
+    },
+    "public300_load1.05": {
+      "attempts": 6,
+      "converged_but_rejected": 0,
+      "feasibility_established": true,
+      "numerical_or_iteration_failures": 4,
+      "stress": "+5% active and reactive demand with unchanged generation/control bounds",
+      "validated_witnesses": 2,
+      "witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ]
+    }
+  },
+  "interpretation": "Once a group has a validated witness, another failed start/backend attempt for the same case is convergence or acceptance sensitivity, not evidence that the case is infeasible.",
+  "not_claimed": [
+    "global optimality",
+    "uniqueness",
+    "reproduction of PGLib generation-cost objective",
+    "enforcement of source branch angle limits",
+    "feasibility beyond the tested nominal and +5% load points"
+  ],
+  "scope": "local feasibility witnesses for the DroopOPF imported-network/dispatch-deviation model"
+}

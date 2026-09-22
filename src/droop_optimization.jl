@@ -186,6 +186,16 @@ _droop_design_value(value::Real) = Float64(value)
 _droop_design_value(value::VariableRef) = JuMP.value(value)
 _droop_design_value(value::AffExpr) = JuMP.value(value)
 
+_droop_parameter_start(value::Real, fallback) = Float64(value)
+function _droop_parameter_start(value::VariableRef, fallback)
+    start = start_value(value)
+    isnothing(start) ? Float64(fallback) : Float64(start)
+end
+function _droop_parameter_start(value::AffExpr, fallback)
+    starts = JuMP.value(v -> something(start_value(v), NaN), value)
+    isfinite(starts) ? Float64(starts) : Float64(fallback)
+end
+
 """
     optimize_droop_parameters(study, control_id; slope_bounds, ...)
 

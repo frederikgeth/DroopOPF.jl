@@ -17,7 +17,11 @@ struct ShuntOPFResult
     opf::ACOPFResult{Float64}
     susceptances::Dict{Int,Float64}
     controls::Vector{ShuntControl}
+    encoding::Symbol
+    complementarity_residual_max::Union{Nothing,Float64}
 end
+
+ShuntOPFResult(opf,susceptances,controls)=ShuntOPFResult(opf,susceptances,controls,:smooth,nothing)
 
 function _simple_bank(case,id)
     isnothing(case.network) && throw(ArgumentError("shunt optimization requires a network"))
@@ -85,22 +89,32 @@ function _shunt_variables!(model,case,controls,Y;normalize_controls=false)
     vars
 end
 
-"""Optimize simple capacitor/reactor banks in base-case smooth OPF; taps and droops stay fixed."""
+"""Optimize simple capacitor/reactor banks in base-case OPF; taps and droops stay fixed."""
 function optimize_shunts(case::Case,controls::AbstractVector{ShuntControl};smooth_epsilon=1e-5,
-    initial_state=nothing,optimizer_factory=Ipopt.Optimizer,silent=true,optimizer_attributes=Dict())
+    encoding=:smooth,initial_state=nothing,optimizer_factory=Ipopt.Optimizer,
+    silent=true,optimizer_attributes=Dict())
     validate_case(case); _check_shunt_controls(case,controls)
+    encoding in (:smooth,:complementarity) || throw(ArgumentError("encoding must be :smooth or :complementarity"))
     isfinite(smooth_epsilon) && smooth_epsilon>0 || throw(ArgumentError("invalid smoothing epsilon"))
-    model,v=_build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
-        reactive_epsilon=nothing,silent,optimizer_factory,initial_state,shunt_controls=controls)
+    encoding==:complementarity && optimizer_factory !== Ipopt.Optimizer &&
+        throw(ArgumentError("encoding=:complementarity uses CCOpt; omit optimizer_factory"))
+    model,v = if encoding==:smooth
+        _build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
+            reactive_epsilon=nothing,silent,optimizer_factory,initial_state,shunt_controls=controls)
+    else
+        _build_complementarity_opf_model(case;silent,initial_state,shunt_controls=controls)
+    end
     for (k,x) in optimizer_attributes
         set_optimizer_attribute(model,k,x)
     end
     optimize!(model); present=has_values(model)
     state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
+    epsilon=encoding==:smooth ? Float64(smooth_epsilon) : nothing
     opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,
-        Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),smooth_epsilon,smooth_epsilon,nothing)
+        Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,nothing)
     settings=present ? Dict(id=>Float64(value(x)) for (id,x) in v.shunts) : Dict{Int,Float64}()
-    ShuntOPFResult(opf,settings,collect(controls))
+    residual=present && encoding==:complementarity ? _complementarity_residual(v) : nothing
+    ShuntOPFResult(opf,settings,collect(controls),encoding,residual)
 end
 optimize_shunts(::Study,args...;kwargs...)=throw(ArgumentError("optimized equipment SCOPF is reserved for M9; supply a base Case"))
 
@@ -143,6 +157,7 @@ end
 
 function write_shunt_design(path,result::ShuntOPFResult)
     d=Dict("schema_version"=>1,"kind"=>"DroopOPF.ShuntOPFResult","continuous_relaxation"=>true,
+        "encoding"=>String(result.encoding),"complementarity_residual_max"=>result.complementarity_residual_max,
         "opf"=>_json_data(result.opf),"susceptances"=>_json_data(result.susceptances),
         "controls"=>[Dict(string(k)=>getfield(c,k) for k in fieldnames(ShuntControl)) for c in result.controls])
     write(path,JSON.json(d;pretty=true)*"\n"); path
@@ -154,5 +169,6 @@ function read_shunt_design(path)
     state=isnothing(s) ? nothing : ACState(Float64.(s["vm"]),Float64.(s["va"]),Float64.(s["pg"]),Float64.(s["qg"]))
     opf=ACOPFResult{Float64}(state,isnothing(o["objective"]) ? NaN : o["objective"],Symbol(o["termination_status"]),Symbol(o["primal_status"]),o["smooth_epsilon"],o["smooth_reactive_relative_epsilon"],o["smooth_reactive_epsilon"])
     controls=ShuntControl[ShuntControl(c["bank_id"];lower=c["lower"],upper=c["upper"],initial=c["initial"],nominal=c["nominal"]) for c in d["controls"]]
-    ShuntOPFResult(opf,Dict{Int,Float64}(parse(Int,k)=>Float64(v) for (k,v) in d["susceptances"]),controls)
+    ShuntOPFResult(opf,Dict{Int,Float64}(parse(Int,k)=>Float64(v) for (k,v) in d["susceptances"]),controls,
+        Symbol(get(d,"encoding","smooth")),get(d,"complementarity_residual_max",nothing))
 end

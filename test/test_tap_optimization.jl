@@ -53,6 +53,15 @@ end
     other=optimize_taps(c,[ctrl];initial_state=result.opf.state,optimizer_factory=MadNLP.Optimizer)
     @test validate_tap_design(c,other).valid
     @test other.opf.objective ≈ result.opf.objective atol=1e-8
+    exact=optimize_taps(c,[ctrl];encoding=:complementarity,initial_state=result.opf.state,
+        optimizer_attributes=m5_ccopt_options())
+    @test exact.encoding == :complementarity
+    @test exact.opf.smooth_epsilon === nothing
+    @test exact.complementarity_residual_max < 1e-5
+    @test validate_tap_design(c,exact).valid
+    @test_throws ArgumentError optimize_taps(c,[ctrl];encoding=:bad)
+    @test_throws ArgumentError optimize_taps(c,[ctrl];encoding=:complementarity,
+        optimizer_factory=MadNLP.Optimizer)
     # Explicitly treat a second branch as adjustable equipment for the two-device fixture.
     joint=optimize_taps(c,[ctrl,TapControl(22;lower=.98,upper=1.02)];initial_state=start)
     @test validate_tap_design(c,joint).valid
@@ -71,5 +80,12 @@ end
         @test validate_tap_design(c,loaded).valid
         d=JSON.parsefile(path); d["schema_version"]=2; write(path,JSON.json(d))
         @test_throws ArgumentError read_tap_design(path)
+    end
+    mktempdir() do dir
+        path=joinpath(dir,"exact-tap.json");write_tap_design(path,exact)
+        loaded=read_tap_design(path)
+        @test loaded.encoding == :complementarity
+        @test loaded.complementarity_residual_max == exact.complementarity_residual_max
+        @test validate_tap_design(c,loaded).valid
     end
 end

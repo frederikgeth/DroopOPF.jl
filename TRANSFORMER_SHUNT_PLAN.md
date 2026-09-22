@@ -180,6 +180,11 @@ visuals make the physical behavior and failures inspectable.
 ## M7: continuous equipment optimization — primary path
 
 M7.1-M7.3 are implemented on `transformers`.
+The fixed-droop M7.3 equipment relaxation is available through both the smooth
+Ipopt/MadNLP path and the exact complementarity CCOpt path. Both optimize the
+same continuous tap ratios and simple-bank susceptances without changing the
+equipment relaxation. Exact bounded droop-curve parameters are also
+supported. Discrete equipment selection remains deferred.
 The [validation report](artifacts/m7_1/report.md) compares fixed, one-free-tap and
 two-free-tap cases with a 41-point fixed-tap sweep. Each case uses fixed shunts,
 droop curves and phase shifts. `TapControl` selects a branch with explicit bounds,
@@ -529,3 +534,29 @@ native termination from physical failures and retains all attempts. Explicit Q
 remains the default, reduced Q remains diagnostic, and **1551/1551 regression
 tests pass**. M9 stays gated while S1
 tests another equivalent treatment against the same no-loss criterion.
+
+### S1 CCOpt pilot checkpoint (2026-09-21)
+
+CCOpt now has base-case joint tap/shunt/droop parity, dedicated tap and shunt
+APIs, serialized complementarity residuals, and a pilot diagnostic adapter.
+Two synthetic joint starts and two IEEE 118 fixed-equipment starts validate.
+Two standard-accuracy IEEE 118 joint attempts converge numerically but fail the
+unchanged exact-droop gate (`3.86e-5` versus `1e-5`); both retained tighter
+follow-ups validate at `3.86e-7`. The pilot remains outside frozen S1 acceptance
+counts. Separate outer-homotopy counts and original-MPCC stationarity are not
+available through the current CCOpt MOI interface and remain explicit gaps.
+
+The pilot now also covers IEEE 300: both fixed-equipment starts, both standard
+one-free-tap/bank/droop starts and both tighter matched attempts validate. A
+machine-checked feasibility audit confirms validated witnesses for the imported
+118/300 baselines and every nominal/+5% controlled group. Therefore failures in
+those frozen groups diagnose solver/start/acceptance sensitivity, not case
+infeasibility. The +5% study is a fixed stress point, not a loadability boundary.
+
+A checkpointed matched-family follow-up is now retained at **78/96** attempts.
+Both nominal public slices validate 24/24. Stressed IEEE 118 isolates failures
+to every family containing the selected tap (0/12), while fixed, droop, shunt
+and shunt--droop validate 12/12. Six completed stressed IEEE 300 fixed/droop
+attempts reach the cumulative inner-iteration limit; the other stressed IEEE
+300 families remain unrun. This partial matrix is labelled as such and does not
+change frozen S1 acceptance counts.

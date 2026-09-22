@@ -7,8 +7,8 @@ struct ACOPFResult{T<:Real}
     objective::T
     termination_status::Symbol
     primal_status::Symbol
-    smooth_epsilon::T
-    smooth_reactive_relative_epsilon::T
+    smooth_epsilon::Union{Nothing,T}
+    smooth_reactive_relative_epsilon::Union{Nothing,T}
     smooth_reactive_epsilon::Union{Nothing,T}
 end
 

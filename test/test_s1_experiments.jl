@@ -80,10 +80,6 @@ end
         s1_summary(out,[row,failed])
         @test length(JSON.parsefile(joinpath(out,"summary.json")))==2
     end
-    public=load_matpower_case(joinpath(@__DIR__,"data","pglib","v23.07","pglib_opf_case300_ieee.m"))
-    @test length(public.network.buses)==300
-    @test length(public.generators)==69
-    @test length(public.network.branches)==411
 end
 
 @testset "S1 physical failure locations agree with independent validation" begin

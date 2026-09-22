@@ -1,0 +1,132 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.011848625,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 0.467439875,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.143998708,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 27,
+      "julia_allocated_bytes": 117608848,
+      "model": {
+        "constraints": 3324,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 3.52625515586089e-10,
+          "dual": 6.5308880180720655e-21,
+          "iterations": 27,
+          "primal": 4.547473508864641e-13
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 934
+      },
+      "name": "public300-load1.05-madnlp-from-ipopt-anchor-attempt1",
+      "objective": 148.70504652504152,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.0018375500394913757,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 3.6415315207705135e-14,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 4.440892098500626e-16,
+        "generator_q_min_margin": 0.02468687986762989,
+        "power_balance_max": 1.1481926520673369e-12,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 7.549516567451064e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.0015756497104162381,
+        "voltage_min_margin": 0.0017110356019454098
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1316438016,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 0.311591,
+      "solver": "madnlp",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "a922a04ef4b3cf75b90f77343222b2f9a20698cd9938f4ff5ba367c091192b4a",
+        "dual_reset": "none; solver default initialization",
+        "initialization": "Ipopt validated AC state and optimized physical settings; no dual transfer",
+        "load_factor": 1.05,
+        "policy": "one-reset-v1",
+        "source_attempt": "public300-load1.05-ipopt-anchor-attempt2",
+        "source_case": "public300-load1.05-ipopt-anchor",
+        "source_objective": 140.95333095388477,
+        "source_solver": "ipopt",
+        "start": "anchor",
+        "study": "cross_solver_physical_warm_start"
+      },
+      "valid": true,
+      "validate_seconds": 0.047049542
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 0.566915417,
+  "events": [
+    "accept"
+  ],
+  "iterations": 27,
+  "name": "public300-load1.05-madnlp-from-ipopt-anchor",
+  "selected": "public300-load1.05-madnlp-from-ipopt-anchor-attempt1",
+  "solver": "madnlp",
+  "tags": {
+    "initialization": "Ipopt validated AC state and optimized physical settings; no dual transfer",
+    "load_factor": 1.05,
+    "source_attempt": "public300-load1.05-ipopt-anchor-attempt2",
+    "source_case": "public300-load1.05-ipopt-anchor",
+    "source_objective": 140.95333095388477,
+    "source_solver": "ipopt",
+    "start": "anchor",
+    "study": "cross_solver_physical_warm_start"
+  },
+  "valid": true
+}
