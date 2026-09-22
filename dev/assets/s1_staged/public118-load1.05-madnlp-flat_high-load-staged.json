@@ -1,0 +1,448 @@
+{
+  "budget": {
+    "clock": "shared cooperative wall deadline; preparation and final attempts included",
+    "iterations": 2000,
+    "preparation_cap": 500,
+    "seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 118,
+  "elapsed_seconds": 22.844685916,
+  "final": {
+    "attempts": [
+      {
+        "build_seconds": 0.010587167,
+        "buses": 118,
+        "control_normalization": "none",
+        "elapsed_seconds": 15.605208458,
+        "epsilon": 1e-06,
+        "extract_seconds": 0.057047791,
+        "free_counts": {
+          "droop": 37,
+          "shunt": 12,
+          "tap": 11
+        },
+        "iterations": 1000,
+        "julia_allocated_bytes": 232104896,
+        "model": {
+          "constraints": 1452,
+          "control_coordinate_maps": [],
+          "final_native": {
+            "complementarity": 6.150625000238764e-11,
+            "dual": 131887.7260531686,
+            "iterations": 1000,
+            "primal": 2.4266218389357164e-05
+          },
+          "nonlinear_derivative_features": [
+            "Grad",
+            "Jac",
+            "JacVec",
+            "Hess",
+            "HessVec",
+            "ExprGraph"
+          ],
+          "variables": 404
+        },
+        "name": "public118-load1.05-madnlp-flat_high-load-joint-attempt1",
+        "objective": 11.421630436767922,
+        "options": {
+          "bound_frac": 1e-08,
+          "bound_push": 1e-08,
+          "bound_relax_factor": 0.0,
+          "max_iter": 1000,
+          "max_wall_time": 60.0,
+          "tol": 1e-08
+        },
+        "physical": {
+          "branch_thermal_min_margin": 0.08506308457374434,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 3.2691761742836833e-05,
+          "generator_p_max_margin": 0.0,
+          "generator_p_min_margin": 0.0,
+          "generator_q_max_margin": 0.0,
+          "generator_q_min_margin": 5.551115123125783e-16,
+          "power_balance_max": 1.00048270136599e-06,
+          "smooth_epsilon": 1e-06,
+          "smooth_exact_droop_gap": 2.912941402669067e-05,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 1e-06,
+          "unavailable_generator_max": 0.0,
+          "valid": false,
+          "violations": [
+            "power_balance",
+            "droop"
+          ],
+          "voltage_max_margin": 1.514076303443801e-06,
+          "voltage_min_margin": 0.051268696192226626
+        },
+        "physical_check_status": "evaluated",
+        "physical_failures": [
+          {
+            "category": "droop",
+            "component": "control 17, regulated bus 61",
+            "equipment": "generator",
+            "exceedance_pu": 2.2691761742836834e-05,
+            "id": 26,
+            "tolerance_pu": 1e-05,
+            "violation_pu": 3.2691761742836833e-05
+          },
+          {
+            "category": "power_balance",
+            "component": "Q",
+            "equipment": "bus",
+            "exceedance_pu": 4.827013659900911e-10,
+            "id": 64,
+            "tolerance_pu": 1e-06,
+            "violation_pu": 1.00048270136599e-06
+          }
+        ],
+        "physical_valid": false,
+        "policy_valid": true,
+        "process_lifetime_peak_rss_bytes": 1696776192,
+        "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+        "solve_seconds": 15.537558125,
+        "solver": "madnlp",
+        "solver_valid": false,
+        "status": "ITERATION_LIMIT",
+        "tags": {
+          "attempt": 1,
+          "builder_start_overridden": false,
+          "context": "c8591f1f2eef3628ea192df84ee52fe8358776a845d38fac7b3d86c368e7cde9",
+          "dual_reset": "none; solver default initialization",
+          "load_factor": 1.05,
+          "policy": "one-reset-v1",
+          "seed_source": "declared_initialization",
+          "start": "supplied",
+          "strategy": "load",
+          "study": "staged_final"
+        },
+        "valid": false,
+        "validate_seconds": 0.050296042
+      },
+      {
+        "build_seconds": 0.022388417,
+        "buses": 118,
+        "control_normalization": "none",
+        "elapsed_seconds": 2.490391041,
+        "epsilon": 1e-06,
+        "extract_seconds": 0.0526365,
+        "free_counts": {
+          "droop": 37,
+          "shunt": 12,
+          "tap": 11
+        },
+        "iterations": 215,
+        "julia_allocated_bytes": 83459664,
+        "model": {
+          "constraints": 1452,
+          "control_coordinate_maps": [],
+          "final_native": {
+            "complementarity": 3.075317778211399e-12,
+            "dual": 13493.766817583535,
+            "iterations": 215,
+            "primal": 6.394884621840902e-14
+          },
+          "nonlinear_derivative_features": [
+            "Grad",
+            "Jac",
+            "JacVec",
+            "Hess",
+            "HessVec",
+            "ExprGraph"
+          ],
+          "variables": 404
+        },
+        "name": "public118-load1.05-madnlp-flat_high-load-joint-attempt2",
+        "objective": 12.107705264429088,
+        "options": {
+          "bound_frac": 1e-08,
+          "bound_push": 1e-08,
+          "bound_relax_factor": 0.0,
+          "dual_initialized": true,
+          "max_iter": 586,
+          "max_wall_time": 60.0,
+          "tol": 1e-08
+        },
+        "physical": {
+          "branch_thermal_min_margin": 0.0938728900350504,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 6.2090559075078655e-06,
+          "generator_p_max_margin": 0.0,
+          "generator_p_min_margin": 0.0,
+          "generator_q_max_margin": 2.7755575615628914e-17,
+          "generator_q_min_margin": 0.052386794471516084,
+          "power_balance_max": 4.6351811278100286e-14,
+          "smooth_epsilon": 1e-06,
+          "smooth_exact_droop_gap": 6.209055907133165e-06,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 1e-06,
+          "unavailable_generator_max": 0.0,
+          "valid": true,
+          "violations": [],
+          "voltage_max_margin": 0.006848825705082717,
+          "voltage_min_margin": 0.02540881287589114
+        },
+        "physical_check_status": "evaluated",
+        "physical_failures": [],
+        "physical_valid": true,
+        "policy_valid": true,
+        "process_lifetime_peak_rss_bytes": 1696776192,
+        "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+        "solve_seconds": 2.415364083,
+        "solver": "madnlp",
+        "solver_valid": false,
+        "status": "SLOW_PROGRESS",
+        "tags": {
+          "attempt": 2,
+          "builder_start_overridden": true,
+          "context": "c8591f1f2eef3628ea192df84ee52fe8358776a845d38fac7b3d86c368e7cde9",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "load_factor": 1.05,
+          "policy": "one-reset-v1",
+          "seed_file": "public118-load1.05-madnlp-flat_high-load-joint-recovery-seed.json",
+          "seed_source": "declared_initialization",
+          "start": "supplied",
+          "strategy": "load",
+          "study": "staged_final"
+        },
+        "valid": false,
+        "validate_seconds": 0.041480959
+      }
+    ],
+    "budget": {
+      "attempt_iterations": 1000,
+      "attempt_seconds": 60.0,
+      "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+      "total_iterations": 1586,
+      "total_seconds": 115.478333916
+    },
+    "budget_exceeded": {
+      "iterations": false,
+      "wall": false
+    },
+    "buses": 118,
+    "control_normalization": "none",
+    "elapsed_seconds": 18.288350791,
+    "events": [
+      "reset_multipliers",
+      "reset_multipliers",
+      "retry_limit_reached"
+    ],
+    "iterations": 1215,
+    "name": "public118-load1.05-madnlp-flat_high-load-joint",
+    "selected": null,
+    "solver": "madnlp",
+    "tags": {
+      "load_factor": 1.05,
+      "seed_source": "declared_initialization",
+      "strategy": "load",
+      "study": "staged_final"
+    },
+    "valid": false
+  },
+  "iterations": 1629,
+  "load_factor": 1.05,
+  "name": "public118-load1.05-madnlp-flat_high-load",
+  "preparations": [
+    {
+      "build_seconds": 0.01218975,
+      "buses": 118,
+      "control_normalization": "none",
+      "elapsed_seconds": 2.960251958,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.002418625,
+      "free_counts": {
+        "droop": 37,
+        "shunt": 12,
+        "tap": 11
+      },
+      "iterations": 284,
+      "julia_allocated_bytes": 81106096,
+      "model": {
+        "constraints": 1452,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 2.5059078319579623e-09,
+          "dual": 1.5977380523152305,
+          "iterations": 284,
+          "primal": 9.823098196987006e-09
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 404
+      },
+      "name": "public118-load1.05-madnlp-flat_high-load-prep1",
+      "objective": 7.634946851472267,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.11289925214108887,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.3109788031827616e-07,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 3.264083447973576e-12,
+        "generator_q_min_margin": 0.015667587379940895,
+        "power_balance_max": 8.595418821144563e-11,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 2.310978826775001e-07,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.00010176521822757856,
+        "voltage_min_margin": 0.06093120674695518
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1696776192,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 37,
+        "shunt": 12,
+        "tap": 11
+      },
+      "solve_seconds": 2.94564275,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "LOCALLY_INFEASIBLE",
+      "tags": {
+        "load_factor": 1.0,
+        "seed_source": "declared_initialization",
+        "stage": 1,
+        "strategy": "load",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.043119209
+    },
+    {
+      "build_seconds": 0.014770584,
+      "buses": 118,
+      "control_normalization": "none",
+      "elapsed_seconds": 1.299290042,
+      "epsilon": 1e-06,
+      "extract_seconds": 0.002690959,
+      "free_counts": {
+        "droop": 37,
+        "shunt": 12,
+        "tap": 11
+      },
+      "iterations": 130,
+      "julia_allocated_bytes": 57135904,
+      "model": {
+        "constraints": 1452,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 1.6309689778903006e-12,
+          "dual": 59503.715777151585,
+          "iterations": 130,
+          "primal": 3.0975222387041867e-12
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 404
+      },
+      "name": "public118-load1.05-madnlp-flat_high-load-prep2",
+      "objective": 10.047677530636513,
+      "options": {
+        "bound_frac": 1e-08,
+        "bound_push": 1e-08,
+        "bound_relax_factor": 0.0,
+        "max_iter": 500,
+        "max_wall_time": 30.0,
+        "tol": 1e-08
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.10677622346060611,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.3644776295173725e-05,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": -6.938893903907228e-18,
+        "generator_q_min_margin": 0.05164446130417378,
+        "power_balance_max": 3.098410417123887e-12,
+        "smooth_epsilon": 1e-06,
+        "smooth_exact_droop_gap": 2.3644776312101157e-05,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1e-06,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "droop"
+        ],
+        "voltage_max_margin": 0.00627844594057092,
+        "voltage_min_margin": 0.027323198956546224
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 19, regulated bus 65",
+          "equipment": "generator",
+          "exceedance_pu": 1.3644776295173724e-05,
+          "id": 28,
+          "tolerance_pu": 1e-05,
+          "violation_pu": 2.3644776295173725e-05
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1696776192,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "seed_transferred": false,
+      "selected_counts": {
+        "droop": 37,
+        "shunt": 12,
+        "tap": 11
+      },
+      "solve_seconds": 1.281825166,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "SLOW_PROGRESS",
+      "tags": {
+        "load_factor": 1.025,
+        "seed_source": "declared_initialization",
+        "stage": 2,
+        "strategy": "load",
+        "study": "staged_initialization",
+        "target_factor": 1.05
+      },
+      "valid": false,
+      "validate_seconds": 0.040526625
+    }
+  ],
+  "restricted_feasible_fallbacks": [],
+  "solver": "madnlp",
+  "strategy": "load",
+  "tags": {
+    "start": "flat_high"
+  },
+  "valid": false
+}

@@ -1,0 +1,222 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.021362,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 7.793933666,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.230320167,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 298,
+      "julia_allocated_bytes": 214700320,
+      "model": {
+        "constraints": 3324,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 9781.059349294075,
+          "dual": 12.661139564955622,
+          "iterations": 298,
+          "primal": 1.9895196601282805e-11
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 934
+      },
+      "name": "public300-load1.05-madnlp-flat_high-release-joint-attempt1",
+      "objective": 148.89041854349566,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.0019709582030289496,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.0826894936144527e-12,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 1.1102230246251565e-16,
+        "generator_q_min_margin": 0.02465717275714142,
+        "power_balance_max": 3.2606306543669916e-11,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 7.993605777301127e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.0018237898781365836,
+        "voltage_min_margin": 0.0016778820670866335
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1576796160,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 7.542232083,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "SLOW_PROGRESS",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "05dbbd3f019c9b9e48d2f1dbe9c5d394c802c031fc8d48978d36f21ab19faed5",
+        "dual_reset": "none; solver default initialization",
+        "load_factor": 1.05,
+        "policy": "one-reset-v1",
+        "seed_source": "declared_initialization",
+        "start": "supplied",
+        "strategy": "release",
+        "study": "staged_final"
+      },
+      "valid": false,
+      "validate_seconds": 0.431903791
+    },
+    {
+      "build_seconds": 0.034149791,
+      "buses": 300,
+      "control_normalization": "none",
+      "elapsed_seconds": 9.774212167,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.23942825,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 32,
+        "tap": 129
+      },
+      "iterations": 197,
+      "julia_allocated_bytes": 198110352,
+      "model": {
+        "constraints": 3324,
+        "control_coordinate_maps": [],
+        "final_native": {
+          "complementarity": 6748.590340438091,
+          "dual": 12.493652811359883,
+          "iterations": 197,
+          "primal": 2.2737367544323206e-13
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "variables": 934
+      },
+      "name": "public300-load1.05-madnlp-flat_high-release-joint-attempt2",
+      "objective": 143.20735639938437,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "dual_initialized": true,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.00043274026146056244,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.0622004840810106e-5,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 0.0,
+        "generator_q_min_margin": 0.026860703187640278,
+        "power_balance_max": 9.14823772291129e-13,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.0622004841698285e-5,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "droop"
+        ],
+        "voltage_max_margin": 0.0005709396790398724,
+        "voltage_min_margin": 0.0004777914974893882
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 4, regulated bus 108",
+          "equipment": "generator",
+          "exceedance_pu": 6.220048408101056e-7,
+          "id": 10,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.0622004840810106e-5
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1576796160,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 9.500613,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "SLOW_PROGRESS",
+      "tags": {
+        "attempt": 2,
+        "builder_start_overridden": true,
+        "context": "05dbbd3f019c9b9e48d2f1dbe9c5d394c802c031fc8d48978d36f21ab19faed5",
+        "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+        "load_factor": 1.05,
+        "policy": "one-reset-v1",
+        "seed_file": "public300-load1.05-madnlp-flat_high-release-joint-recovery-seed.json",
+        "seed_source": "declared_initialization",
+        "start": "supplied",
+        "strategy": "release",
+        "study": "staged_final"
+      },
+      "valid": false,
+      "validate_seconds": 0.113708625
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 1575,
+    "total_seconds": 105.41779596
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "elapsed_seconds": 18.351936125,
+  "events": [
+    "reset_multipliers",
+    "reset_multipliers",
+    "retry_limit_reached"
+  ],
+  "iterations": 495,
+  "name": "public300-load1.05-madnlp-flat_high-release-joint",
+  "selected": null,
+  "solver": "madnlp",
+  "tags": {
+    "load_factor": 1.05,
+    "seed_source": "declared_initialization",
+    "strategy": "release",
+    "study": "staged_final"
+  },
+  "valid": false
+}

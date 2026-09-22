@@ -1,0 +1,2291 @@
+[
+  {
+    "build_seconds": 3.677400792,
+    "buses": 118,
+    "elapsed_seconds": 12.924514,
+    "epsilon": 1e-06,
+    "extract_seconds": 2.116635792,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 465,
+    "julia_allocated_bytes": 1222627280,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.0-source",
+    "objective": 7.594008004695113,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.11726658625103392,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 3.229037638774468e-06,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 5.362377208939506e-14,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 3.2290376390103903e-06,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 9.46553946334916e-12,
+      "voltage_min_margin": 0.06250730261257909
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 7.13046625,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "source",
+      "study": "warmstart"
+    },
+    "valid": true,
+    "validate_seconds": 0.322937333
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 0,
+      "nonlinear_dual": 0
+    },
+    "build_seconds": 0.2548125,
+    "buses": 118,
+    "elapsed_seconds": 7.073063791,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.030669125,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 143890032,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.0-primal",
+    "objective": 7.6010160873100086,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.11344253203615795,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.0162449091515465,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.00030116683553083057,
+      "power_balance_max": 8.953393677985089e-06,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 4.08122404393918e-06,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 4.561854893836426e-09,
+      "voltage_min_margin": 0.059609253067818835
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 37, regulated bus 116",
+        "equipment": "generator",
+        "exceedance_pu": 0.0162349091515465,
+        "id": 54,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.0162449091515465
+      },
+      {
+        "category": "droop",
+        "component": "control 30, regulated bus 103",
+        "equipment": "generator",
+        "exceedance_pu": 0.0001292895653466314,
+        "id": 46,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.0001392895653466314
+      },
+      {
+        "category": "droop",
+        "component": "control 28, regulated bus 99",
+        "equipment": "generator",
+        "exceedance_pu": 0.00012659571564909878,
+        "id": 44,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.00013659571564909878
+      },
+      {
+        "category": "droop",
+        "component": "control 26, regulated bus 90",
+        "equipment": "generator",
+        "exceedance_pu": 0.00011311152146682325,
+        "id": 41,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.00012311152146682325
+      },
+      {
+        "category": "droop",
+        "component": "control 29, regulated bus 100",
+        "equipment": "generator",
+        "exceedance_pu": 1.2699496153646969e-05,
+        "id": 45,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 2.269949615364697e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.953393677985088e-06,
+        "id": 68,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.953393677985089e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.2357631817214785e-06,
+        "id": 116,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.235763181721478e-06
+      },
+      {
+        "category": "droop",
+        "component": "control 1, regulated bus 4",
+        "equipment": "generator",
+        "exceedance_pu": 1.632672857031511e-06,
+        "id": 2,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 1.1632672857031512e-05
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 6.78757825,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "primal",
+      "source_attempt": "public118-load1.0-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.024714542
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 807,
+      "nonlinear_dual": 645
+    },
+    "build_seconds": 0.006355125,
+    "buses": 118,
+    "elapsed_seconds": 2.329817167,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.000876333,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 302,
+    "julia_allocated_bytes": 107444832,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.0-zero_dual",
+    "objective": 7.59323873639362,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.11764633767628663,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 4.266687697596083e-11,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 1.420600526103044e-09,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 4.718447854656915e-16,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 9.502842956976565e-12,
+      "voltage_min_margin": 0.06265390345075916
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 2.322584959,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 25,
+        "saturated": 2,
+        "sloping": 10
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "zero_dual",
+      "source_attempt": "public118-load1.0-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.025201125
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 807,
+      "nonlinear_dual": 645
+    },
+    "build_seconds": 0.006363583,
+    "buses": 118,
+    "elapsed_seconds": 0.0738035,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.000868583,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 3,
+    "julia_allocated_bytes": 39054752,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.0-primal_dual",
+    "objective": 7.594008004695051,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.11726658625103115,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 3.22903763876059e-06,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 5.032085859113522e-14,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 3.2290376390103903e-06,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 9.46553946334916e-12,
+      "voltage_min_margin": 0.06250730261257975
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 0.066570792,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 27,
+        "saturated": 2,
+        "sloping": 8
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "primal_dual",
+      "source_attempt": "public118-load1.0-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.024967084
+  },
+  {
+    "build_seconds": 0.006263125,
+    "buses": 118,
+    "elapsed_seconds": 2.005316958,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.036809916,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 320,
+    "julia_allocated_bytes": 61689584,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.05-source",
+    "objective": 11.387428424796566,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.07822003713657621,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 7.897051377409037e-07,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 4.96269692007445e-14,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 7.897051764321761e-07,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 1.0902390101819037e-11,
+      "voltage_min_margin": 0.05376521542822055
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 1.962242834,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "source",
+      "study": "warmstart"
+    },
+    "valid": true,
+    "validate_seconds": 0.024963958
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 0,
+      "nonlinear_dual": 0
+    },
+    "build_seconds": 0.006582917,
+    "buses": 118,
+    "elapsed_seconds": 1.849873,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.000902291,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 297,
+    "julia_allocated_bytes": 60122608,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.05-primal",
+    "objective": 11.38792209628617,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.07567570995402018,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 1.1220379539905734e-05,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 1.321859288694327e-13,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 1.1220379539517156e-05,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "droop"
+      ],
+      "voltage_max_margin": 8.916867244579407e-12,
+      "voltage_min_margin": 0.05364511801631422
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 17, regulated bus 61",
+        "equipment": "generator",
+        "exceedance_pu": 1.220379539905733e-06,
+        "id": 26,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 1.1220379539905734e-05
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 1.842387667,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "primal",
+      "source_attempt": "public118-load1.05-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.025356417
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 807,
+      "nonlinear_dual": 645
+    },
+    "build_seconds": 0.006366334,
+    "buses": 118,
+    "elapsed_seconds": 6.79012325,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.001727917,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 113428672,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.05-zero_dual",
+    "objective": 11.387784503429769,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.07608736231592861,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.042628176547469865,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 0.00013305665138985123,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 6.309218931105365e-06,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 2.844789638567491e-05,
+      "voltage_min_margin": 0.05319750496856357
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 16, regulated bus 59",
+        "equipment": "generator",
+        "exceedance_pu": 0.04261817654746986,
+        "id": 25,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.042628176547469865
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.00013205665138985124,
+        "id": 63,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00013305665138985123
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 9.099747624441535e-05,
+        "id": 59,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 9.199747624441534e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 5.073049886756721e-06,
+        "id": 63,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 6.073049886756721e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 2.358947773896004e-06,
+        "id": 64,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.358947773896004e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.6965691986013951e-06,
+        "id": 59,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.696569198601395e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.259204057873401e-07,
+        "id": 61,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.72592040578734e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 2.6274235467960243e-07,
+        "id": 64,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.2627423546796024e-06
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 6.782028541,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "zero_dual",
+      "source_attempt": "public118-load1.05-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.074988
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 404,
+      "regular_dual": 807,
+      "nonlinear_dual": 645
+    },
+    "build_seconds": 0.0288955,
+    "buses": 118,
+    "elapsed_seconds": 0.09749025,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.000925834,
+    "free_counts": {
+      "droop": 37,
+      "shunt": 12,
+      "tap": 11
+    },
+    "iterations": 3,
+    "julia_allocated_bytes": 39025216,
+    "model": {
+      "constraints": 1452,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 404
+    },
+    "name": "public118-load1.05-primal_dual",
+    "objective": 11.387428424796697,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 0.07822003713657144,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 7.897051391009269e-07,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.0,
+      "power_balance_max": 5.928590951498336e-14,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 7.897051391286825e-07,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 1.0902390101819037e-11,
+      "voltage_min_margin": 0.0537652154282261
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 0.067668541,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 11,
+        "saturated": 3,
+        "sloping": 23
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "primal_dual",
+      "source_attempt": "public118-load1.05-source",
+      "source_status": "LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public118-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.025168958
+  },
+  {
+    "build_seconds": 0.066013875,
+    "buses": 300,
+    "elapsed_seconds": 6.418614875,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.146032084,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 388,
+    "julia_allocated_bytes": 149258480,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.0-source",
+    "objective": 89.22604414212765,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 3.2218672174622043e-13,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 1.622944356682865e-08,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.022080365492805676,
+      "power_balance_max": 3.115285807098189e-13,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 1.6229443788873255e-08,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 2.360334150353083e-13,
+      "voltage_min_margin": 4.29101199017623e-13
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 6.206559125,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "status": "ALMOST_LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "source",
+      "study": "warmstart"
+    },
+    "valid": true,
+    "validate_seconds": 0.050414334
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 0,
+      "nonlinear_dual": 0
+    },
+    "build_seconds": 0.012989458,
+    "buses": 300,
+    "elapsed_seconds": 17.569458458,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.002186458,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 228932240,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.0-primal",
+    "objective": 89.22912041777643,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 6.732739836756707e-07,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.01573912735170696,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.02197087235277574,
+      "power_balance_max": 1.2986134889647616e-08,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 1.6465383942398937e-05,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "droop"
+      ],
+      "voltage_max_margin": 5.36549104701578e-07,
+      "voltage_min_margin": 8.96774885461582e-07
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 30, regulated bus 7002",
+        "equipment": "generator",
+        "exceedance_pu": 0.01572912735170696,
+        "id": 47,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.01573912735170696
+      },
+      {
+        "category": "droop",
+        "component": "control 29, regulated bus 7001",
+        "equipment": "generator",
+        "exceedance_pu": 3.659861861588954e-05,
+        "id": 46,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 4.659861861588954e-05
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 17.554272084,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "primal",
+      "source_attempt": "public300-load1.0-source",
+      "source_status": "ALMOST_LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public300-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.057028542
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 1867,
+      "nonlinear_dual": 1457
+    },
+    "build_seconds": 0.018265583,
+    "buses": 300,
+    "elapsed_seconds": 15.079170833,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.002606667,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 225414944,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.0-zero_dual",
+    "objective": 89.23792483634848,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 2.196780456653613e-06,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.16306912691782272,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.01917703163091057,
+      "power_balance_max": 8.463390341090227e-05,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 2.899885911400446e-07,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 1.931853488512658e-06,
+      "voltage_min_margin": 2.9265409551282318e-06
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 29, regulated bus 7001",
+        "equipment": "generator",
+        "exceedance_pu": 0.1630591269178227,
+        "id": 46,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.16306912691782272
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 8.363390341090227e-05,
+        "id": 1,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.463390341090227e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.606382661387679e-05,
+        "id": 7001,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 7.706382661387678e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.1381685925120254e-05,
+        "id": 3,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.238168592512025e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.16398632319126e-06,
+        "id": 1,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.16398632319126e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.0071017082254914e-06,
+        "id": 7001,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.007101708225491e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 2.3229724136031398e-07,
+        "id": 7003,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.232297241360314e-06
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 15.058294542,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "zero_dual",
+      "source_attempt": "public300-load1.0-source",
+      "source_status": "ALMOST_LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public300-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.415694625
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 1867,
+      "nonlinear_dual": 1457
+    },
+    "build_seconds": 0.014941208,
+    "buses": 300,
+    "elapsed_seconds": 1.009583125,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.002328292,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 55,
+    "julia_allocated_bytes": 106857408,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.0-primal_dual",
+    "objective": 89.2252964485511,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 3.226308109560705e-13,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 1.6229522836752608e-08,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 0.0,
+      "generator_q_min_margin": 0.022371699813644536,
+      "power_balance_max": 7.426836923229985e-13,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 1.6229522392663398e-08,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 2.360334150353083e-13,
+      "voltage_min_margin": 4.29101199017623e-13
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 0.992312417,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 18,
+        "saturated": 3,
+        "sloping": 14
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "ALMOST_LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.0,
+      "mode": "primal_dual",
+      "source_attempt": "public300-load1.0-source",
+      "source_status": "ALMOST_LOCALLY_SOLVED",
+      "study": "warmstart",
+      "seed_file": "public300-load1.0-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.054198375
+  },
+  {
+    "build_seconds": 0.014651708,
+    "buses": 300,
+    "elapsed_seconds": 18.337765583,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.171774875,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 234621840,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.05-source",
+    "objective": 141.09873386567781,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 2.021445662792054e-05,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.18683281904508542,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 6.026569767864087e-05,
+      "generator_q_min_margin": 0.03109236960068193,
+      "power_balance_max": 0.005402850005204685,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 8.43769498715119e-15,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 3.0382339412327042e-05,
+      "voltage_min_margin": 2.3847611272720393e-05
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 26, regulated bus 239",
+        "equipment": "generator",
+        "exceedance_pu": 0.1868228190450854,
+        "id": 42,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.18683281904508542
+      },
+      {
+        "category": "droop",
+        "component": "control 23, regulated bus 230",
+        "equipment": "generator",
+        "exceedance_pu": 0.12833690048220664,
+        "id": 38,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.12834690048220665
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0054018500052046845,
+        "id": 229,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.005402850005204685
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.004036456903681069,
+        "id": 230,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.004037456903681069
+      },
+      {
+        "category": "droop",
+        "component": "control 27, regulated bus 241",
+        "equipment": "generator",
+        "exceedance_pu": 0.0010977285004427173,
+        "id": 43,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.0011077285004427173
+      },
+      {
+        "category": "droop",
+        "component": "control 25, regulated bus 236",
+        "equipment": "generator",
+        "exceedance_pu": 0.0006979383787662596,
+        "id": 40,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.0007079383787662596
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.00044544143003425005,
+        "id": 238,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0004464414300342501
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.000442835436879203,
+        "id": 190,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.000443835436879203
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0004396627812998387,
+        "id": 239,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0004406627812998387
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.0004061737953701415,
+        "id": 229,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00040717379537014153
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.0003966484057135465,
+        "id": 230,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00039764840571354654
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0002958075055127528,
+        "id": 234,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0002968075055127528
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0002169459884983359,
+        "id": 236,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0002179459884983359
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.00011062552587962171,
+        "id": 241,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00011162552587962171
+      },
+      {
+        "category": "droop",
+        "component": "control 22, regulated bus 222",
+        "equipment": "generator",
+        "exceedance_pu": 9.262956157891523e-05,
+        "id": 36,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.00010262956157891523
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 6.936304029672813e-05,
+        "id": 237,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 7.036304029672813e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.323677067093678e-05,
+        "id": 239,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.423677067093678e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.1149338881737324e-05,
+        "id": 238,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.214933888173732e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 2.938213223471864e-05,
+        "id": 240,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.038213223471864e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.2360116244531816e-05,
+        "id": 222,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.3360116244531817e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.1231816804542105e-05,
+        "id": 228,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.2231816804542106e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 7.984837004177847e-06,
+        "id": 234,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.984837004177848e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 5.87666511023366e-06,
+        "id": 236,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 6.8766651102336596e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.3911968374832358e-06,
+        "id": 232,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.3911968374832355e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 2.615942294032948e-06,
+        "id": 228,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.6159422940329478e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 2.600089232058679e-06,
+        "id": 231,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.6000892320586786e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.6039741491956648e-06,
+        "id": 241,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.6039741491956647e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.3783550439082646e-06,
+        "id": 233,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.3783550439082646e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 6.898404795462341e-07,
+        "id": 235,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.689840479546234e-06
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 18.151334708,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "source",
+      "study": "warmstart"
+    },
+    "valid": false,
+    "validate_seconds": 0.057482833
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 0,
+      "nonlinear_dual": 0
+    },
+    "build_seconds": 0.1255865,
+    "buses": 300,
+    "elapsed_seconds": 8.854493125,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.003095041,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 491,
+    "julia_allocated_bytes": 163659104,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.05-primal",
+    "objective": 140.95411139725354,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 2.2248869413488137e-13,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 1.9991854296463885e-06,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 6.638301019989967e-13,
+      "generator_q_min_margin": 0.036121175695207924,
+      "power_balance_max": 5.538833280915867e-13,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 1.999185429424344e-06,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 3.3795188869589765e-13,
+      "voltage_min_margin": 2.6212365611399946e-13
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 8.725794,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 9,
+        "saturated": 4,
+        "sloping": 22
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "ALMOST_LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "primal",
+      "source_attempt": "public300-load1.05-source",
+      "source_status": "ITERATION_LIMIT",
+      "study": "warmstart",
+      "seed_file": "public300-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.074981458
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 1867,
+      "nonlinear_dual": 1457
+    },
+    "build_seconds": 0.022541416,
+    "buses": 300,
+    "elapsed_seconds": 0.753207416,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.002100084,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 40,
+    "julia_allocated_bytes": 105036688,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.05-zero_dual",
+    "objective": 140.95333095388477,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 2.2293278334473143e-13,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 2.5515058732494822e-08,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 6.638301019989967e-13,
+      "generator_q_min_margin": 0.03615665271851362,
+      "power_balance_max": 6.544279007592024e-13,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 2.5515058510450217e-08,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": true,
+      "violations": [],
+      "voltage_max_margin": 3.3795188869589765e-13,
+      "voltage_min_margin": 2.6212365611399946e-13
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [],
+    "physical_valid": true,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 0.728564875,
+    "solver": "ipopt",
+    "solver_valid": true,
+    "source_audit": {
+      "droop_regions": {
+        "deadband": 8,
+        "saturated": 5,
+        "sloping": 22
+      },
+      "source_angle_violation_degrees": 0.0
+    },
+    "status": "ALMOST_LOCALLY_SOLVED",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "zero_dual",
+      "source_attempt": "public300-load1.05-source",
+      "source_status": "ITERATION_LIMIT",
+      "study": "warmstart",
+      "seed_file": "public300-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": true,
+    "validate_seconds": 0.072140333
+  },
+  {
+    "applied_seed_counts": {
+      "primal": 934,
+      "regular_dual": 1867,
+      "nonlinear_dual": 1457
+    },
+    "build_seconds": 0.014271375,
+    "buses": 300,
+    "elapsed_seconds": 17.56698375,
+    "epsilon": 1e-06,
+    "extract_seconds": 0.001886584,
+    "free_counts": {
+      "droop": 35,
+      "shunt": 32,
+      "tap": 129
+    },
+    "iterations": 1000,
+    "julia_allocated_bytes": 235326896,
+    "model": {
+      "constraints": 3324,
+      "nonlinear_derivative_features": [
+        "Grad",
+        "Jac",
+        "JacVec",
+        "Hess",
+        "HessVec",
+        "ExprGraph"
+      ],
+      "variables": 934
+    },
+    "name": "public300-load1.05-primal_dual",
+    "objective": 141.4823596728135,
+    "options": {
+      "bound_frac": 1e-08,
+      "bound_push": 1e-08,
+      "bound_relax_factor": 0.0,
+      "max_cpu_time": 60.0,
+      "max_iter": 1000,
+      "mu_strategy": "adaptive",
+      "tol": 1e-08,
+      "warm_start_bound_frac": 1e-08,
+      "warm_start_bound_push": 1e-08,
+      "warm_start_init_point": "yes",
+      "warm_start_mult_bound_push": 1e-08,
+      "warm_start_slack_bound_frac": 1e-08,
+      "warm_start_slack_bound_push": 1e-08
+    },
+    "physical": {
+      "branch_thermal_min_margin": 1.0726829599017051e-05,
+      "control_active_power_violation_max": 0.0,
+      "droop_residual_max": 0.509710024875315,
+      "generator_p_max_margin": 0.0,
+      "generator_p_min_margin": 0.0,
+      "generator_q_max_margin": 3.172825884875663e-05,
+      "generator_q_min_margin": 0.030929302423706312,
+      "power_balance_max": 0.002232382853825543,
+      "smooth_epsilon": 1e-06,
+      "smooth_exact_droop_gap": 7.15823321173481e-07,
+      "smooth_reactive_epsilon": null,
+      "smooth_reactive_relative_epsilon": 1e-06,
+      "unavailable_generator_max": 0.0,
+      "valid": false,
+      "violations": [
+        "power_balance",
+        "droop"
+      ],
+      "voltage_max_margin": 1.2703669553415509e-05,
+      "voltage_min_margin": 1.252917758554073e-05
+    },
+    "physical_check_status": "evaluated",
+    "physical_failures": [
+      {
+        "category": "droop",
+        "component": "control 23, regulated bus 230",
+        "equipment": "generator",
+        "exceedance_pu": 0.5097000248753151,
+        "id": 38,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.509710024875315
+      },
+      {
+        "category": "droop",
+        "component": "control 24, regulated bus 233",
+        "equipment": "generator",
+        "exceedance_pu": 0.21492736152775832,
+        "id": 39,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.21493736152775833
+      },
+      {
+        "category": "droop",
+        "component": "control 26, regulated bus 239",
+        "equipment": "generator",
+        "exceedance_pu": 0.1501538178151987,
+        "id": 42,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.15016381781519872
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.002231382853825543,
+        "id": 238,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.002232382853825543
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0017770642272002823,
+        "id": 239,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0017780642272002822
+      },
+      {
+        "category": "droop",
+        "component": "control 25, regulated bus 236",
+        "equipment": "generator",
+        "exceedance_pu": 0.0017677749099396889,
+        "id": 40,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.001777774909939689
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0013583301909189948,
+        "id": 230,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0013593301909189948
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0012962533989341618,
+        "id": 229,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0012972533989341617
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0007166165468023576,
+        "id": 234,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0007176165468023576
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0004906827058218942,
+        "id": 232,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0004916827058218942
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.0004886829648106671,
+        "id": 233,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0004896829648106671
+      },
+      {
+        "category": "droop",
+        "component": "control 27, regulated bus 241",
+        "equipment": "generator",
+        "exceedance_pu": 0.00048647437873379105,
+        "id": 43,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.0004964743787337911
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.00045654335785952447,
+        "id": 236,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.0004575433578595245
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.00033470635289192905,
+        "id": 230,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00033570635289192907
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 0.00033039434276963084,
+        "id": 229,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00033139434276963087
+      },
+      {
+        "category": "droop",
+        "component": "control 22, regulated bus 222",
+        "equipment": "generator",
+        "exceedance_pu": 0.00010257910602657795,
+        "id": 36,
+        "tolerance_pu": 1e-05,
+        "violation_pu": 0.00011257910602657795
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 0.00010158288829412266,
+        "id": 237,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 0.00010258288829412265
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 9.166334527480158e-05,
+        "id": 241,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 9.266334527480158e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 6.0541112187146754e-05,
+        "id": 231,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 6.154111218714675e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 5.49243125799469e-05,
+        "id": 239,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 5.59243125799469e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.834473660916101e-05,
+        "id": 238,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.9344736609161005e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 2.191698687395538e-05,
+        "id": 235,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.291698687395538e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.9832367884082714e-05,
+        "id": 233,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.0832367884082714e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.6666786696679537e-05,
+        "id": 232,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.7666786696679537e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.2638836470430959e-05,
+        "id": 220,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.363883647043096e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.2189109064004611e-05,
+        "id": 190,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.3189109064004612e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.1820975503480269e-05,
+        "id": 222,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.282097550348027e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 1.0570490978218828e-05,
+        "id": 240,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.1570490978218828e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 9.337559888995428e-06,
+        "id": 223,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.0337559888995429e-05
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.4245424277762384e-06,
+        "id": 220,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.424542427776238e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 7.047241178754661e-06,
+        "id": 221,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 8.04724117875466e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 5.988959396103667e-06,
+        "id": 234,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 6.988959396103667e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 4.5077687088900265e-06,
+        "id": 224,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 5.507768708890026e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 4.056060694563769e-06,
+        "id": 235,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 5.056060694563769e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.7515171618384147e-06,
+        "id": 217,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.7515171618384144e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.6429947959669707e-06,
+        "id": 219,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.64299479596697e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 3.4126019531631758e-06,
+        "id": 236,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.4126019531631755e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 3.177713076813916e-06,
+        "id": 218,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 4.177713076813916e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 2.579408669907025e-06,
+        "id": 228,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 3.579408669907025e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.6058924946781304e-06,
+        "id": 223,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.6058924946781303e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.5034627340048133e-06,
+        "id": 228,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.5034627340048132e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.247434339963661e-06,
+        "id": 241,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 2.247434339963661e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "Q",
+        "equipment": "bus",
+        "exceedance_pu": 8.459894750577633e-07,
+        "id": 226,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.8459894750577632e-06
+      },
+      {
+        "category": "power_balance",
+        "component": "P",
+        "equipment": "bus",
+        "exceedance_pu": 1.592074122823704e-07,
+        "id": 221,
+        "tolerance_pu": 1e-06,
+        "violation_pu": 1.1592074122823703e-06
+      }
+    ],
+    "physical_valid": false,
+    "policy_valid": true,
+    "process_lifetime_peak_rss_bytes": 1339064320,
+    "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+    "solve_seconds": 17.550824875,
+    "solver": "ipopt",
+    "solver_valid": false,
+    "status": "ITERATION_LIMIT",
+    "tags": {
+      "load_factor": 1.05,
+      "mode": "primal_dual",
+      "source_attempt": "public300-load1.05-source",
+      "source_status": "ITERATION_LIMIT",
+      "study": "warmstart",
+      "seed_file": "public300-load1.05-seed.json",
+      "builder_start_overridden": true
+    },
+    "valid": false,
+    "validate_seconds": 0.047422459
+  }
+]
