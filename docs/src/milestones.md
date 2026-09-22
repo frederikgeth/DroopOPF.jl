@@ -23,7 +23,7 @@ failures are documented rather than hidden.
 |---|---|---|
 | Ipopt and MadNLP | Frozen policy and restart evidence exists; reliability gate remains open | [bounded restart policy](s1_restart_policy.md) |
 | CCOpt | Exact-PWL frozen lane completed; 2/12 direct cells accepted | [CCOpt frozen lane](s1_ccopt.md#frozen-s1-lane) |
-| Case feasibility | IEEE 118 nominal/+5% and IEEE 300 nominal have validated local witnesses; IEEE 300 +5% remains unknown | [feasibility status](../../artifacts/s1_ccopt_frozen/FEASIBILITY_STATUS.md) |
+| Case feasibility | IEEE 118 nominal/+5% and IEEE 300 nominal have validated local witnesses; IEEE 300 +5% remains unknown | [feasibility status](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/s1_ccopt_frozen/FEASIBILITY_STATUS.md) |
 
 IEEE 118/300 are explicit reliability workloads, not unit tests. Their retained
 commands and artifacts live under `artifacts/s1_ccopt_*`.
@@ -34,4 +34,4 @@ commands and artifacts live under `artifacts/s1_ccopt_*`.
 - Smooth-solver convergence history: [S1 convergence evidence](s1_evidence.md).
 - Exact CCOpt, physical residuals, and reproduction commands:
   [S1 CCOpt pilot and frozen lane](s1_ccopt.md).
-- Overall roadmap and outstanding gates: [ROADMAP.md](../../ROADMAP.md).
+- Overall roadmap and outstanding gates: [ROADMAP.md](https://github.com/frederikgeth/DroopOPF.jl/blob/main/ROADMAP.md).
