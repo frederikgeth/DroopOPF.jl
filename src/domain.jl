@@ -208,6 +208,112 @@ function validate_case(case::Case)
     return true
 end
 
+"""Validate explicit reactive-control assignments against one case."""
+function validate_reactive_assignments(
+    case::Case,
+    assignments::AbstractVector{<:ReactiveControlAssignment},
+)
+    length(unique(a.generator_id for a in assignments)) == length(assignments) ||
+        throw(ArgumentError("each generator may have at most one reactive-control mode"))
+    generators = Dict(generator.id => generator for generator in case.generators)
+    bus_ids = isnothing(case.network) ? Set{Int}() : Set(bus.id for bus in case.network.buses)
+    buses = isnothing(case.network) ? Dict{Int,Any}() :
+        Dict(bus.id => bus for bus in case.network.buses)
+    for assignment in assignments
+        haskey(generators, assignment.generator_id) ||
+            throw(ArgumentError("reactive-control assignment references an unknown generator"))
+        generator = generators[assignment.generator_id]
+        mode = assignment.mode
+        if mode isa FixedQ
+            generator.q_min <= mode.q_schedule <= generator.q_max || throw(ArgumentError(
+                "fixed-Q schedule must lie within generator $(generator.id) limits"))
+        elseif mode isa AVR
+            isnothing(case.network) && throw(ArgumentError("AVR requires an AC network"))
+            location = assignment.location
+            location.bus_id in bus_ids ||
+                throw(ArgumentError("AVR location references an unknown bus"))
+            bus = buses[location.bus_id]
+            bus.v_min <= mode.voltage_setpoint <= bus.v_max || throw(ArgumentError(
+                "AVR setpoint must lie within regulated-bus voltage limits"))
+            location.kind == :generator_terminal && location.bus_id != generator.bus_id &&
+                throw(ArgumentError("generator-terminal AVR must regulate its generator bus"))
+            if location.kind == :branch_terminal
+                branch = findfirst(b -> b.id == location.branch_id, case.network.branches)
+                !isnothing(branch) || throw(ArgumentError("AVR branch-terminal references an unknown branch"))
+                selected = case.network.branches[branch]
+                selected.available || throw(ArgumentError("AVR branch-terminal references an unavailable branch"))
+                endpoint = location.side == :from ? selected.from_bus : selected.to_bus
+                endpoint == location.bus_id || throw(ArgumentError(
+                    "AVR branch-terminal bus_id must match the declared branch side"))
+            end
+        elseif mode isa VoltVarDroop
+            location = assignment.location
+            !isnothing(case.network) && location.bus_id in bus_ids || throw(ArgumentError(
+                "VoltVarDroop location references an unknown bus"))
+            mode.capability.p_min <= mode.capability.p_max || error("invalid capability")
+            max(generator.p_min, mode.capability.p_min) <=
+                min(generator.p_max, mode.capability.p_max) || throw(ArgumentError(
+                    "VoltVarDroop has no active-power overlap with generator $(generator.id)"))
+            mode.capability.q_min >= generator.q_min &&
+                mode.capability.q_max <= generator.q_max || throw(ArgumentError(
+                    "VoltVarDroop reactive capability must be inside generator $(generator.id) limits"))
+        end
+    end
+    avr_targets = Dict{Tuple{Symbol,Int,Union{Nothing,Symbol}},Float64}()
+    for assignment in assignments
+        assignment.mode isa AVR || continue
+        key = (assignment.location.kind, assignment.location.bus_id,
+            assignment.location.side)
+        target = Float64(assignment.mode.voltage_setpoint)
+        haskey(avr_targets, key) && avr_targets[key] != target && throw(ArgumentError(
+            "AVR assignments at one regulated location must use the same setpoint"))
+        avr_targets[key] = target
+    end
+    true
+end
+
+function _active_avr_groups(case::Case, assignments)
+    isnothing(assignments) && return Vector{Vector{ReactiveControlAssignment}}()
+    available = Set(g.id for g in case.generators if g.available)
+    groups = Vector{Vector{ReactiveControlAssignment}}()
+    for assignment in assignments
+        assignment.mode isa AVR && assignment.generator_id in available || continue
+        location = assignment.location
+        if location.kind == :branch_terminal
+            branch = only(filter(b -> b.id == location.branch_id, case.network.branches))
+            branch.available || continue
+        end
+        index = findfirst(group -> first(group).location == assignment.location, groups)
+        if isnothing(index)
+            push!(groups, ReactiveControlAssignment[assignment])
+        else
+            push!(groups[index], assignment)
+        end
+    end
+    groups
+end
+
+"""Project a legacy droop-only case into one explicit mode per generator.
+
+Generators without a legacy attachment become `FreeQ`; existing attachments
+become `VoltVarDroop` assignments. The case itself is not modified.
+"""
+function reactive_control_assignments(case::Case)
+    by_generator = Dict(attachment.generator_id => attachment for attachment in case.attachments)
+    assignments = ReactiveControlAssignment[]
+    for generator in case.generators
+        if haskey(by_generator, generator.id)
+            attachment = by_generator[generator.id]
+            push!(assignments, ReactiveControlAssignment(generator.id,
+                case.controls[attachment.control_id], attachment.location))
+        else
+            push!(assignments, ReactiveControlAssignment(generator.id, FreeQ()))
+        end
+    end
+    validate_reactive_assignments(case, assignments)
+    assignments
+end
+
 function droop_response(case::Case, generator_id::Integer, voltage::Real; p::Real)
     gen = findfirst(g -> g.id == generator_id, case.generators)
     gen === nothing && throw(KeyError(generator_id))

@@ -2,11 +2,13 @@ struct RegulatedLocation
     kind::Symbol
     bus_id::Int
     side::Union{Nothing,Symbol}
+    branch_id::Union{Nothing,Int}
 
     function RegulatedLocation(
         kind::Symbol,
         bus_id::Integer;
         side::Union{Nothing,Symbol} = nothing,
+        branch_id::Union{Nothing,Integer} = nothing,
     )
         kind in (:generator_terminal, :bus, :branch_terminal, :remote_bus) ||
             throw(ArgumentError("unsupported regulated-location kind: $kind"))
@@ -14,12 +16,49 @@ struct RegulatedLocation
         if kind == :branch_terminal
             side in (:from, :to) ||
                 throw(ArgumentError("branch-terminal locations require side=:from or :to"))
-        elseif !isnothing(side)
-            throw(ArgumentError("side is only valid for branch-terminal locations"))
+            !isnothing(branch_id) && branch_id > 0 ||
+                throw(ArgumentError("branch-terminal locations require a positive branch_id"))
+        elseif !isnothing(side) || !isnothing(branch_id)
+            throw(ArgumentError("side and branch_id are only valid for branch-terminal locations"))
         end
-        new(kind, Int(bus_id), side)
+        new(kind, Int(bus_id), side, isnothing(branch_id) ? nothing : Int(branch_id))
     end
 end
+
+"""Declared reactive-control semantics for one generator.
+
+These modes are deliberately independent of their numerical encoding. `AVR`
+may later be represented by a smooth transition or exact complementarity
+without changing the physical assignment.
+"""
+abstract type ReactiveControlMode end
+
+"""Generator Q is bounded only by its declared capability."""
+struct FreeQ <: ReactiveControlMode end
+
+"""Generator Q is fixed to an explicit schedule."""
+struct FixedQ{T<:Real} <: ReactiveControlMode
+    q_schedule::T
+    function FixedQ{T}(q_schedule::T) where {T<:Real}
+        isfinite(q_schedule) || throw(ArgumentError("fixed-Q schedule must be finite"))
+        new{T}(q_schedule)
+    end
+end
+
+FixedQ(q_schedule::T) where {T<:Real} = FixedQ{T}(q_schedule)
+
+"""Automatic voltage regulation with generator Q limits supplied by the case."""
+struct AVR{T<:Real} <: ReactiveControlMode
+    voltage_setpoint::T
+    function AVR{T}(voltage_setpoint::T) where {T<:Real}
+        isfinite(voltage_setpoint) && voltage_setpoint > zero(T) ||
+            throw(ArgumentError("AVR voltage setpoint must be finite and positive"))
+        new{T}(voltage_setpoint)
+    end
+end
+
+
+AVR(voltage_setpoint::T) where {T<:Real} = AVR{T}(voltage_setpoint)
 
 struct VoltageSchedule{T<:Real}
     v_ref::T
@@ -84,7 +123,7 @@ function q_limits(capability::ReactiveCapability, p::Real)
 end
 
 """A static volt-var droop with exact PWL semantics and constant Q capability."""
-struct VoltVarDroop{T<:Real}
+struct VoltVarDroop{T<:Real} <: ReactiveControlMode
     schedule::VoltageSchedule{T}
     slope::T
     q_at_deadband::T
@@ -117,6 +156,41 @@ struct VoltVarDroop{T<:Real}
             extrapolation = :clamp,
         )
         new{T}(schedule, slope, q_at_deadband, capability, curve)
+    end
+end
+
+"""Preferred name for the reactive-power reference inside the voltage deadband."""
+q_ref(control::VoltVarDroop) = control.q_at_deadband
+
+function VoltVarDroop(
+    schedule::VoltageSchedule{T},
+    slope::T,
+    capability::ReactiveCapability{T};
+    q_ref::T,
+) where {T<:Real}
+    VoltVarDroop(schedule, slope, q_ref, capability)
+end
+
+"""Attach one explicit reactive-control mode to a generator.
+
+`FreeQ` and `FixedQ` act at the generator and therefore take no regulated
+location. `AVR` and `VoltVarDroop` require a declared voltage location.
+"""
+struct ReactiveControlAssignment{M<:ReactiveControlMode}
+    generator_id::Int
+    mode::M
+    location::Union{Nothing,RegulatedLocation}
+    function ReactiveControlAssignment(
+        generator_id::Integer,
+        mode::M,
+        location::Union{Nothing,RegulatedLocation}=nothing,
+    ) where {M<:ReactiveControlMode}
+        generator_id > 0 || throw(ArgumentError("generator_id must be positive"))
+        needs_location = mode isa AVR || mode isa VoltVarDroop
+        needs_location == !isnothing(location) || throw(ArgumentError(
+            needs_location ? "$(nameof(typeof(mode))) requires a regulated location" :
+                "$(nameof(typeof(mode))) must not declare a regulated location"))
+        new{M}(Int(generator_id), mode, location)
     end
 end
 

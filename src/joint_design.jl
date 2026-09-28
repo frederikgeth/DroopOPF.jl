@@ -23,11 +23,12 @@ struct JointDesignResult
     droop_controls::Vector{DroopControl}
     encoding::Symbol
     complementarity_residual_max::Union{Nothing,Float64}
+    reactive_assignments::Union{Nothing,Vector{ReactiveControlAssignment}}
 end
 
 JointDesignResult(opf, taps, susceptances, droops, tap_controls, shunt_controls,
     droop_controls) = JointDesignResult(opf, taps, susceptances, droops,
-    tap_controls, shunt_controls, droop_controls, :smooth, nothing)
+    tap_controls, shunt_controls, droop_controls, :smooth, nothing, nothing)
 
 function _joint_droop_policy(case,c)
     1<=c.control_id<=length(case.controls) || throw(ArgumentError("unknown droop control"))
@@ -55,7 +56,7 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
     droop_controls=DroopControl[],initial_state=nothing,smooth_epsilon=1e-5,control_normalization=:none,
     droop_q_bounds=:explicit,droop_q_formulation=:explicit,
     encoding=:smooth, optimizer_factory=Ipopt.Optimizer,silent=true,
-    optimizer_attributes=Dict(),_measurement_hook=nothing)
+    optimizer_attributes=Dict(),reactive_assignments=nothing,_measurement_hook=nothing)
     encoding in (:smooth, :complementarity) || throw(ArgumentError("encoding must be :smooth or :complementarity"))
     control_normalization in (:none,:bounds) || throw(ArgumentError("control_normalization must be :none or :bounds"))
     droop_q_bounds in (:explicit,:implied) || throw(ArgumentError("droop_q_bounds must be :explicit or :implied"))
@@ -64,6 +65,9 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
         throw(ArgumentError("reduced droop Q has no separate Q bound; use droop_q_bounds=:explicit"))
     normalize_controls=control_normalization==:bounds
     validate_case(case);_check_tap_controls(case,tap_controls);_check_shunt_controls(case,shunt_controls)
+    isnothing(reactive_assignments) || validate_reactive_assignments(case, reactive_assignments)
+    !isnothing(reactive_assignments) && !isempty(droop_controls) && throw(ArgumentError(
+        "explicit reactive assignments cannot be combined with legacy droop design variables"))
     length(unique(c.control_id for c in droop_controls))==length(droop_controls) || throw(ArgumentError("duplicate droop controls"))
     isfinite(smooth_epsilon) && smooth_epsilon>0 || throw(ArgumentError("invalid smoothing"))
     if encoding == :complementarity
@@ -85,11 +89,11 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
         _build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
             reactive_epsilon=nothing,silent,optimizer_factory,initial_state,shared_model=model,
             tap_controls,shunt_controls,droop_parameter_variables=parameters,normalize_controls,
-            droop_q_bounds,droop_q_formulation)
+            droop_q_bounds,droop_q_formulation,reactive_assignments)
     else
         _build_complementarity_opf_model(case;silent,initial_state,shared_model=model,
             tap_controls,shunt_controls,normalize_controls,
-            droop_parameter_variables=parameters)
+            droop_parameter_variables=parameters,reactive_assignments)
     end
     for (k,x) in optimizer_attributes
         set_optimizer_attribute(model,k,x)
@@ -110,7 +114,8 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
         end
     end
     residual = present && encoding == :complementarity ? _complementarity_residual(v) : nothing
-    result=JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls),encoding,residual)
+    assignments=isnothing(reactive_assignments) ? nothing : ReactiveControlAssignment[reactive_assignments...]
+    result=JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls),encoding,residual,assignments)
     isnothing(_measurement_hook) || _measurement_hook(:extracted,model)
     result
 end
@@ -144,7 +149,8 @@ function validate_joint_design(case::Case,result::JointDesignResult;setting_tole
     physical=nothing
     reconstructable=all(isfinite(x) && x>0 for x in values(result.taps)) && all(isfinite(x) && x/only(_simple_bank(case,id).step_susceptances)>=0 for (id,x) in result.susceptances)
     if policy && reconstructable && !isnothing(result.opf.state)
-        physical=validate_equilibrium(with_joint_settings(case,result),result.opf;kwargs...)
+        physical=validate_equilibrium(with_joint_settings(case,result),result.opf;
+            reactive_assignments=result.reactive_assignments,kwargs...)
     end
     solver=result.opf.termination_status in (:LOCALLY_SOLVED,:ALMOST_LOCALLY_SOLVED,:OPTIMAL)
     (valid=solver && policy && !isnothing(physical) && physical.valid,solver_valid=solver,
@@ -209,15 +215,15 @@ end
 
 function write_joint_design(path,r::JointDesignResult)
     fields(cs,T)=[Dict(string(k)=>_json_data(getfield(c,k)) for k in fieldnames(T)) for c in cs]
-    d=Dict("schema_version"=>1,"kind"=>"DroopOPF.JointDesignResult","continuous_relaxation"=>true,
+    d=Dict("schema_version"=>2,"kind"=>"DroopOPF.JointDesignResult","continuous_relaxation"=>true,
         "encoding"=>String(r.encoding),"complementarity_residual_max"=>r.complementarity_residual_max,
         "opf"=>_json_data(r.opf),"taps"=>_json_data(r.taps),"susceptances"=>_json_data(r.susceptances),"droops"=>_json_data(r.droops),
-        "tap_controls"=>fields(r.tap_controls,TapControl),"shunt_controls"=>fields(r.shunt_controls,ShuntControl),"droop_controls"=>fields(r.droop_controls,DroopControl))
+        "tap_controls"=>fields(r.tap_controls,TapControl),"shunt_controls"=>fields(r.shunt_controls,ShuntControl),"droop_controls"=>fields(r.droop_controls,DroopControl),"reactive_assignments"=>_json_data(r.reactive_assignments))
     write(path,JSON.json(d;pretty=true)*"\n");path
 end
 function read_joint_design(path)
     d=JSON.parsefile(path)
-    d["schema_version"]==1 && d["kind"]=="DroopOPF.JointDesignResult" && d["continuous_relaxation"]===true || throw(ArgumentError("unsupported joint result"))
+    d["schema_version"] in (1,2) && d["kind"]=="DroopOPF.JointDesignResult" && d["continuous_relaxation"]===true || throw(ArgumentError("unsupported joint result"))
     o=d["opf"];s=o["state"]
     state=isnothing(s) ? nothing : ACState(Float64.(s["vm"]),Float64.(s["va"]),Float64.(s["pg"]),Float64.(s["qg"]))
     opf=ACOPFResult{Float64}(state,isnothing(o["objective"]) ? NaN : o["objective"],Symbol(o["termination_status"]),Symbol(o["primal_status"]),o["smooth_epsilon"],o["smooth_reactive_relative_epsilon"],o["smooth_reactive_epsilon"])
@@ -225,5 +231,6 @@ function read_joint_design(path)
     shunts=ShuntControl[ShuntControl(c["bank_id"];lower=c["lower"],upper=c["upper"],initial=c["initial"],nominal=c["nominal"]) for c in d["shunt_controls"]]
     droops=DroopControl[DroopControl(c["control_id"];slope_bounds=c["bounds"]["slope"],v_ref_bounds=c["bounds"]["v_ref"],deadband_low_bounds=c["bounds"]["deadband_low"],deadband_high_bounds=c["bounds"]["deadband_high"],initial=isnothing(c["initial"]) ? nothing : _droop_settings_from_data(c["initial"])) for c in d["droop_controls"]]
     JointDesignResult(opf,Dict{Int,Float64}(parse(Int,k)=>v for (k,v) in d["taps"]),Dict{Int,Float64}(parse(Int,k)=>v for (k,v) in d["susceptances"]),Dict{Int,DroopSettings{Float64}}(parse(Int,k)=>_droop_settings_from_data(v) for (k,v) in d["droops"]),taps,shunts,droops,
-        Symbol(get(d,"encoding","smooth")),get(d,"complementarity_residual_max",nothing))
+        Symbol(get(d,"encoding","smooth")),get(d,"complementarity_residual_max",nothing),
+        _reactive_assignments_from_data(get(d,"reactive_assignments",nothing)))
 end

@@ -19,7 +19,8 @@ function _complementarity_residual(variables)
         value.(variables.voltage_lower) .* value.(variables.voltage_lower_complement),
         value.(variables.voltage_upper) .* value.(variables.voltage_upper_complement),
         value.(variables.q_lower_slack) .* value.(variables.q_lower_multiplier),
-        value.(variables.q_upper_slack) .* value.(variables.q_upper_multiplier)); init=0.0)
+        value.(variables.q_upper_slack) .* value.(variables.q_upper_multiplier),
+        [value(s) * value(m) for (s, m) in variables.avr_pairs]); init=0.0)
 end
 
 """Read final CCOpt/MadNLP relaxation diagnostics from a solved JuMP model.
@@ -192,7 +193,17 @@ function _build_complementarity_opf_model(
     shunt_controls = nothing,
     normalize_controls::Bool = false,
     droop_parameter_variables::AbstractDict = Dict(),
+    reactive_assignments = nothing,
 )
+    if !isnothing(reactive_assignments)
+        validate_reactive_assignments(case, reactive_assignments)
+        isempty(droop_parameter_variables) || throw(ArgumentError(
+            "reactive_assignments cannot be combined with droop design variables"))
+        selected = [a for a in reactive_assignments if a.mode isa VoltVarDroop]
+        case = attach_controls(case, VoltVarDroop[a.mode for a in selected],
+            GeneratorControlAttachment[GeneratorControlAttachment(a.generator_id, k, a.location)
+             for (k, a) in enumerate(selected)])
+    end
     validate_case(case)
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -239,7 +250,55 @@ function _build_complementarity_opf_model(
         tap_controls, shunt_controls; normalize_controls)
 
     generator_indices = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
+    if !isnothing(reactive_assignments)
+        for assignment in reactive_assignments
+            assignment.mode isa FixedQ || continue
+            i = generator_indices[assignment.generator_id]
+            case.generators[i].available || continue
+            @constraint(model, qg[i] == assignment.mode.q_schedule)
+        end
+    end
     bus_indices = _bus_indices(network)
+    avr_pairs = Tuple{VariableRef,VariableRef}[]
+    if !isnothing(reactive_assignments)
+        for group in _active_avr_groups(case, reactive_assignments)
+            indices = [generator_indices[a.generator_id] for a in group]
+            generators = case.generators[indices]
+            j = bus_indices[first(group).location.bus_id]
+            target = first(group).mode.voltage_setpoint
+            q_min = sum(g.q_min for g in generators)
+            q_max = sum(g.q_max for g in generators)
+            group_q = sum(qg[i] for i in indices)
+            # V - Vset = lower release - upper release.
+            # Aggregate lower Q permits V >= Vset; aggregate upper Q permits V <= Vset.
+            lower = @variable(model, lower_bound=0)
+            upper = @variable(model, lower_bound=0)
+            lower_slack = @variable(model, lower_bound=0)
+            upper_slack = @variable(model, lower_bound=0)
+            @constraint(model, vm[j] - target == lower - upper)
+            @constraint(model, lower_slack == group_q - q_min)
+            @constraint(model, upper_slack == q_max - group_q)
+            anchor_i, anchor_g = first(indices), first(generators)
+            for (i, generator) in zip(indices[2:end], generators[2:end])
+                @constraint(model, (qg[i] - generator.q_min) *
+                    (anchor_g.q_max - anchor_g.q_min) ==
+                    (qg[anchor_i] - anchor_g.q_min) *
+                    (generator.q_max - generator.q_min))
+            end
+            @constraint(model, [lower_slack, lower] in _COMPLEMENTARITY_MOI.Complements(2))
+            @constraint(model, [upper_slack, upper] in _COMPLEMENTARITY_MOI.Complements(2))
+            vstart = isnothing(initial_state) ? target : initial_state.vm[j]
+            qstart = sum(isnothing(initial_state) ? g.initial_q : initial_state.qg[i]
+                for (i, g) in zip(indices, generators))
+            qstart = clamp(qstart, q_min, q_max)
+            set_start_value(vm[j], vstart)
+            set_start_value(lower, max(vstart - target, 0.0))
+            set_start_value(upper, max(target - vstart, 0.0))
+            set_start_value(lower_slack, qstart - q_min)
+            set_start_value(upper_slack, q_max - qstart)
+            append!(avr_pairs, [(lower_slack, lower), (upper_slack, upper)])
+        end
+    end
     active_attachments = Tuple{GeneratorControlAttachment,Int,Int}[]
     for attachment in case.attachments
         generator_index = generator_indices[attachment.generator_id]
@@ -377,6 +436,7 @@ function _build_complementarity_opf_model(
         )
     end
     variables=(vm = vm, va = va, pg = pg, qg = qg, taps = taps, shunts = shunts,
+                   avr_pairs = avr_pairs,
                    voltage_lower = voltage_lower,
                    voltage_lower_complement = voltage_lower_complement,
                    voltage_upper = voltage_upper,
@@ -397,11 +457,13 @@ function solve_opf_complementarity(
     silent::Bool = true,
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
+    reactive_assignments = nothing,
 )
     model, variables = _build_complementarity_opf_model(
         case;
         silent = silent,
         initial_state = initial_state,
+        reactive_assignments = reactive_assignments,
     )
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)

@@ -58,7 +58,7 @@ include(joinpath(@__DIR__,"..","examples","m6_shunt_case.jl"))
     mktempdir() do dir
         path=joinpath(dir,"study.json"); write_study(path,m6_shunt_study())
         @test read_study(path).case.network.banks == c.network.banks
-        doc=JSON.parsefile(path); @test doc["schema_version"] == 4
+        doc=JSON.parsefile(path); @test doc["schema_version"] == 6
         delete!(doc["data"]["case"]["network"],"banks")
         write(path,JSON.json(doc)); @test_throws ArgumentError read_study(path)
         for version in (1,2,3)

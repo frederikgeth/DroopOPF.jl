@@ -83,6 +83,26 @@ end
         droop_q_formulation=:reduced)
     @test_throws ArgumentError optimize_joint_design(c;encoding=:complementarity,
         optimizer_factory=MadNLP.Optimizer)
+    avr_assignments=[ReactiveControlAssignment(7,AVR(.98),RegulatedLocation(:generator_terminal,10))]
+    avr_joint=optimize_joint_design(c;tap_controls=tap,shunt_controls=shunt,
+        reactive_assignments=avr_assignments,initial_state=start)
+    @test avr_joint.reactive_assignments == avr_assignments
+    @test validate_joint_design(c,avr_joint).valid
+    @test validate_equilibrium(with_joint_settings(c,avr_joint),avr_joint.opf;
+        reactive_assignments=avr_assignments).valid
+    avr_exact=optimize_joint_design(c;tap_controls=tap,shunt_controls=shunt,
+        reactive_assignments=avr_assignments,encoding=:complementarity,
+        initial_state=avr_joint.opf.state,optimizer_attributes=m5_ccopt_options())
+    @test avr_exact.complementarity_residual_max < 1e-5
+    @test validate_joint_design(c,avr_exact).valid
+    @test_throws ArgumentError optimize_joint_design(c;reactive_assignments=avr_assignments,
+        droop_controls=droop)
+    mktempdir() do dir
+        path=joinpath(dir,"avr-joint.json");write_joint_design(path,avr_joint)
+        loaded=read_joint_design(path)
+        @test loaded.reactive_assignments == avr_assignments
+        @test validate_joint_design(c,loaded).valid
+    end
     # Independently selectable references and widths, including more than one controller.
     for field in (:v_ref_bounds,:deadband_low_bounds,:deadband_high_bounds)
         bounds=field==:v_ref_bounds ? (.995,1.005) : (.005,.015)

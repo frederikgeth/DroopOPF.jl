@@ -139,6 +139,7 @@ function _build_acopf_model(
     normalize_controls::Bool = false,
     droop_q_bounds::Symbol = :explicit,
     droop_q_formulation::Symbol = :explicit,
+    reactive_assignments = nothing,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -167,12 +168,22 @@ function _build_acopf_model(
             throw(ArgumentError("initial_state generator vectors do not match the case"))
     end
 
+    if !isnothing(reactive_assignments)
+        validate_reactive_assignments(case, reactive_assignments)
+        droop_q_formulation == :explicit || throw(ArgumentError(
+            "reactive_assignments currently require droop_q_formulation=:explicit"))
+    end
     model = isnothing(shared_model) ? Model(optimizer_factory) : shared_model
     silent && set_silent(model)
     bus_indices = _bus_indices(network)
-    attachment_by_generator = Dict(
-        attachment.generator_id => attachment for attachment in case.attachments
-    )
+    droop_entries = if isnothing(reactive_assignments)
+        [(generator_id=a.generator_id, control_id=a.control_id,
+            location=a.location, control=case.controls[a.control_id]) for a in case.attachments]
+    else
+        [(generator_id=a.generator_id, control_id=k, location=a.location, control=a.mode)
+            for (k, a) in enumerate(reactive_assignments) if a.mode isa VoltVarDroop]
+    end
+    attachment_by_generator = Dict(a.generator_id => a for a in droop_entries)
     vm = @variable(model, [1:nbus], base_name = scenario_prefix * "vm")
     va = @variable(model, [1:nbus], base_name = scenario_prefix * "va")
     pg = @variable(model, [1:ngen], base_name = scenario_prefix * "pg")
@@ -223,15 +234,64 @@ function _build_acopf_model(
     model.ext[:droop_q_formulation] = droop_q_formulation
     model.ext[:reduced_droop_q_generator_ids] = reduced_q_generator_ids
 
+    if !isnothing(reactive_assignments)
+        generator_by_id = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
+        for assignment in reactive_assignments
+            i = generator_by_id[assignment.generator_id]
+            generator = case.generators[i]
+            generator.available || continue
+            if assignment.mode isa FixedQ
+                @constraint(model, qg[i] == assignment.mode.q_schedule)
+            end
+        end
+        for (k, group) in enumerate(_active_avr_groups(case, reactive_assignments))
+            indices = [generator_by_id[a.generator_id] for a in group]
+            generators = case.generators[indices]
+            j = bus_indices[first(group).location.bus_id]
+            target = first(group).mode.voltage_setpoint
+            q_min = sum(g.q_min for g in generators)
+            q_max = sum(g.q_max for g in generators)
+            group_q = sum(qg[i] for i in indices)
+            lower = @variable(model, lower_bound=0,
+                base_name=scenario_prefix * "avr_lower_release[$k]")
+            upper = @variable(model, lower_bound=0,
+                base_name=scenario_prefix * "avr_upper_release[$k]")
+            lower_slack = @variable(model, lower_bound=0,
+                base_name=scenario_prefix * "avr_lower_q_slack[$k]")
+            upper_slack = @variable(model, lower_bound=0,
+                base_name=scenario_prefix * "avr_upper_q_slack[$k]")
+            @constraint(model, vm[j] - target == lower - upper)
+            @constraint(model, lower_slack == group_q - q_min)
+            @constraint(model, upper_slack == q_max - group_q)
+            anchor_i, anchor_g = first(indices), first(generators)
+            for (i, generator) in zip(indices[2:end], generators[2:end])
+                @constraint(model, (qg[i] - generator.q_min) *
+                    (anchor_g.q_max - anchor_g.q_min) ==
+                    (qg[anchor_i] - anchor_g.q_min) *
+                    (generator.q_max - generator.q_min))
+            end
+            @NLconstraint(model, lower_slack * lower == voltage_epsilon^2)
+            @NLconstraint(model, upper_slack * upper == voltage_epsilon^2)
+            start_margin = min(voltage_epsilon^2, (q_max - q_min) / 4)
+            qstart = sum(isnothing(initial_state) ? g.initial_q : initial_state.qg[i]
+                for (i, g) in zip(indices, generators))
+            qstart = clamp(qstart, q_min + start_margin, q_max - start_margin)
+            set_start_value(lower_slack, qstart - q_min)
+            set_start_value(upper_slack, q_max - qstart)
+            set_start_value(lower, voltage_epsilon^2 / (qstart - q_min))
+            set_start_value(upper, voltage_epsilon^2 / (q_max - qstart))
+        end
+    end
+
     deferred_droop_constraints = Expr[]
-    for attachment in case.attachments
+    for attachment in droop_entries
         generator_index = findfirst(g -> g.id == attachment.generator_id, case.generators)
         generator_index === nothing && error("validated attachment lookup failed")
         generator = case.generators[generator_index]
         generator.available || continue
         location_index = get(bus_indices, attachment.location.bus_id, 0)
         location_index > 0 || error("validated control-location lookup failed")
-        control = case.controls[attachment.control_id]
+        control = attachment.control
         _set_bound!(
             pg[generator_index],
             max(generator.p_min, control.capability.p_min),
@@ -365,8 +425,10 @@ function solve_opf(
     silent::Bool = true,
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
+    reactive_assignments = nothing,
 )
     validate_case(case)
+    isnothing(reactive_assignments) || validate_reactive_assignments(case, reactive_assignments)
     base_epsilon = isnothing(smooth_epsilon) ? 1.0e-4 : smooth_epsilon
     voltage_epsilon = isnothing(smooth_voltage_epsilon) ? base_epsilon : smooth_voltage_epsilon
     reactive_relative_epsilon = isnothing(smooth_reactive_relative_epsilon) ?
@@ -379,6 +441,7 @@ function solve_opf(
         silent = silent,
         optimizer_factory = optimizer_factory,
         initial_state = initial_state,
+        reactive_assignments = reactive_assignments,
     )
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)

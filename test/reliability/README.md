@@ -20,3 +20,8 @@ The public-case test checks, when wanted, are run separately:
 ```sh
 julia --project=. test/reliability/runtests.jl
 ```
+
+This suite also replays the retained IEEE-300/load-1.02 cumulative-six witness
+against the cumulative-five and controller-5-only models. That check performs
+no optimization: it proves that the corresponding failed direct paths are not
+case-level infeasibility certificates.

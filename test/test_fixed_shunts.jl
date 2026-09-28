@@ -39,7 +39,7 @@ using JSON
         path=joinpath(dir,"study.json"); write_study(path,Study(c))
         @test read_study(path).case.network.shunts == c.network.shunts
         doc=JSON.parsefile(path)
-        @test doc["schema_version"] == 4
+        @test doc["schema_version"] == 6
         delete!(doc["data"]["case"]["network"],"shunts")
         write(path,JSON.json(doc)); @test_throws ArgumentError read_study(path)
         for version in (1,2)

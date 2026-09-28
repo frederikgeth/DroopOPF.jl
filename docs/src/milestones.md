@@ -8,9 +8,12 @@
 | M5 — transformer physics | Implemented and validated | [data model](data_model.md#fixed-transformer-electrical-model-m52m54) |
 | M6 — fixed shunts and simple banks | Implemented and validated | [data model](data_model.md#fixed-bus-shunts-m61) |
 | M7 — continuous tap, bank, and joint droop design | Implemented and validated for the declared continuous base-case scope | [equipment optimization](equipment_optimization.md) |
+| M8 — explicit reactive controls and AVR | Released for the declared base-case scope | [data model](data_model.md#explicit-reactive-control-modes-m8) and [AVR qualification](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/avr_ieee_qualification/README.md) |
 
 M7 permits continuous tap ratios and simple-bank susceptances. Discrete tap
 positions and switched-shunt selection remain intentionally out of scope.
+M8 adds explicit base-case reactive-control semantics and AVR-aware joint
+equipment design; coordinated preventive/corrective SCOPF policy remains M9.
 
 ## S1 — current reliability investigation
 

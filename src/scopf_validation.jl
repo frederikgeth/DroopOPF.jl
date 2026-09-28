@@ -42,6 +42,8 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
     violations = Dict(id => Symbol[] for id in ids)
     result.encoding in (:smooth,:complementarity) || push!(violations[:base], :unknown_encoding)
     result.mode == study.mode || push!(violations[:base], :response_mode_mismatch)
+    _json_data(result.reactive_assignments) == _json_data(study.reactive_assignments) ||
+        push!(violations[:base], :reactive_assignments_mismatch)
     Set(keys(result.states)) == Set(ids) || push!(violations[:base], :scenario_set_mismatch)
     base = get(result.states, :base, nothing)
     for (id, case) in zip(ids, cases)
@@ -65,16 +67,22 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
             limit_tolerance=limit_tolerance, unavailable_tolerance=unavailable_tolerance,
             smooth_epsilon=result.encoding == :smooth ? result.smooth_epsilon : nothing,
             smooth_reactive_relative_epsilon=result.encoding == :smooth ? result.smooth_reactive_relative_epsilon : nothing,
-            smooth_reactive_epsilon=result.encoding == :smooth ? result.smooth_reactive_epsilon : nothing)
+            smooth_reactive_epsilon=result.encoding == :smooth ? result.smooth_reactive_epsilon : nothing,
+            reactive_assignments=study.reactive_assignments)
         encoded_droop[id] = report.droop_residual_max
         if result.encoding == :smooth
             encoded_droop[id] = 0.0
             bus_indices = _bus_indices(case.network)
             generator_indices = Dict(g.id=>i for (i,g) in enumerate(case.generators))
-            for attachment in case.attachments
+            droop_entries = isnothing(study.reactive_assignments) ?
+                [(generator_id=a.generator_id, location=a.location,
+                    control=case.controls[a.control_id]) for a in case.attachments] :
+                [(generator_id=a.generator_id, location=a.location, control=a.mode)
+                    for a in study.reactive_assignments if a.mode isa VoltVarDroop]
+            for attachment in droop_entries
                 i = generator_indices[attachment.generator_id]
                 case.generators[i].available || continue
-                control = case.controls[attachment.control_id]
+                control = attachment.control
                 epsilon_q = reactive_smoothing_epsilon(control,result.smooth_reactive_relative_epsilon;
                     absolute_epsilon=result.smooth_reactive_epsilon)
                 expected = _smooth_droop_value(control,state.vm[bus_indices[attachment.location.bus_id]],

@@ -32,6 +32,7 @@ serialization, and visual validation remain available unchanged.
 | `v0.5.0` | M5 | Transformer data, fixed transformer physics, and validation |
 | `v0.6.0` | M6 | Fixed shunts and simple-bank physics, accounting, and validation |
 | `v0.7.0` | M7 | Continuous tap, simple-bank, and joint droop design in the declared base-case scope |
+| `v0.8.0` | M8 | Explicit reactive-control modes, AVR, and qualified AVR-aware base-case joint design |
 
 S1 is the active reliability investigation for the M7 joint model on IEEE
 118/300. It is deliberately not labelled a completed reliability release.
@@ -62,6 +63,7 @@ retained solver evidence.
 | M5 transformers | [Data model](docs/src/data_model.md#fixed-transformer-electrical-model-m52m54) | [M5 report](artifacts/m5/report.md) and [M5.1 report](artifacts/m5_1/report.md) |
 | M6 shunts and banks | [Data model](docs/src/data_model.md#fixed-bus-shunts-m61) | [M6 report](artifacts/m6/report.md) and [M6.1 report](artifacts/m6_1/report.md) |
 | M7 continuous equipment | [Equipment optimization](docs/src/equipment_optimization.md) | [M7.1](artifacts/m7_1/report.md), [M7.2](artifacts/m7_2/report.md), [M7.3](artifacts/m7_3/report.md), and [CCOpt comparison](artifacts/m7_ccopt_comparison/report.md) |
+| M8 reactive controls and AVR | [Data model](docs/src/data_model.md#explicit-reactive-control-modes-m8) | [IEEE AVR qualification](artifacts/avr_ieee_qualification/README.md) and [reactive-control roadmap](REACTIVE_CONTROL_ROADMAP.md) |
 | S1 reliability | [S1 joint formulation](docs/src/joint_formulation.md), [S1 evidence](docs/src/s1_evidence.md), [CCOpt frozen lane](docs/src/s1_ccopt.md) | [Frozen CCOpt](artifacts/s1_ccopt_frozen/report.md), [feasibility status](artifacts/s1_ccopt_frozen/FEASIBILITY_STATUS.md), and [developer reproduction report](artifacts/s1_ccopt_frozen/DEVELOPER_REPORT.md) |
 
 The documentation navigation contains the detailed S1 studies: restart policy,

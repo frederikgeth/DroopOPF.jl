@@ -38,13 +38,17 @@ function validate_equilibrium(
     droop_tolerance::Real = 1.0e-5,
     limit_tolerance::Real = 1.0e-6,
     unavailable_tolerance::Real = 1.0e-8,
+    avr_voltage_tolerance::Real = 1.0e-5,
+    avr_sharing_tolerance::Real = 1.0e-5,
     smooth_epsilon::Union{Nothing,Real} = nothing,
     smooth_reactive_relative_epsilon::Union{Nothing,Real} = nothing,
     smooth_reactive_epsilon::Union{Nothing,Real} = nothing,
+    reactive_assignments = nothing,
 )
     isnothing(case.network) && throw(ArgumentError("case has no AC network"))
     all(x -> x >= 0 && isfinite(x),
-        (power_tolerance, droop_tolerance, limit_tolerance, unavailable_tolerance)) ||
+        (power_tolerance, droop_tolerance, limit_tolerance, unavailable_tolerance,
+         avr_voltage_tolerance, avr_sharing_tolerance)) ||
         throw(ArgumentError("validation tolerances must be finite and nonnegative"))
     if !isnothing(smooth_epsilon)
         smooth_epsilon > 0 && isfinite(smooth_epsilon) ||
@@ -94,12 +98,22 @@ function validate_equilibrium(
         smooth_reactive_relative_epsilon
     bus_indices = _bus_indices(network)
     generator_indices = Dict(g.id => i for (i, g) in enumerate(case.generators))
-    for attachment in case.attachments
+    if !isnothing(reactive_assignments)
+        validate_reactive_assignments(case, reactive_assignments)
+    end
+    droop_entries = if isnothing(reactive_assignments)
+        [(generator_id=a.generator_id, location=a.location,
+            control=case.controls[a.control_id]) for a in case.attachments]
+    else
+        [(generator_id=a.generator_id, location=a.location, control=a.mode)
+            for a in reactive_assignments if a.mode isa VoltVarDroop]
+    end
+    for attachment in droop_entries
         generator_index = generator_indices[attachment.generator_id]
         generator = case.generators[generator_index]
         generator.available || continue
         location_index = bus_indices[attachment.location.bus_id]
-        control = case.controls[attachment.control_id]
+        control = attachment.control
         active_power = state.pg[generator_index]
         control_active_power_violation = max(
             control_active_power_violation,
@@ -126,6 +140,16 @@ function validate_equilibrium(
             smooth_exact_gap = max(smooth_exact_gap, abs(smooth - exact))
         end
     end
+    fixed_q_residuals = Float64[]
+    if !isnothing(reactive_assignments)
+        for assignment in reactive_assignments
+            assignment.mode isa FixedQ || continue
+            generator_index = generator_indices[assignment.generator_id]
+            case.generators[generator_index].available || continue
+            push!(fixed_q_residuals,
+                state.qg[generator_index] - assignment.mode.q_schedule)
+        end
+    end
 
     power_balance_max = Float64(_max_abs(balance.vector))
     droop_residual_max = Float64(_max_abs(exact_droop_residuals))
@@ -146,6 +170,27 @@ function validate_equilibrium(
         nothing : Float64(smooth_reactive_epsilon)
 
     violations = Symbol[]
+    if !isnothing(reactive_assignments)
+        for group in _active_avr_groups(case, reactive_assignments)
+            indices = [generator_indices[a.generator_id] for a in group]
+            generators = case.generators[indices]
+            voltage_error = state.vm[bus_indices[first(group).location.bus_id]] -
+                first(group).mode.voltage_setpoint
+            q = sum(state.qg[i] for i in indices)
+            q_min = sum(g.q_min for g in generators)
+            q_max = sum(g.q_max for g in generators)
+            # Check physical regimes directly, independently of solver auxiliaries.
+            valid_avr = abs(voltage_error) <= avr_voltage_tolerance ||
+                (voltage_error > 0 && abs(q - q_min) <= limit_tolerance) ||
+                (voltage_error < 0 && abs(q - q_max) <= limit_tolerance)
+            valid_avr || (:avr in violations || push!(violations, :avr))
+            positions = [(state.qg[i] - g.q_min) / (g.q_max - g.q_min)
+                for (i, g) in zip(indices, generators)]
+            maximum(positions) - minimum(positions) <=
+                avr_sharing_tolerance || push!(violations, :avr_sharing)
+        end
+    end
+    _max_abs(fixed_q_residuals) <= power_tolerance || push!(violations, :fixed_q)
     power_balance_max <= power_tolerance || push!(violations, :power_balance)
     droop_residual_max <= droop_tolerance || push!(violations, :droop)
     control_active_power_violation_max <= limit_tolerance ||

@@ -19,10 +19,20 @@ function _json_data(x::VoltVarDroop)
     return Dict(string(k) => _json_data(getfield(x,k)) for k in
         (:schedule,:slope,:q_at_deadband,:capability))
 end
+_json_data(::FreeQ) = Dict("type" => "FreeQ")
+_json_data(x::FixedQ) = Dict("type" => "FixedQ", "q_schedule" => x.q_schedule)
+_json_data(x::AVR) = Dict("type" => "AVR", "voltage_setpoint" => x.voltage_setpoint)
+function _json_data(x::ReactiveControlAssignment)
+    mode = x.mode isa VoltVarDroop ?
+        merge(Dict("type" => "VoltVarDroop"), _json_data(x.mode)) : _json_data(x.mode)
+    Dict("generator_id" => x.generator_id, "mode" => mode,
+        "location" => _json_data(x.location))
+end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        JSON.json(io, Dict("schema_version"=>(kind == "DroopOPF.Study" ? 4 : 1), "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
+        version = kind == "DroopOPF.Study" ? 6 : kind == "DroopOPF.SCOPFResult" ? 2 : 1
+        JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
     return path
@@ -51,11 +61,18 @@ write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
     version = get(document,"schema_version",nothing)
-    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4) : (1,)
+    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6) :
+        kind == "DroopOPF.SCOPFResult" ? (1, 2) : (1,)
     version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
     data = document["data"]
     if kind == "DroopOPF.Study"
+        if version < 5
+            data["reactive_assignments"] = nothing
+        else
+            haskey(data, "reactive_assignments") ||
+                throw(ArgumentError("v5 study requires reactive_assignments"))
+        end
         network = data["case"]["network"]
         if version < 4
             isempty(get(network,"banks",[])) || throw(ArgumentError("bank data requires study schema v4"))
@@ -83,8 +100,38 @@ function _read_scopf_json(path, kind)
             end
         end
     end
+    kind == "DroopOPF.SCOPFResult" && version < 2 &&
+        (data["reactive_assignments"] = nothing)
     return data
 end
+
+function _reactive_assignment_from_data(a)
+    m = a["mode"]
+    mode = if m["type"] == "FreeQ"
+        FreeQ()
+    elseif m["type"] == "FixedQ"
+        FixedQ(Float64(m["q_schedule"]))
+    elseif m["type"] == "AVR"
+        AVR(Float64(m["voltage_setpoint"]))
+    elseif m["type"] == "VoltVarDroop"
+        s, cap = m["schedule"], m["capability"]
+        VoltVarDroop(VoltageSchedule(Float64(s["v_ref"]);
+            v_db_low=Float64(s["v_db_low"]), v_db_high=Float64(s["v_db_high"]),
+            unit=Symbol(s["unit"])), Float64(m["slope"]),
+            Float64(m["q_at_deadband"]), ReactiveCapability(;
+                (Symbol(k)=>Float64(cap[k]) for k in ("p_min","p_max","q_min","q_max"))...))
+    else
+        throw(ArgumentError("unknown reactive-control mode type"))
+    end
+    l = a["location"]
+    location = isnothing(l) ? nothing : RegulatedLocation(Symbol(l["kind"]), l["bus_id"];
+        side=isnothing(l["side"]) ? nothing : Symbol(l["side"]),
+        branch_id=get(l, "branch_id", nothing))
+    ReactiveControlAssignment(a["generator_id"], mode, location)
+end
+
+_reactive_assignments_from_data(data) = isnothing(data) ? nothing :
+    ReactiveControlAssignment[_reactive_assignment_from_data(a) for a in data]
 
 """Load a study and recheck case, outage, and response-policy validity."""
 function read_study(path::AbstractString)
@@ -116,7 +163,9 @@ function read_study(path::AbstractString)
     attachments = GeneratorControlAttachment[]
     for a in c["attachments"]
         l = a["location"]
-        location = RegulatedLocation(Symbol(l["kind"]),l["bus_id"]; side=isnothing(l["side"]) ? nothing : Symbol(l["side"]))
+        location = RegulatedLocation(Symbol(l["kind"]),l["bus_id"];
+            side=isnothing(l["side"]) ? nothing : Symbol(l["side"]),
+            branch_id=get(l,"branch_id",nothing))
         push!(attachments,GeneratorControlAttachment(a["generator_id"],a["control_id"],location; priority=Symbol(a["priority"])))
     end
     case = Case(c["id"]; base_power=Float64(c["base_power"]),base_frequency=Float64(c["base_frequency"]),
@@ -125,7 +174,8 @@ function read_study(path::AbstractString)
         branch_ids=Int.(k["branch_ids"])) for k in data["contingencies"]]
     return Study(case; contingencies=contingencies,mode=Symbol(data["mode"]),
         participation=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["participation"]),
-        redispatch_limits=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["redispatch_limits"]))
+        redispatch_limits=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["redispatch_limits"]),
+        reactive_assignments=_reactive_assignments_from_data(data["reactive_assignments"]))
 end
 
 function _scopf_result_from_data(d)
@@ -139,7 +189,8 @@ function _scopf_result_from_data(d)
         isnothing(d["objective"]) ? NaN : Float64(d["objective"]),
         Symbol(d["termination_status"]),Symbol(d["primal_status"]),Symbol(d["mode"]),Symbol(d["encoding"]),
         Float64(d["smooth_epsilon"]),Float64(d["smooth_reactive_relative_epsilon"]),
-        isnothing(d["smooth_reactive_epsilon"]) ? nothing : Float64(d["smooth_reactive_epsilon"]),d["solver"])
+        isnothing(d["smooth_reactive_epsilon"]) ? nothing : Float64(d["smooth_reactive_epsilon"]),d["solver"],
+        _reactive_assignments_from_data(d["reactive_assignments"]))
 end
 
 """Load saved states and metadata. Revalidate them against the corresponding study before use."""

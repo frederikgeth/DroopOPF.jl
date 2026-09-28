@@ -175,7 +175,9 @@ scenario set differs from the study is rejected instead of producing a partial
 figure. The graphics explain a validated result; the independent numerical
 report remains the acceptance authority.
 
-JSON documents use schema version 1 and a document-kind tag. Study files contain
+JSON documents use a document-kind tag. Study schema v6 and result schema v2
+persist optional reactive-control assignments; older supported documents reload
+with legacy attachment semantics. Study files contain
 all case data, contingencies, and the response policy. Result files contain
 scenario states, balancing powers, solver/status, encoding, and smoothing widths.
 Nonfinite diagnostics are written as JSON `null`; missing states remain `null`.

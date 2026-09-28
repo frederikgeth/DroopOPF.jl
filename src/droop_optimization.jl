@@ -383,6 +383,7 @@ function optimize_droop_parameters(
         Float64(smooth_reactive_relative_epsilon),
         isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
         solver_name(model),
+        study.reactive_assignments,
     )
     settings = if has_values(model)
         DroopSettings(

@@ -1,5 +1,93 @@
-using JuMP, Ipopt, MadNLP
+using JuMP, Ipopt, MadNLP, Random
 include(joinpath(@__DIR__, "..", "examples", "m5_transformer_case.jl"))
+
+# Independent transcription of PowerModels' ACP OLTC/PST terminal-flow
+# equations.  Keep this oracle outside DroopOPF's admittance/current helpers so
+# a shared tap convention or scaling error cannot make the test pass.
+function powermodels_acp_terminal_flows(branch, vm_fr, va_fr, vm_to, va_to; tm=branch.tap_ratio)
+    y = inv(complex(branch.resistance, branch.reactance))
+    g, b = real(y), imag(y)
+    g_fr = g_to = 0.0
+    b_fr = b_to = branch.charging / 2
+    ta = branch.phase_shift
+    delta = va_fr - va_to - ta
+    reverse_delta = va_to - va_fr + ta
+    p_fr = (g + g_fr) / tm^2 * vm_fr^2 -
+        g / tm * vm_fr * vm_to * cos(delta) -
+        b / tm * vm_fr * vm_to * sin(delta)
+    q_fr = -(b + b_fr) / tm^2 * vm_fr^2 +
+        b / tm * vm_fr * vm_to * cos(delta) -
+        g / tm * vm_fr * vm_to * sin(delta)
+    p_to = (g + g_to) * vm_to^2 -
+        g / tm * vm_to * vm_fr * cos(reverse_delta) -
+        b / tm * vm_to * vm_fr * sin(reverse_delta)
+    q_to = -(b + b_to) * vm_to^2 +
+        b / tm * vm_to * vm_fr * cos(reverse_delta) -
+        g / tm * vm_to * vm_fr * sin(reverse_delta)
+    return (from=complex(p_fr, q_fr), to=complex(p_to, q_to))
+end
+
+@testset "PowerModels ACP transformer equivalence" begin
+    rng = MersenneTwister(0x5a17)
+    buses = [Bus(1; reference=true), Bus(2)]
+
+    # Fixed-device evaluator: cover nonzero R, line charging, off-nominal taps,
+    # signed phase shifts, voltage magnitudes and angle differences.
+    for sample in 1:256
+        branch = Branch(sample, 1, 2;
+            resistance=rand(rng, 0.005:0.001:0.080),
+            reactance=rand(rng, 0.030:0.002:0.400),
+            charging=rand(rng, 0.000:0.002:0.200),
+            thermal_limit=100.0,
+            tap_ratio=rand(rng, 0.80:0.01:1.20),
+            phase_shift=rand(rng, -0.35:0.01:0.35))
+        vm = rand(rng, 0.90:0.002:1.10, 2)
+        va = rand(rng, -0.40:0.004:0.40, 2)
+        state = ACState(vm, va, Float64[], Float64[])
+        actual = branch_flows(ACNetwork(buses, [branch]), state)
+        expected = powermodels_acp_terminal_flows(branch, vm[1], va[1], vm[2], va[2])
+        @test actual.from[1] ≈ expected.from atol=2e-12 rtol=2e-12
+        @test actual.to[1] ≈ expected.to atol=2e-12 rtol=2e-12
+    end
+
+    # Variable-tap NLP path: fix several operating points in one model and
+    # verify the bus injections produced by _add_tap_network! against the same
+    # independent PowerModels equations.  Phase shift remains a fixed input,
+    # matching DroopOPF's present TapControl scope.
+    branch = Branch(1, 1, 2; resistance=0.017, reactance=0.143,
+        charging=0.086, thermal_limit=100.0, tap_ratio=1.03, phase_shift=-0.11)
+    generators = [
+        Generator(1, 1; p_min=-100.0, p_max=100.0, q_min=-100.0, q_max=100.0),
+        Generator(2, 2; p_min=-100.0, p_max=100.0, q_min=-100.0, q_max=100.0),
+    ]
+    case = Case("powermodels-tap-oracle"; base_power=100.0, base_frequency=60.0,
+        network=ACNetwork(buses, [branch]),
+        generators, loads=Load[], controls=VoltVarDroop[],
+        attachments=GeneratorControlAttachment[])
+    model, variables = DroopOPF._build_acopf_model(case;
+        voltage_epsilon=1e-6, reactive_relative_epsilon=1e-6,
+        reactive_epsilon=nothing, silent=true, tap_controls=[
+            TapControl(1; lower=0.75, upper=1.25, initial=branch.tap_ratio),
+        ])
+    for (tm, vm_fr, vm_to, va_to) in (
+        (0.81, 0.92, 1.08, -0.31), (0.93, 1.07, 0.94, 0.22),
+        (1.00, 1.00, 1.00, 0.00), (1.08, 0.97, 1.04, -0.17),
+        (1.19, 1.09, 0.91, 0.36),
+    )
+        fix(variables.vm[1], vm_fr; force=true)
+        fix(variables.vm[2], vm_to; force=true)
+        fix(variables.va[1], 0.0; force=true)
+        fix(variables.va[2], va_to; force=true)
+        fix(variables.taps[1], tm; force=true)
+        optimize!(model)
+        @test termination_status(model) in (MOI.LOCALLY_SOLVED, MOI.OPTIMAL)
+        expected = powermodels_acp_terminal_flows(branch, vm_fr, 0.0, vm_to, va_to; tm)
+        @test complex(value(variables.pg[1]), value(variables.qg[1])) ≈
+            expected.from atol=2e-8 rtol=2e-8
+        @test complex(value(variables.pg[2]), value(variables.qg[2])) ≈
+            expected.to atol=2e-8 rtol=2e-8
+    end
+end
 
 @testset "M5.2-M5.3 analytical transformer physics" begin
     buses=[Bus(1;reference=true),Bus(2)]

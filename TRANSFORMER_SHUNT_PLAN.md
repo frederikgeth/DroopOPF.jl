@@ -560,3 +560,58 @@ and shunt--droop validate 12/12. Six completed stressed IEEE 300 fixed/droop
 attempts reach the cumulative inner-iteration limit; the other stressed IEEE
 300 families remain unrun. This partial matrix is labelled as such and does not
 change frozen S1 acceptance counts.
+
+### S1 smooth control-family checkpoint (2026-09-23)
+
+The complete 192-cell smooth family-isolation matrix now covers fixed,
+droop-only, tap-only, shunt-only, all three pairs and the full joint model for
+both frozen solvers, both public networks, both loads and all three starts.
+Every cell uses the frozen epsilon, independent validation and one-reset
+budget. Combined acceptance is fixed 13/24, droop 14/24, tap 13/24, shunt
+16/24, tap--shunt 10/24, tap--droop 15/24, shunt--droop 15/24 and joint
+12/24. The joint slice reproduces every original frozen decision exactly
+(Ipopt 8/12, MadNLP 4/12). Droop alone is therefore not the dominant failure
+source. Effects are backend- and context-dependent; the largest aggregate
+penalty is the tap--shunt interaction, while tap freedom is necessary for
+several stressed IEEE-300 recoveries. This diagnostic does not replace the
+joint frozen acceptance decision.
+
+### S1 raw-source stress qualification checkpoint (2026-09-23)
+
+The public overlay is not the untouched PGLib OPF: PGLib supplies fixed
+transformer ratios, fixed shunts, network and generator data, while the
+volt--var curves and switched banks are explicitly synthetic. A raw +5% audit
+therefore ran with no overlay. IEEE-118 validates from the raw nominal solution
+with both solvers. IEEE-300 validates through a 1% warm-start continuation to
+1.04, but both solvers fail at 1.05; the 1.04 witnesses have essentially zero
+P/Q, voltage and thermal margins. The raw 1.05 point is consequently an
+unqualified near-limit stress point, not a suitable default robustness point or
+evidence that the droop model alone creates infeasibility. Future public
+control matrices should use a raw-qualified stress below that path endpoint,
+and retain 1.05 only as an explicitly labelled limit challenge.
+
+### S1 epsilon-continuation checkpoint (2026-09-23)
+
+A fixed six-stage sensitivity schedule (`1e-2` through `1e-7`) was run on all
+24 frozen Ipopt/MadNLP cells. Each stage starts from the latest solver- and
+policy-valid stage; failed stages are retained but not propagated. Raw
+exact-droop mismatch is recorded at every epsilon, including accepted stages.
+The unchanged strict `1e-5` physical criterion validates at least one stage in
+**18/24** cells versus **12/24** frozen direct cells. Ipopt remains **8/12**
+(one gain and one loss); MadNLP reaches **10/12** (seven gains and one loss).
+The best aggregate region is `1e-5` to `1e-6`; the large `1e-2` and `1e-3`
+stages produce no strict-valid cells, while `1e-7` is less numerically reliable.
+
+The continuation union is not an equal-budget replacement: it permits six
+solve allowances per cell and fails to reproduce two frozen-accepted stressed
+IEEE-300 anchor cells. A separate deterministic cross-seed experiment transfers
+one strict-valid state only within the same solver, network and load level at
+epsilon `1e-6`; it recovers **1/6** unresolved continuation cells. Two converged
+IEEE-118 Ipopt transfers miss strict droop acceptance at `1.427e-5` pu and keep
+their raw mismatch in the report.
+
+The retained ledgers are in `artifacts/s1_epsilon_sensitivity` and
+`artifacts/s1_epsilon_cross_seed`. **1605/1605 regression tests pass. S1 remains
+open:** continuation is a promising opt-in MadNLP recovery strategy, but it
+does not satisfy the no-loss or shared-budget reliability gate and is not
+promoted as the default.

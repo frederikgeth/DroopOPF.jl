@@ -1,0 +1,111 @@
+[
+  {
+    "avr": {
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "assignment": {
+            "generator_id": 10,
+            "location": {
+              "branch_id": null,
+              "bus_id": 24,
+              "kind": "generator_terminal",
+              "side": null
+            },
+            "mode": {
+              "type": "AVR",
+              "voltage_setpoint": 1.048733995751897
+            }
+          },
+          "bus_id": 24,
+          "generator_id": 10,
+          "normalized_bidirectional_q_headroom": 0.498725945438738,
+          "setpoint": 1.048733995751897
+        },
+        {
+          "assignment": {
+            "generator_id": 54,
+            "location": {
+              "branch_id": null,
+              "bus_id": 116,
+              "kind": "generator_terminal",
+              "side": null
+            },
+            "mode": {
+              "type": "AVR",
+              "voltage_setpoint": 1.014590138203703
+            }
+          },
+          "bus_id": 116,
+          "generator_id": 54,
+          "normalized_bidirectional_q_headroom": 0.496158557580488,
+          "setpoint": 1.014590138203703
+        },
+        {
+          "assignment": {
+            "generator_id": 33,
+            "location": {
+              "branch_id": null,
+              "bus_id": 73,
+              "kind": "generator_terminal",
+              "side": null
+            },
+            "mode": {
+              "type": "AVR",
+              "voltage_setpoint": 1.0329649329473591
+            }
+          },
+          "bus_id": 73,
+          "generator_id": 33,
+          "normalized_bidirectional_q_headroom": 0.49547233859545536,
+          "setpoint": 1.0329649329473591
+        }
+      ],
+      "ipopt": {
+        "objective": 8.31183109441573,
+        "primal_status": "FEASIBLE_POINT",
+        "termination_status": "LOCALLY_SOLVED",
+        "valid": true
+      },
+      "joint": {
+        "staged": true,
+        "stages": [
+          {
+            "avr_count": 1,
+            "tap_ratio": 0.9989462453905218,
+            "termination_status": "LOCALLY_SOLVED",
+            "valid": true
+          },
+          {
+            "avr_count": 2,
+            "tap_ratio": 0.998946245964905,
+            "termination_status": "LOCALLY_SOLVED",
+            "valid": true
+          },
+          {
+            "avr_count": 3,
+            "tap_ratio": 0.9989462459677911,
+            "termination_status": "LOCALLY_SOLVED",
+            "valid": true
+          }
+        ],
+        "tap_bounds": [
+          0.99,
+          1.01
+        ],
+        "tap_branch_id": 1,
+        "valid": true
+      },
+      "selection_rule": "highest normalized bidirectional Q headroom; one generator per bus; raw voltage at least 1e-5 inside limits"
+    },
+    "freeq": {
+      "objective": 8.311831094421091,
+      "primal_status": "FEASIBLE_POINT",
+      "termination_status": "LOCALLY_SOLVED",
+      "valid": true
+    },
+    "load_factor": 1.01,
+    "network": 118,
+    "note": "predeclared highest-headroom terminal AVR set; separate qualification lane"
+  }
+]

@@ -7,8 +7,23 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-28
+
 ### Added
 
+- M8 explicit reactive-control assignments: `FreeQ`, `FixedQ`, AVR, and
+  Volt–VAr modes; local, remote-bus, and identified branch-terminal voltage
+  locations; common-location AVR Q-range sharing; independent equilibrium
+  validation; and legacy-compatible persistence.
+- Smooth Ipopt/MadNLP and exact CCOpt AVR formulations, including PV-to-PQ
+  behavior at generator-Q limits, independent regime checks, and
+  cross-solver regressions.
+- AVR-aware base-case tap, simple-bank, and joint-design APIs with persisted
+  reactive assignments and independently replayed physical validation.
+- Reproducible IEEE-118/300 AVR qualification artifacts. Staged k1 → k2 → k3
+  continuation passes the Ipopt and MadNLP envelopes at loads 1.00 and 1.01;
+  the exact CCOpt lane and its cross-seed diagnostic are retained with solver
+  statuses and complementarity residuals.
 - CCOpt parity for base-case continuous joint design: exact complementarity
   droop with the same tap-ratio, simple-bank, and bounded droop-parameter
   variables used by the Ipopt/MadNLP formulation, including independent replay,
@@ -105,7 +120,8 @@ First public M1 milestone release.
   assessed using physical residuals, objective values, and droop regimes.
 - Security constraints and droop-curve optimization are planned for M2 and M3.
 
-[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.7.0...v0.8.0
 [0.4.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...v0.2.0

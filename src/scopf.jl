@@ -11,6 +11,7 @@ struct SCOPFResult
     smooth_reactive_relative_epsilon::Float64
     smooth_reactive_epsilon::Union{Nothing,Float64}
     solver::String
+    reactive_assignments::Union{Nothing,Vector{ReactiveControlAssignment}}
 end
 
 function _add_response_constraints!(model, study, scenario, base, variables, prefix)
@@ -115,11 +116,11 @@ function solve_scopf(study::Study;
                 reactive_relative_epsilon=smooth_reactive_relative_epsilon,
                 reactive_epsilon=smooth_reactive_epsilon, silent=silent,
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
-                initial_state=initial)
+                initial_state=initial, reactive_assignments=study.reactive_assignments)
         else
             _build_complementarity_opf_model(case; silent=silent,
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
-                initial_state=initial)
+                initial_state=initial, reactive_assignments=study.reactive_assignments)
         end
         push!(variables, vars)
         if k > 1
@@ -138,7 +139,7 @@ function solve_scopf(study::Study;
             Dict{Symbol,Float64}(), base_cost, :NOT_RUN, :NO_SOLUTION, study.mode,
             encoding, Float64(smooth_epsilon),Float64(smooth_reactive_relative_epsilon),
             isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
-            "Fixed base evaluation (no optimization)")
+            "Fixed base evaluation (no optimization)", study.reactive_assignments)
     end
     optimize!(model)
     states = Dict{Symbol,Union{Nothing,ACState{Float64}}}(id => nothing for id in ids)
@@ -166,7 +167,7 @@ function solve_scopf(study::Study;
         Symbol(string(termination_status(model))), Symbol(string(primal_status(model))),
         study.mode, encoding, Float64(smooth_epsilon), Float64(smooth_reactive_relative_epsilon),
         isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
-        solver_name(model))
+        solver_name(model), study.reactive_assignments)
 end
 
 solve(study::Study; kwargs...) = solve_scopf(study; kwargs...)

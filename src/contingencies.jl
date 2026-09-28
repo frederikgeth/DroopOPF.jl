@@ -74,13 +74,15 @@ scenario. Outaged generators have zero P/Q and no active droop equation.
 """
 struct Study{T<:Real}
     case::Case{T}
+    reactive_assignments::Union{Nothing,Vector{ReactiveControlAssignment}}
     contingencies::Vector{Contingency}
     mode::Symbol
     participation::Dict{Int,Float64}
     redispatch_limits::Dict{Int,Float64}
     function Study(case::Case{T}; contingencies = Contingency[], mode::Symbol = :preventive,
                    participation::AbstractDict = Dict{Int,Float64}(),
-                   redispatch_limits::AbstractDict = Dict{Int,Float64}()) where {T}
+                   redispatch_limits::AbstractDict = Dict{Int,Float64}(),
+                   reactive_assignments = nothing) where {T}
         mode in (:preventive, :corrective) || throw(ArgumentError("unknown SCOPF mode"))
         cs = Contingency[contingencies...]
         length(unique(c.id for c in cs)) == length(cs) ||
@@ -97,6 +99,9 @@ struct Study{T<:Real}
         mode == :corrective && !isempty(weights) &&
             throw(ArgumentError("participation weights only apply to preventive mode"))
         validate_case(case)
+        assignments = isnothing(reactive_assignments) ? nothing :
+            ReactiveControlAssignment[reactive_assignments...]
+        isnothing(assignments) || validate_reactive_assignments(case, assignments)
         _check_connected(case)
         for c in cs
             overlay = scenario_case(case, c)
@@ -106,7 +111,7 @@ struct Study{T<:Real}
                     throw(ArgumentError("scenario $(c.id) needs a surviving active-power participant"))
             end
         end
-        new{T}(case, copy(cs), mode, weights, limits)
+        new{T}(case, assignments, copy(cs), mode, weights, limits)
     end
 end
 
@@ -118,5 +123,6 @@ end
 # Recheck mutable vectors/dictionaries when a study is used.
 function _validated_study(study::Study)
     return Study(study.case; contingencies=study.contingencies, mode=study.mode,
-        participation=study.participation, redispatch_limits=study.redispatch_limits)
+        participation=study.participation, redispatch_limits=study.redispatch_limits,
+        reactive_assignments=study.reactive_assignments)
 end

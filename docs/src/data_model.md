@@ -44,6 +44,80 @@ The exact curve is available through `droop_curve(control)` and evaluated with
 `droop_response(control, voltage; p = active_power)`. The active-power range
 on the control is enforced for its attached generator.
 
+`q_ref(control)` is the preferred name for the constant reactive reference
+inside the voltage deadband. The legacy `q_at_deadband` field remains available
+for backward compatibility. New code may use the keyword constructor:
+
+```julia
+control = VoltVarDroop(schedule, slope, capability; q_ref = 0.0)
+```
+
+## Explicit reactive-control modes
+
+`FreeQ`, `FixedQ`, `AVR`, and `VoltVarDroop` are explicit
+`ReactiveControlMode`s. A `ReactiveControlAssignment` associates one mode with
+one generator; AVR and Volt–VAr modes also require a regulated location.
+`validate_reactive_assignments` rejects duplicate generator assignments,
+out-of-range fixed-Q schedules and AVR setpoints, unknown locations, and droop
+capabilities incompatible with generator limits.
+
+```julia
+assignments = [
+    ReactiveControlAssignment(1, AVR(1.02), RegulatedLocation(:bus, 1)),
+    ReactiveControlAssignment(2, FixedQ(0.1)),
+]
+validate_reactive_assignments(case, assignments)
+```
+
+`reactive_control_assignments(case)` gives every generator in a legacy case an
+explicit mode without modifying the case: attached droops remain
+`VoltVarDroop`, and unattached generators become `FreeQ`. The existing solver
+and study-file representation remains backward compatible.
+
+For base-case smooth or CCOpt OPF, pass `reactive_assignments=assignments` to
+`solve_opf` or `solve_opf_complementarity`, respectively, and to
+`validate_equilibrium`. This list replaces legacy attachments
+for that call; omitted generators have bounded, free Q. `FixedQ` adds a Q
+schedule equality and the independent validator reports `:fixed_q` when its
+error exceeds `power_tolerance`. Unavailable generators retain zero output.
+AVR is supported by both the smooth and CCOpt base-case entry points.
+Study JSON v6 and SCOPF result JSON v2 store optional assignments explicitly.
+Readers preserve `nothing` for older documents, which retains legacy attachment
+semantics. Restored assignments are revalidated and SCOPF validation rejects a
+study/result assignment mismatch. Joint design accepts the same optional
+assignments for base-case tap/shunt design, validates the returned equilibrium
+against them, and persists them in joint-design schema v2. Explicit assignments
+cannot be combined with legacy droop-parameter design variables in one run.
+When assignments contain only FreeQ/FixedQ, there are no complementarity
+constraints and CCOpt delegates to MadNLP; these runs are not independent
+third-solver evidence. Explicit VoltVarDroop assignments retain the exact
+complementarity encoding.
+
+Exact AVR holds the regulated voltage at its setpoint when Q is interior.
+At the upper Q limit it permits voltage below the setpoint; at the lower Q
+limit it permits voltage above the setpoint. The encoding uses two nonnegative
+voltage-release variables complementary to the respective Q-limit slacks.
+The independent validator checks these physical regimes directly and reports
+`:avr`, using `avr_voltage_tolerance` (default `1e-5`) for voltage and
+`limit_tolerance` for Q-limit proximity. Unavailable generators do not regulate.
+AVRs at the same regulated location must declare the same setpoint. Available
+generators form one aggregate regulator: their normalized Q positions
+`(Q-Qmin)/(Qmax-Qmin)` are equal, so output is shared in proportion to each
+unit's Q range and the aggregate Q limits govern voltage release. Outages
+automatically regroup the surviving units. The independent validator reports
+`:avr_sharing` for inconsistent allocations. Remote regulation and IEEE
+benchmark performance are not yet qualified. `:remote_bus` regulates the named
+network bus. `:generator_terminal` must name the generator's own bus. A
+`:branch_terminal` location must provide `branch_id` and `side`; it regulates
+that endpoint's bus voltage and is disabled in a scenario where its monitoring
+branch is unavailable.
+Smooth AVR uses the same two Q-slack/voltage-release pairs with
+`slack * release == smooth_voltage_epsilon^2`. Thus Ipopt and MadNLP follow a
+central path approaching the exact CCOpt graph rather than replacing AVR with
+an arbitrary high-gain droop curve. At finite smoothing, Q remains slightly
+inside its limits; the default `1e-4` voltage smoothing keeps the tested
+small-case deviation within the independent AVR tolerances.
+
 ## Attachments
 
 `GeneratorControlAttachment` connects one generator to one control and gives
@@ -211,7 +285,9 @@ Positive B is capacitive, so Q is negative consumption. Fixed shunts and banks
 share a unique ID namespace. Do not represent the same physical aggregate in both.
 MATPOWER GS/BS remains fixed admittance and does not infer bank identities or states.
 
-Study schema v4 requires `network.banks` and preserves all metadata. Readers
+Study schema v4 requires `network.banks` and preserves all metadata. Schema v5
+adds optional reactive-control assignments; schema v6 adds `branch_id` to a
+branch-terminal location. Readers
 migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas.
 Existing branch/generator contingencies preserve supplied bank states. M6 uses
 fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization

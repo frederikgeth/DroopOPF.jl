@@ -40,7 +40,9 @@ export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
 export DroopBreakpointDiagnostic, SCOPFFinding, SCOPFDiagnostics, scopf_diagnostics
 export SCOPFBenchmarkSample, SCOPFBenchmarkReport, benchmark_scopf, write_scopf_benchmark
 export PiecewiseLinearCurve, evaluate, slope_at
-export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop
+export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop, q_ref
+export ReactiveControlMode, FreeQ, FixedQ, AVR, ReactiveControlAssignment
+export reactive_control_assignments, validate_reactive_assignments
 export droop_response, droop_curve
 export Generator, GeneratorControlAttachment, Case, validate_case
 export load_matpower_case, attach_controls
