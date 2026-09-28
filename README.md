@@ -5,26 +5,33 @@
 [![Docs (dev)](https://img.shields.io/badge/docs-dev-blue.svg)](https://frederikgeth.github.io/DroopOPF.jl/dev/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green.svg)](LICENSE)
 
-DroopOPF.jl is a Julia library for AC optimal power flow with generator
-volt-var droop controls. It is being developed as the foundation for a
-security-constrained AC OPF library with equilibrium-aware generator controls.
+DroopOPF.jl is a Julia library for equilibrium-aware AC optimal power flow.
+It supports smooth nonlinear and exact-complementarity representations of
+generator reactive controls, independently validates returned operating points,
+and retains failed numerical attempts as evidence rather than treating solver
+status as physical feasibility.
 
-Version `0.1.0` delivered M1:
+## Current release: v0.8.0
 
-- AC network power-flow physics and OPF constraints;
-- static piecewise-linear volt-var curves with deadband and reactive limits;
-- independent equilibrium and droop-curve validation;
-- numerically stable smooth encoding for standard nonlinear programming;
-- Ipopt and MadNLP access through the same smoothed model;
-- an exact complementarity encoding for CCOpt;
-- operating-point extraction, SVG plots, and solver comparison examples.
+M8 adds explicit `FreeQ`, `FixedQ`, AVR, and Volt–VAr assignments; local,
+remote-bus, and identified branch-terminal regulation; common-location AVR
+sharing; legacy-compatible persistence; and AVR-aware continuous equipment
+design. Ipopt and MadNLP provide smooth formulations, while CCOpt provides the
+separately reported exact-complementarity lane.
 
-Version `0.3.0` delivered M3: reference-anchored slope sweeps and
-bounded optimization of droop slope, voltage reference, and asymmetric deadband
-widths. Optimized designs are reconstructed as exact PWL curves, independently
-validated across the M2 security-constrained model, and checked on held-out
-contingencies. M2 line/generator outages, response policies, continuation, JSON
-serialization, and visual validation remain available unchanged.
+| Release gate | Result |
+|---|---:|
+| Package tests | 2267/2267 pass |
+| Documentation build | Pass |
+| Qualified AVR joint stages, Ipopt + MadNLP | 24/24 physically valid and `LOCALLY_SOLVED` |
+| Qualified AVR joint stages, direct CCOpt | 11/12 physically valid; 7/12 strictly `LOCALLY_SOLVED` |
+| CCOpt cross-seed diagnostic | Recovers the remaining physical point; not a direct-start pass |
+
+Read the [v0.8.0 release notes](RELEASE_NOTES_v0.8.0.md) and the
+[current S1 decision report](docs/src/s1_summary.md). S1 remains open for the
+frozen synthetic-droop reliability contract; the qualified AVR lane does not
+rescore it. Coordinated preventive/corrective equipment policy is deferred to
+M9.
 
 | Release | Milestone | Scope and evidence |
 |---|---|---|
@@ -34,8 +41,8 @@ serialization, and visual validation remain available unchanged.
 | `v0.7.0` | M7 | Continuous tap, simple-bank, and joint droop design in the declared base-case scope |
 | `v0.8.0` | M8 | Explicit reactive-control modes, AVR, and qualified AVR-aware base-case joint design |
 
-S1 is the active reliability investigation for the M7 joint model on IEEE
-118/300. It is deliberately not labelled a completed reliability release.
+S1 is the active reliability investigation for the M7/M8 numerical models on
+IEEE 118/300. It is deliberately not labelled a completed reliability release.
 
 Run the M2 workflow with `julia --project=. examples/m2_workflow.jl`.
 Run the first M3 validation slice with
@@ -53,9 +60,9 @@ Run the pinned public-case and M2 measurements with
 
 ## Documentation and milestone reports
 
-Start with [Milestones and S1 status](docs/src/milestones.md): it is the
-repository map for implemented scope, release status, reliability gates, and
-retained solver evidence.
+Start with [Milestones and S1 status](docs/src/milestones.md), then use the
+[current S1 decision report](docs/src/s1_summary.md) for the authoritative
+scorecards, failure classification, evidence provenance, and M9 entry gate.
 
 | Topic | Documentation | Retained report |
 |---|---|---|
@@ -63,13 +70,44 @@ retained solver evidence.
 | M5 transformers | [Data model](docs/src/data_model.md#fixed-transformer-electrical-model-m52m54) | [M5 report](artifacts/m5/report.md) and [M5.1 report](artifacts/m5_1/report.md) |
 | M6 shunts and banks | [Data model](docs/src/data_model.md#fixed-bus-shunts-m61) | [M6 report](artifacts/m6/report.md) and [M6.1 report](artifacts/m6_1/report.md) |
 | M7 continuous equipment | [Equipment optimization](docs/src/equipment_optimization.md) | [M7.1](artifacts/m7_1/report.md), [M7.2](artifacts/m7_2/report.md), [M7.3](artifacts/m7_3/report.md), and [CCOpt comparison](artifacts/m7_ccopt_comparison/report.md) |
-| M8 reactive controls and AVR | [Data model](docs/src/data_model.md#explicit-reactive-control-modes-m8) | [IEEE AVR qualification](artifacts/avr_ieee_qualification/README.md) and [reactive-control roadmap](REACTIVE_CONTROL_ROADMAP.md) |
-| S1 reliability | [S1 joint formulation](docs/src/joint_formulation.md), [S1 evidence](docs/src/s1_evidence.md), [CCOpt frozen lane](docs/src/s1_ccopt.md) | [Frozen CCOpt](artifacts/s1_ccopt_frozen/report.md), [feasibility status](artifacts/s1_ccopt_frozen/FEASIBILITY_STATUS.md), and [developer reproduction report](artifacts/s1_ccopt_frozen/DEVELOPER_REPORT.md) |
+| M8 reactive controls and AVR | [Data model](docs/src/data_model.md#explicit-reactive-control-modes) | [IEEE AVR qualification](artifacts/avr_ieee_qualification/README.md) and [reactive-control roadmap](REACTIVE_CONTROL_ROADMAP.md) |
+| S1 reliability | [Current decision report](docs/src/s1_summary.md), [joint formulation](docs/src/joint_formulation.md), and [CCOpt frozen lane](docs/src/s1_ccopt.md) | [Three-solver scorecard](artifacts/s1_three_solver_scorecard/report.md), [witness-seed matrix](artifacts/s1_frozen_witness_seed_matrix/report.md), and [frozen CCOpt](artifacts/s1_ccopt_frozen/report.md) |
 
-The documentation navigation contains the detailed S1 studies: restart policy,
-normalization, staged initialization, KKT diagnostics, and alternate droop-Q
-formulations. The [architecture](ARCHITECTURE.md), [roadmap](ROADMAP.md), and
-[changelog](CHANGELOG.md) provide project-wide context and decision history.
+The detailed S1 pages are an audit trail: restart policy, normalization, staged
+initialization, KKT diagnostics, and alternate droop-Q formulations. Their
+individual counts reflect the checkpoint at which each experiment ran; the
+current decision report is the synthesis. The [architecture](ARCHITECTURE.md),
+[roadmap](ROADMAP.md), and [changelog](CHANGELOG.md) provide project-wide
+context and decision history.
+
+## M8 quick start
+
+Reactive behavior is explicit and opt-in. An AVR assignment names both the
+generator and the voltage location it regulates:
+
+```julia
+using DroopOPF
+
+assignments = [
+    ReactiveControlAssignment(
+        7,
+        AVR(1.02),
+        RegulatedLocation(:generator_terminal, 10),
+    ),
+]
+
+result = solve_opf(case; reactive_assignments=assignments)
+report = validate_equilibrium(case, result;
+    reactive_assignments=assignments,
+    power_tolerance=1e-5,
+)
+@assert report.valid
+```
+
+Use `optimize_joint_design` with the same `reactive_assignments` to coordinate
+continuous taps or simple-bank settings in the base case. Equipment timing and
+scenario coupling are not inferred; those preventive/corrective decisions are
+the declared scope of M9.
 
 ## Installation
 

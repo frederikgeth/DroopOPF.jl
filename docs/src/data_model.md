@@ -105,12 +105,14 @@ generators form one aggregate regulator: their normalized Q positions
 `(Q-Qmin)/(Qmax-Qmin)` are equal, so output is shared in proportion to each
 unit's Q range and the aggregate Q limits govern voltage release. Outages
 automatically regroup the surviving units. The independent validator reports
-`:avr_sharing` for inconsistent allocations. Remote regulation and IEEE
-benchmark performance are not yet qualified. `:remote_bus` regulates the named
-network bus. `:generator_terminal` must name the generator's own bus. A
+`:avr_sharing` for inconsistent allocations. `:remote_bus` regulates the named
+network bus and `:generator_terminal` must name the generator's own bus. A
 `:branch_terminal` location must provide `branch_id` and `side`; it regulates
 that endpoint's bus voltage and is disabled in a scenario where its monitoring
-branch is unavailable.
+branch is unavailable. Remote and branch-terminal behavior is covered by
+small-case regressions. The retained IEEE-118/300 qualification uses
+generator-terminal AVR only and must not be generalized to remote or
+branch-terminal public-case performance.
 Smooth AVR uses the same two Q-slack/voltage-release pairs with
 `slack * release == smooth_voltage_epsilon^2`. Thus Ipopt and MadNLP follow a
 central path approaching the exact CCOpt graph rather than replacing AVR with

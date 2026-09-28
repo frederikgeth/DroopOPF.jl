@@ -1,16 +1,16 @@
 # DroopOPF.jl
 
-DroopOPF.jl is a Julia library for AC optimal power flow with generator
-volt-var droop controls. It provides a common data model, smooth nonlinear
-programming formulation, exact complementarity formulation, equilibrium
-validation, and solver-comparison tooling.
+DroopOPF.jl is a Julia library for equilibrium-aware AC optimal power flow. It
+provides explicit reactive-control semantics, smooth nonlinear and exact
+complementarity formulations, independent physical validation, continuous
+equipment design, and security-constrained workflows.
 
 !!! note "Current status"
 
-    M1–M7 are implemented. M7 delivers continuous transformer-tap,
-    simple-shunt-bank, and joint droop design in the declared base-case scope.
-    S1 is the active IEEE 118/300 reliability investigation and remains open;
-    it is not presented as a completed reliability release.
+    v0.8.0 releases M8 explicit FreeQ, FixedQ, AVR, and Volt–VAr assignments
+    plus AVR-aware base-case equipment design. The frozen S1 IEEE 118/300
+    reliability gate remains open; the qualified AVR lane is separate evidence.
+    Coordinated preventive/corrective equipment policy remains M9.
 
 ## Formulations
 
@@ -19,6 +19,8 @@ validation, and solver-comparison tooling.
 | Smooth AC OPF with Ipopt | `solve_opf(case)` |
 | Smooth AC OPF with MadNLP | `solve_opf(case; optimizer_factory = MadNLP.Optimizer)` |
 | Exact PWL droop graph with CCOpt | `solve_opf_complementarity(case)` |
+| Explicit reactive modes | `ReactiveControlAssignment(...)` |
+| Continuous equipment and reactive-control design | `optimize_joint_design(...)` |
 | Independent equilibrium checks | `equilibrium_report(case, result)` |
 | Droop operating-point plot | `write_droop_plot(...)` |
 | Validated M3 slope sweep | `sweep_droop_slope(...)` |
@@ -46,8 +48,11 @@ reactive clipping directly as complementarity pairs.
 - [M4 scale-up decision](scale_up_decision.md) — inspect measured model-size,
   timing, and allocation evidence before choosing a scaling algorithm.
 - [M7 equipment optimization](equipment_optimization.md) — tables and plots for tap, simple-bank and joint droop design.
+- [Data model: explicit reactive-control modes](data_model.md#explicit-reactive-control-modes) — FreeQ, FixedQ, AVR, Volt–VAr, regulated locations, sharing, and persistence.
 - [Milestones and S1 status](milestones.md) — release status, reliability gate,
   and direct links to retained solver evidence.
+- [S1 current decision report](s1_summary.md) — authoritative scorecards,
+  failure classification, evidence provenance, and the M9 entry decision.
 - [Examples](examples.md) — reproduce the M1 regime and solver studies.
 - [API reference](api.md) — generated documentation for exported
   types and functions.

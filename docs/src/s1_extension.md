@@ -1,4 +1,8 @@
-# S1 extended robustness and public cases
+# S1 extended robustness and public cases — historical checkpoint
+
+This page preserves the extended-study checkpoint and its contemporary counts.
+Later frozen matrices, witness-seed diagnostics, and the qualified AVR lane are
+synthesized in the [current S1 decision report](s1_summary.md).
 
 **The S1 reliability gate remains open.** The synthetic matrix passes 35/35 attempts; the initial public matrix passes 13/30. Both imported baselines and at least one joint solution at each tested network/loading condition validate, but solver/start reliability and solution quality are inconsistent.
 

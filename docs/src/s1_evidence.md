@@ -1,6 +1,9 @@
-# S1 convergence evidence
+# S1 convergence evidence — historical checkpoint
 
-This is the first S1 checkpoint. See [extended public-case evidence](s1_extension.md) for the current reliability gate.
+This page preserves the first S1 checkpoint and its contemporary counts. It is
+not the current aggregate status. See the [current S1 decision report](s1_summary.md)
+for the authoritative gate and [extended public-case evidence](s1_extension.md)
+for the next historical checkpoint.
 
 The [implemented formulation](joint_formulation.md) retains the M7 equipment laws, smoothing and dispatch objective. The variable-droop encoding now preserves exact Hessians. All eight control combinations converge locally and independently validate at 12 and 96 buses; both full joint runs take 16 iterations instead of reaching the 1000-iteration limit.
 

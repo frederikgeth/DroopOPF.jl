@@ -8,7 +8,7 @@
 | M5 — transformer physics | Implemented and validated | [data model](data_model.md#fixed-transformer-electrical-model-m52m54) |
 | M6 — fixed shunts and simple banks | Implemented and validated | [data model](data_model.md#fixed-bus-shunts-m61) |
 | M7 — continuous tap, bank, and joint droop design | Implemented and validated for the declared continuous base-case scope | [equipment optimization](equipment_optimization.md) |
-| M8 — explicit reactive controls and AVR | Released for the declared base-case scope | [data model](data_model.md#explicit-reactive-control-modes-m8) and [AVR qualification](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/avr_ieee_qualification/README.md) |
+| M8 — explicit reactive controls and AVR | Released for the declared base-case scope | [data model](data_model.md#explicit-reactive-control-modes) and [AVR qualification](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/avr_ieee_qualification/README.md) |
 
 M7 permits continuous tap ratios and simple-bank susceptances. Discrete tap
 positions and switched-shunt selection remain intentionally out of scope.
@@ -24,9 +24,10 @@ failures are documented rather than hidden.
 
 | Evidence | Current conclusion | Entry point |
 |---|---|---|
-| Ipopt and MadNLP | Frozen policy and restart evidence exists; reliability gate remains open | [bounded restart policy](s1_restart_policy.md) |
-| CCOpt | Exact-PWL frozen lane completed; 2/12 direct cells accepted | [CCOpt frozen lane](s1_ccopt.md#frozen-s1-lane) |
-| Case feasibility | IEEE 118 nominal/+5% and IEEE 300 nominal have validated local witnesses; IEEE 300 +5% remains unknown | [feasibility status](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/s1_ccopt_frozen/FEASIBILITY_STATUS.md) |
+| Frozen smooth direct starts | Ipopt 8/12 and MadNLP 4/12 pass the unchanged strict contract | [current S1 report](s1_summary.md#frozen-direct-start-scorecard) |
+| Frozen exact direct starts | CCOpt 2/12 passes; rejected cells also fail status or AC balance, not only droop tolerance | [current S1 report](s1_summary.md#frozen-direct-start-scorecard) |
+| Same-case witness diagnostics | 7/12 unresolved cells recover strictly; failures separate basin, residual-gate, and termination behavior | [current S1 report](s1_summary.md#same-case-witness-diagnostic) |
+| Physically qualified AVR lane | Ipopt/MadNLP validate 24/24 staged cells; direct CCOpt validates 11/12 physically and the remaining point is cross-seed recoverable | [current S1 report](s1_summary.md#qualified-avr-lane) |
 
 IEEE 118/300 are explicit reliability workloads, not unit tests. Their retained
 commands and artifacts live under `artifacts/s1_ccopt_*`.
@@ -34,6 +35,7 @@ commands and artifacts live under `artifacts/s1_ccopt_*`.
 ## Finding the evidence
 
 - Formulation and validation contract: [S1 joint formulation](joint_formulation.md).
+- Authoritative synthesis and gate decision: [current S1 report](s1_summary.md).
 - Smooth-solver convergence history: [S1 convergence evidence](s1_evidence.md).
 - Exact CCOpt, physical residuals, and reproduction commands:
   [S1 CCOpt pilot and frozen lane](s1_ccopt.md).

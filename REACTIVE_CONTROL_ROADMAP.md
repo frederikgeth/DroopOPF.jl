@@ -355,12 +355,11 @@ and small-case cross-solver agreement. Study v5/result v2 persistence and
 SCOPF replay are implemented with legacy-schema compatibility. Common-location
 AVRs use proportional Q-range sharing and aggregate PV/PQ limits. Remote-bus
 and identified branch-terminal AVR locations are implemented; an outaged
-monitoring branch disables its branch-terminal regulator. A separate one-device
-terminal-AVR qualification lane has validated Ipopt and MadNLP witnesses for
-IEEE-118 and IEEE-300; the bounded IEEE-118 CCOpt process produced no result
-and is retained as a non-pass. A predeclared three-device, one-per-bus
-headroom set validates for IEEE-118/MadNLP and IEEE-300/Ipopt; IEEE-300/MadNLP
-produced no result and is retained as a non-pass. AVR-aware base-case joint
+monitoring branch disables its branch-terminal regulator. Preliminary
+one-device and unstaged k3 attempts retain their bounded no-result outcomes;
+they are historical direct-path non-passes, not the final staged scorecard. A
+predeclared three-device, one-per-bus headroom set is used for the qualified
+staged lane. AVR-aware base-case joint
 tap/shunt design is implemented and persisted. The k3 AVR set validates under
 Ipopt at loads 1.00 and 1.01 for both IEEE systems. The direct IEEE-118 k3
 joint-tap run has a retained bounded non-pass, but a same-case staged k1 → k2

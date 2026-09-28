@@ -136,3 +136,22 @@ Python plotting requires Matplotlib. Julia solves retain versioned input/design
 JSON and independent validation evidence. All M7 cases are base-case continuous
 optimizations; equipment SCOPF is reserved for M9. Complex bank optimization stays
 in the post-scaling backlog.
+
+## M8 AVR qualification
+
+The M8 workflow solves a FreeQ baseline, selects a predeclared one-per-bus AVR
+set by normalized bidirectional Q headroom, independently validates the AVR
+point, and optionally activates k1 → k2 → k3 inside a continuous joint tap
+design:
+
+```sh
+julia --project=. examples/avr_ieee_qualification.jl 118 ipopt 3 1.0,1.01 joint_staged
+julia --project=. examples/avr_ieee_qualification.jl 300 madnlp 3 1.0,1.01 joint_staged
+julia --project=. examples/avr_ieee_qualification.jl 300 ccopt 3 1.01 joint_cross_seed
+```
+
+Every command writes a separately labelled JSON record under
+`artifacts/avr_ieee_qualification`. Cross-seeded CCOpt is a basin diagnostic;
+it does not replace the direct exact result. See the [current S1 decision
+report](s1_summary.md#qualified-avr-lane) for the full scorecard and scope
+boundaries.

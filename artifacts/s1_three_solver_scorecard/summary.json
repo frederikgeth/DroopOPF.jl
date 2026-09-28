@@ -1,0 +1,36 @@
+{
+  "interpretation": "CCOpt is an exact-complementarity third-solver lane with a native direct budget. Its score is comparable in cell coverage and independent acceptance, but not a same-formulation budget comparison with the smooth lanes.",
+  "relaxed_exact_droop_tolerance_pu": 0.01,
+  "rows": [
+    {
+      "budget": "one reset; 2000 iterations / 120 s",
+      "cells": 12,
+      "formulation": "smooth explicit droop",
+      "relaxed_droop_1e2_passes": 8,
+      "solver": "Ipopt",
+      "source": "artifacts/s1_policy_ipopt/summary.json",
+      "strict_passes": 8
+    },
+    {
+      "budget": "one reset; 2000 iterations / 120 s",
+      "cells": 12,
+      "formulation": "smooth explicit droop",
+      "relaxed_droop_1e2_passes": 5,
+      "solver": "MadNLP",
+      "source": "artifacts/s1_policy_madnlp/summary.json",
+      "strict_passes": 4
+    },
+    {
+      "budget": "native direct; 1000 iterations / 60 s",
+      "cells": 12,
+      "formulation": "exact complementarity",
+      "relaxed_droop_1e2_passes": 2,
+      "solver": "CCOpt",
+      "source": "artifacts/s1_ccopt_frozen/summary.json",
+      "strict_passes": 2
+    }
+  ],
+  "schema": "s1-three-solver-scorecard-v1",
+  "scope": "public 12-cell direct-start S1 lanes",
+  "strict_exact_droop_tolerance_pu": 1.0e-5
+}

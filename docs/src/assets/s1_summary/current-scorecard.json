@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.8.0",
+  "decision": "frozen_s1_gate_open",
+  "acceptance": {
+    "frozen_exact_droop_tolerance_pu": 1e-5,
+    "diagnostic_relaxed_droop_tolerance_pu": 0.01,
+    "solver_status_and_other_physical_gates_unchanged_in_relaxed_view": true
+  },
+  "frozen_direct_start": [
+    {"backend": "ipopt", "formulation": "smooth_explicit_droop", "cells": 12, "strict_passes": 8, "relaxed_passes": 8},
+    {"backend": "madnlp", "formulation": "smooth_explicit_droop", "cells": 12, "strict_passes": 4, "relaxed_passes": 5},
+    {"backend": "ccopt", "formulation": "exact_complementarity", "cells": 12, "strict_passes": 2, "relaxed_passes": 2}
+  ],
+  "same_case_witness": {
+    "unresolved_cells": 12,
+    "strict_passes": 7,
+    "relaxed_passes": 9,
+    "slow_progress_with_near_machine_precision_residuals": 3,
+    "locally_solved_narrow_strict_droop_misses": 2,
+    "rescored_frozen_matrix": false
+  },
+  "qualified_avr_joint_stages": [
+    {"backend": "ipopt", "cells": 12, "physically_valid": 12, "locally_solved": 12},
+    {"backend": "madnlp", "cells": 12, "physically_valid": 12, "locally_solved": 12},
+    {"backend": "ccopt", "cells": 12, "direct_physically_valid": 11, "direct_locally_solved": 7}
+  ],
+  "ccopt_cross_seed": {
+    "network": "IEEE-300",
+    "load_factor": 1.01,
+    "avr_count": 3,
+    "termination_status": "ALMOST_LOCALLY_SOLVED",
+    "physically_valid": true,
+    "complementarity_residual_max": 2.4838549927012624e-8,
+    "tap_difference_from_smooth_seed": 5.176284956221355e-9,
+    "rescored_direct_lane": false
+  }
+}
