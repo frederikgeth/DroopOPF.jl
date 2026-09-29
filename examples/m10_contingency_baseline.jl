@@ -97,16 +97,18 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
     write_contingency_catalog(joinpath(output, "catalog.json"), catalog)
     write(joinpath(output, "catalog.md"), markdown_report(catalog) * "\n")
     write(joinpath(output, "run-policy.md"), "# M10 run policy\n\n" *
-        "- Base CPU-time limit: $(base_max_cpu_time) seconds\n" *
-        "- Contingency-batch CPU-time limit: $(scenario_max_cpu_time) seconds\n" *
+        "- Base Ipopt CPU/wall-time limit: $(base_max_cpu_time) seconds\n" *
+        "- Contingency-batch Ipopt CPU/wall-time limit: $(scenario_max_cpu_time) seconds\n" *
         "- Ipopt iteration limit: $(max_iter)\n\n" *
+        "These limits begin when Ipopt starts; model construction needs a separate process supervisor. " *
         "A time or iteration limit is an unresolved outcome, never a safety claim.\n")
 
     base = if isfile(cache_path)
         m10_read_base_cache(cache_path, source, case)
     else
         base_result = solve_opf(case; optimizer_attributes=Dict(
-            "max_cpu_time" => Float64(base_max_cpu_time), "max_iter" => Int(max_iter)))
+            "max_cpu_time" => Float64(base_max_cpu_time),
+            "max_wall_time" => Float64(base_max_cpu_time), "max_iter" => Int(max_iter)))
         if isnothing(base_result.state)
             write(joinpath(output, "base-outcome.md"), "# M10 base outcome\n\n" *
                 "- Solver status: `$(base_result.termination_status)`\n" *
@@ -139,7 +141,8 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
     participation = Dict(g.id => 1.0 for g in case.generators if g.available)
     study = Study(case; contingencies=batch, participation=participation)
     result = evaluate_contingencies(study, base.state; optimizer_attributes=Dict(
-        "max_cpu_time" => Float64(scenario_max_cpu_time), "max_iter" => Int(max_iter)))
+        "max_cpu_time" => Float64(scenario_max_cpu_time),
+        "max_wall_time" => Float64(scenario_max_cpu_time), "max_iter" => Int(max_iter)))
     report = equilibrium_report(study, result)
     ranks = rank_contingencies(catalog, report)
     write_study(joinpath(output, "study.json"), study)

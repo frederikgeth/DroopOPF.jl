@@ -27,8 +27,10 @@ batch directories; later batches reuse that state only after independently
 revalidating it. Thus every batch assesses the identical, solver-accepted base
 without repeatedly optimizing a new base dispatch.
 The runner writes `run-policy.md` before solving. Its default 120-second
-CPU-time and 1,000-iteration limits apply independently to the base and each
-contingency batch. A bounded solver failure is retained as an unresolved
+Ipopt CPU-time and wall-clock limits, plus its 1,000-iteration limit, apply
+independently to the base and each contingency batch. They begin after model
+construction, so production runs need an external process supervisor for an
+end-to-end budget. A bounded solver failure is retained as an unresolved
 outcome; it is never converted into a safety or screening assertion.
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
