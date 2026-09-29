@@ -11,27 +11,32 @@ generator reactive controls, independently validates returned operating points,
 and retains failed numerical attempts as evidence rather than treating solver
 status as physical feasibility.
 
-## Current release: v0.8.0
+## Current release: v0.9.0
 
-M8 adds explicit `FreeQ`, `FixedQ`, AVR, and Volt–VAr assignments; local,
-remote-bus, and identified branch-terminal regulation; common-location AVR
-sharing; legacy-compatible persistence; and AVR-aware continuous equipment
-design. Ipopt and MadNLP provide smooth formulations, while CCOpt provides the
-separately reported exact-complementarity lane.
+M9 adds equipment-aware SCOPF with explicit preventive/corrective tap and shunt
+timing, per-device corrective movement budgets, shared automatic reactive
+assignments, independent scenario replay, and paired immediate/settled
+steady-state assessment. Ipopt and MadNLP provide smooth formulations, while
+CCOpt provides the separately reported exact-complementarity lane.
 
 | Release gate | Result |
 |---|---:|
-| Package tests | 2267/2267 pass |
+| Package tests | 2319/2319 pass |
 | Documentation build | Pass |
+| M9 preventive/corrective example | Pass |
 | Qualified AVR joint stages, Ipopt + MadNLP | 24/24 physically valid and `LOCALLY_SOLVED` |
 | Qualified AVR joint stages, direct CCOpt | 11/12 physically valid; 7/12 strictly `LOCALLY_SOLVED` |
 | CCOpt cross-seed diagnostic | Recovers the remaining physical point; not a direct-start pass |
 
-Read the [v0.8.0 release notes](RELEASE_NOTES_v0.8.0.md) and the
+Read the [v0.9.0 release notes](RELEASE_NOTES_v0.9.0.md) and the
 [current S1 decision report](docs/src/s1_summary.md). S1 remains open for the
-frozen synthetic-droop reliability contract; the qualified AVR lane does not
-rescore it. Coordinated preventive/corrective equipment policy is deferred to
-M9.
+frozen synthetic-droop reliability contract and is not rescored by M9. The S2
+initial qualification is frozen and remains separate so S1 can continue against
+its original contract. Its frozen 29-cell IEEE-118 expansion accepts 25 direct
+cells and 26 with the declared bounded warm retry, and
+covers shunt, joint, multi-location, corrective-budget, mixed-control, holdout,
+and stress cases. Broader reliability qualification remains active.
+See the [generated S2 qualification report](artifacts/s2_scopf/qualification_report.md).
 
 | Release | Milestone | Scope and evidence |
 |---|---|---|
@@ -40,6 +45,7 @@ M9.
 | `v0.6.0` | M6 | Fixed shunts and simple-bank physics, accounting, and validation |
 | `v0.7.0` | M7 | Continuous tap, simple-bank, and joint droop design in the declared base-case scope |
 | `v0.8.0` | M8 | Explicit reactive-control modes, AVR, and qualified AVR-aware base-case joint design |
+| `v0.9.0` | M9 | Equipment-aware SCOPF timing, movement budgets, paired response stages, and bounded public qualification |
 
 S1 is the active reliability investigation for the M7/M8 numerical models on
 IEEE 118/300. It is deliberately not labelled a completed reliability release.
@@ -55,6 +61,8 @@ Run M3 parameter multi-start validation with
 `julia --project=. examples/m4_design_multistart.jl /tmp/droopopf-m4-design`.
 Run the pinned public-case and M2 measurements with
 `julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark`.
+Run the staged M9.1 preventive/corrective equipment workflow with
+`julia --project=. examples/m9_1_equipment_scopf.jl /tmp/droopopf-m9-1`.
 
 ![M3 reference and optimized droop design](m3_validation/m3_droop_design_comparison.svg)
 
@@ -105,9 +113,32 @@ report = validate_equilibrium(case, result;
 ```
 
 Use `optimize_joint_design` with the same `reactive_assignments` to coordinate
-continuous taps or simple-bank settings in the base case. Equipment timing and
-scenario coupling are not inferred; those preventive/corrective decisions are
-the declared scope of M9.
+continuous taps or simple-bank settings in the base case. For SCOPF, pass those
+policies to `Study` and declare timing explicitly:
+
+```julia
+seed_study = Study(case;
+    contingencies,
+    participation,
+    reactive_assignments = assignments,
+)
+seed = solve_scopf(seed_study)
+
+study = Study(case;
+    contingencies,
+    participation,
+    reactive_assignments = assignments,
+    tap_controls = [TapControl(11; lower=0.95, upper=1.05)],
+    shunt_controls = [ShuntControl(201)],
+    control_policy = SCOPFControlPolicy(), # preventive taps/shunts
+)
+result = solve_scopf(study; initial_states=seed.states)
+@assert equilibrium_report(study, result).valid
+```
+
+Use `taps=:corrective` or `shunts=:corrective` only when that post-contingency
+movement is physically justified. Reactive assignments and their setpoints
+remain shared and respond automatically to scenario physics.
 
 ## Installation
 

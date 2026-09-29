@@ -1,0 +1,109 @@
+{
+  "data": {
+    "case_id": "pglib_opf_case118_ieee",
+    "coupling_violation": {
+      "generator_39": 1.1988969862531436e-25,
+      "line_1": 4.721297617328609e-28
+    },
+    "encoded_droop_residual": {
+      "base": 2.83102030999155e-5,
+      "generator_39": 0.00011338568520277009,
+      "line_1": 5.545864620426499e-6
+    },
+    "encoded_physical_valid": false,
+    "encoding": "complementarity",
+    "equipment_coupling_violation": {
+      "generator_39": 0.0,
+      "line_1": 0.0
+    },
+    "mode": "preventive",
+    "objective": 7.7553047909034944,
+    "physical_valid": false,
+    "primal_status": "NEARLY_FEASIBLE_POINT",
+    "scenario_ids": [
+      "base",
+      "line_1",
+      "generator_39"
+    ],
+    "scenarios": {
+      "base": {
+        "branch_thermal_min_margin": 0.11693353022608644,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.83102030999155e-5,
+        "generator_p_max_margin": -1.0731883381964735e-8,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 9.634929770685474e-9,
+        "generator_q_min_margin": -6.682760941845167e-9,
+        "power_balance_max": 4.488076577047195e-14,
+        "smooth_epsilon": null,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": null,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": -1.0375185821587252e-8,
+        "voltage_min_margin": 0.02798473958979919
+      },
+      "generator_39": {
+        "branch_thermal_min_margin": 0.10728168564230756,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.00011338568520277009,
+        "generator_p_max_margin": -1.0731883381964735e-8,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": -9.5936703581323e-9,
+        "generator_q_min_margin": -9.415430213266518e-9,
+        "power_balance_max": 4.1022740759899534e-14,
+        "smooth_epsilon": null,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": null,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "droop"
+        ],
+        "voltage_max_margin": -1.0591487020761292e-8,
+        "voltage_min_margin": 0.05974386415491195
+      },
+      "line_1": {
+        "branch_thermal_min_margin": 0.10749721508608945,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 5.545864620426499e-6,
+        "generator_p_max_margin": -1.0731883381964735e-8,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 0.04799337290198625,
+        "generator_q_min_margin": 0.05200662709801376,
+        "power_balance_max": 2.839395385478838e-14,
+        "smooth_epsilon": null,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": null,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.010516564993804378,
+        "voltage_min_margin": 0.02382904048604595
+      }
+    },
+    "solver": "CCOpt",
+    "termination_status": "ALMOST_LOCALLY_SOLVED",
+    "tolerances": {
+      "coupling_tolerance": 1.0e-5,
+      "droop_tolerance": 0.0001,
+      "limit_tolerance": 1.0e-5,
+      "power_tolerance": 1.0e-5,
+      "unavailable_tolerance": 1.0e-8
+    },
+    "valid": false,
+    "violations": {
+      "base": [],
+      "generator_39": [
+        "droop"
+      ],
+      "line_1": []
+    }
+  },
+  "kind": "DroopOPF.SCOPFReport",
+  "schema_version": 1
+}

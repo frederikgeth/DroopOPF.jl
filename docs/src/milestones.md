@@ -9,11 +9,32 @@
 | M6 — fixed shunts and simple banks | Implemented and validated | [data model](data_model.md#fixed-bus-shunts-m61) |
 | M7 — continuous tap, bank, and joint droop design | Implemented and validated for the declared continuous base-case scope | [equipment optimization](equipment_optimization.md) |
 | M8 — explicit reactive controls and AVR | Released for the declared base-case scope | [data model](data_model.md#explicit-reactive-control-modes) and [AVR qualification](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/avr_ieee_qualification/README.md) |
+| M9.1 — explicit SCOPF equipment timing | Released in v0.9.0; synthetic qualification complete | [SCOPF policy](scopf.md#equipment-and-reactive-control-timing-m91) |
+| M9.2 — corrective-action movement budgets | Implemented and synthetically validated | Per-device allowed-action maps and independent delta checks |
+| M9.3 — paired immediate/settled assessment | Implemented and synthetically validated | Fixed-base equipment replay and paired margin reporting |
+| S2 — equipment-aware SCOPF public qualification | Initial bounded gate complete; broader reliability qualification remains active and independent of S1 | [Retained S2 evidence](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/s2_scopf/qualification_report.md) |
 
 M7 permits continuous tap ratios and simple-bank susceptances. Discrete tap
 positions and switched-shunt selection remain intentionally out of scope.
-M8 adds explicit base-case reactive-control semantics and AVR-aware joint
-equipment design; coordinated preventive/corrective SCOPF policy remains M9.
+M8 adds explicit reactive-control semantics and AVR-aware joint equipment
+design. M9.1 now applies those semantics across SCOPF scenarios, with taps and
+shunts preventive by default and explicitly selectable corrective timing.
+Independent replay reconstructs each scenario's reported equipment. Public-case
+qualification, discrete actions, and response-time evidence remain outside this
+completed synthetic slice.
+
+S2 is a separate qualification campaign, not a replacement or completion of
+S1. Its initial IEEE-118/300 scorecard is frozen with direct, staged, immediate,
+settled, solver-status and physical-replay outcomes reported separately. A
+bounded power-balance Phase-I lane did not recover the open IEEE-300 staged
+cell and is retained as diagnostic evidence, not acceptance.
+
+The frozen expansion adds 29 IEEE-118 cells spanning tap, shunt, joint and
+multi-location equipment; preventive and bounded corrective timing; AVR and
+mixed AVR/Volt–VAr control; holdout outages; and +3% fixed-control load stress.
+It accepts 25/29 direct cells and 26/29 with the declared bounded warm retry.
+The remaining failures and the continuous
+shunt overlay are explicitly disclosed in the generated scorecard.
 
 ## S1 — current reliability investigation
 

@@ -2,7 +2,7 @@
 
 Status: agile development plan with proof-of-concept priority.
 
-Last updated: 2026-09-20
+Last updated: 2026-09-29
 
 ## 1. Product goal
 
@@ -163,8 +163,9 @@ no P2 scaling algorithm is justified by the validated small-case measurements.
 ### Equipment extension — revised continuous-first plan
 
 M1-M4 remain released and unchanged. The following M5-M10 milestones record the
-agreed planning direction on branch `transformers`; M5.1-M5.4 are implemented and
-validated on this branch. M6 and M7.1-M7.3 are also complete; M8-M10 remain pending. These are not release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
+agreed planning direction. M5–M9 are released, the bounded initial S2 public
+qualification gate is complete, and broader S2/M10 reliability work remains.
+These are not future release promises. The [equipment plan](TRANSFORMER_SHUNT_PLAN.md) supplies
 small validation slices and acceptance evidence. This roadmap owns sequencing.
 
 **M5 complete on `transformers` (unreleased, 2026-09-18):** transformer
@@ -232,8 +233,9 @@ Full regression: **916/916 tests pass**. This completes the base-case M7 scope; 
 | M6 — Shunt reference physics **complete** | M6.1 fixed admittance **complete**; M6.2 supplied bank states **complete**; M6.3 OPF/SCOPF integration **complete** | Independent of M5; signs, V-squared curves and reactive accounting |
 | M7 — Continuous equipment optimization **complete** | M7.1 tap ratio **complete**; M7.2 simple-bank susceptance **complete**; M7.3 joint equipment/droop **complete** | Applicable M5/M6 physics; fixed-bound equivalence, sweeps and setting extraction |
 | **S1 — Reliable optimization convergence and scaling (active)** | S1.1 mathematical contract; S1.2 diagnostics; S1.3 control isolation; S1.4 conditioning; S1.5 initialization/solver comparison; S1.6 larger networks | M7; convergence and physical feasibility reported separately; public 118-bus then 300-bus cases |
-| M8 — Steady-state transformer AVR **deferred** | M8.1 target plus saturation; M8.2 deadband/selection; M8.3 fixed/OPF/AVR comparisons | Can start after M5.4; voltage-target tracking, tap limits and explicit equilibrium-selection semantics |
-| M9 — Equipment-aware SCOPF | M9.1 preventive sharing; M9.2 bounded corrective action; M9.3 AVR stages **deferred with M8** | M7; independent shared/corrective coupling checks. M8 is not a prerequisite for M9.1/M9.2 |
+| M8 — Explicit reactive controls and AVR **released in v0.8.0** | FreeQ, FixedQ, Volt–VAr and smooth/exact AVR; local, remote and branch-terminal regulation; common-location sharing | Independent regime checks and qualified IEEE-118/300 base-case evidence |
+| M9 — Equipment-aware SCOPF **released in v0.9.0** | M9.1 policy layer, M9.2 recourse budgets and M9.3 paired response stages implemented and synthetically validated | Shared automatic reactive assignments, preventive sharing, explicit bounded corrective movement and independent scenario replay |
+| **S2 — Equipment-aware SCOPF public qualification** | Frozen initial IEEE-118/300 scorecard plus 29-cell IEEE-118 equipment/control/timing/holdout/stress expansion; broader reliability work remains active | Initial bounded gate complete with 25/29 direct and 26/29 declared-retry expansion cells accepted; IEEE-300 staged lane remains an explicitly classified open numerical cell without rescoring S1 |
 | M10 — Comparative validation gate | M10.1 external physics references; M10.2 matched studies; M10.3 regression/performance evidence | Applicable M5-M7/M9 capabilities; AVR comparisons deferred |
 
 Continuous tap-ratio and shunt-susceptance relaxation is the primary optimization
@@ -256,6 +258,16 @@ operational-limit and control-policy statuses. Report AVR unmet targets explicit
 Numerical checks and adversarial tests determine acceptance; visuals explain it.
 M10 consolidates existing evidence rather than postponing validation.
 
+**M9/S2 release exit decision (2026-09-29).** M9 is release-complete when all
+three feature slices have independent validation, persistence and synthetic
+regression coverage; at least one accepted public equipment-aware SCOPF witness
+exists at both IEEE-118 and IEEE-300 scale; the declared solver matrix, bounded
+IEEE-118 expansion and all failed attempts are retained with separate solver and
+physical status; and the package tests, documentation build and runnable M9
+workflow pass. Universal solver convergence, full N-1 enumeration and closure of
+the IEEE-300 staged lane are not release criteria. They remain S2/M10 reliability
+work and must not be described as infeasibility or silently omitted.
+
 Maintain data / optimization problem / formulation / validation boundaries.
 M5 and M6 can proceed independently; M8 can branch from M5 while M7 progresses.
 Sequential automatic delays, dwell, hunting and discrete event counts are later
@@ -264,11 +276,13 @@ The original performance gate and released milestone identities remain unchanged
 
 ### S1 — Reliable optimization convergence and scaling (dedicated active milestone)
 
-User decision (2026-09-20): defer M8 transformer AVR, M9.3 AVR response-stage
+Historical user decision (2026-09-20): defer M8 transformer AVR, M9.3 AVR response-stage
 comparisons and heterogeneous/complex-bank optimization until the simple models
 have demonstrated adequate scaling together. Preserve milestone IDs and existing
 acceptance specifications; deferred capabilities are not prerequisites for the
-current path. Current order is **S1 → M9.1 → M9.2 → S2/M10**.
+current path. M8 and M9 were subsequently completed and released; broader S2
+qualification and M10 now follow while S1 remains a separately reported
+reliability track.
 
 S1 is a standalone milestone, rather than an incidental benchmark task. It does
 not reopen the completed M7 feature scope or renumber M8-M10. The initial
@@ -291,7 +305,7 @@ Failures and numerical/physical distinctions are retained in tables and plots.
 Current regression: **1551/1551 tests pass**; documentation builds successfully. These
 software checks do not override failed public optimization attempts.
 
-**S1 remains active; M9 is not unlocked.** Primal/dual experiments, bounded restart
+**Historical S1 gate checkpoint (2026-09-20): M9 was not yet unlocked.** Primal/dual experiments, bounded restart
 execution, opt-in controller normalization, staged release and load continuation have now been tested (latest checkpoints below).
 Next: isolate saturated-droop/active-Q-bound numerical dependence in a small reproducer, then test an equivalent numerical remedy before broader reliability studies.
 The restart policy remains experimental. Isolated, warmed performance acceptance follows reliability. No equipment law, hidden objective penalty, operating bound or
@@ -321,12 +335,28 @@ acceptance tolerances. Record numerical configurations separately from physics.
   with documented control overlays. Add load stress and multiple starting states.
   The [initial experiment](artifacts/scaling_initial/report.md) is a first sample,
   not evidence that this gate is complete. The [revised historical experiment](artifacts/scaling_robustness/decision.md) retains the pre-correction synthetic stalls. Exact Hessians resolved those stalls; the [public-case extension](artifacts/s1_extension/report.md) now defines the remaining reliability failures.
-- **M9.1: preventive SCOPF.** Shared installed droop parameters and shared optimized
-  tap/bank settings across all selected contingencies; fixed/free choices remain
-  independent. Validate sharing and frozen equipment under outages.
-- **M9.2: corrective SCOPF.** Explicit bounded equipment recourse, with independent
-  policy checks. An outage alone never authorizes a tap or shunt movement.
-- **S2/M10: security scaling and comparative evidence.** Increase contingency
+- **M9.1: equipment-policy SCOPF (released; bounded S2 gate complete).**
+  Shared automatic reactive assignments and shared preventive tap/bank settings
+  across selected contingencies; explicit corrective setting timing is available.
+  Synthetic tests validate sharing, outage behavior, exact/smooth paths,
+  persistence, and independently reconstructed scenario physics.
+- **S2: equipment-aware SCOPF public qualification (initial gate complete;
+  broader reliability active).** The implemented M9.1 policy is qualified on
+  predeclared IEEE-118/300 cases and contingencies.
+  Keep direct and staged results, seed lineage, solver status, physical replay,
+  and equipment-coupling results separate from the frozen S1 scorecard. S1 may
+  continue independently.
+- **M9.2: explicit corrective-action budgets (implemented).** Per-device/per-contingency
+  limits on movement from the base setting (for example `|tau_c-tau_0|` and
+  `|B_c-B_0|`), allowed-action sets, and independent perturbation checks. The
+  M9.1 corrective timing alone supplied scenario settings within absolute bounds;
+  M9.2 adds delta limits but does not model movement speed or action count.
+  An outage alone never authorizes movement.
+- **M9.3: staged reactive/equipment response (implemented).** Compare the immediate
+  post-contingency state with preventive equipment frozen against a later
+  AVR/equipment-settled state. Report voltage, thermal and Q margins, AVR target
+  error and saturation. These are paired steady states, not a transient model.
+- **M10: security scaling and comparative evidence.** Increase contingency
   counts and device counts, retain held-out cases and failed scenarios, and profile
   bottlenecks. Add screening, sparse-assembly improvements or decomposition only
   when measurements justify them. Define hardware-specific practical size/runtime

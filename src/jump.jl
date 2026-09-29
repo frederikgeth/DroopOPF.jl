@@ -140,6 +140,7 @@ function _build_acopf_model(
     droop_q_bounds::Symbol = :explicit,
     droop_q_formulation::Symbol = :explicit,
     reactive_assignments = nothing,
+    power_balance_slacks::Bool = false,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -174,6 +175,8 @@ function _build_acopf_model(
             "reactive_assignments currently require droop_q_formulation=:explicit"))
     end
     model = isnothing(shared_model) ? Model(optimizer_factory) : shared_model
+    haskey(model.ext,:power_balance_slacks) ||
+        (model.ext[:power_balance_slacks]=VariableRef[])
     silent && set_silent(model)
     bus_indices = _bus_indices(network)
     droop_entries = if isnothing(reactive_assignments)
@@ -365,9 +368,19 @@ function _build_acopf_model(
             selected = [b for b in network.banks if haskey(shunts,b.id) && bus_indices[b.bus_id]==i]
             variable_g = sum((only(b.step_conductances)/only(b.step_susceptances))*shunts[b.id] for b in selected; init=0.)
             variable_b = sum(shunts[b.id] for b in selected; init=0.)
+            ppos = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"p_balance_pos[$i]") : 0.0
+            pneg = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"p_balance_neg[$i]") : 0.0
+            qpos = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"q_balance_pos[$i]") : 0.0
+            qneg = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"q_balance_neg[$i]") : 0.0
+            power_balance_slacks && append!(model.ext[:power_balance_slacks],
+                (ppos,pneg,qpos,qneg))
             @NLconstraint(
                 model,
-                p_generation - load_p[i] - variable_g*vm[i]^2 ==
+                p_generation - load_p[i] - variable_g*vm[i]^2 + ppos-pneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
                              susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
@@ -375,7 +388,7 @@ function _build_acopf_model(
             )
             @NLconstraint(
                 model,
-                q_generation - load_q[i] + variable_b*vm[i]^2 ==
+                q_generation - load_q[i] + variable_b*vm[i]^2 + qpos-qneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
                              susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
@@ -385,7 +398,9 @@ function _build_acopf_model(
 
         _add_branch_thermal_limits!(model, network, vm, va)
     else
-        taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,tap_controls,shunt_controls;normalize_controls)
+        taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,
+            load_p,load_q,tap_controls,shunt_controls;normalize_controls,
+            power_balance_slacks,scenario_prefix)
     end
 
     # Keep the legacy explicit formulation's nonlinear constraint ordering.

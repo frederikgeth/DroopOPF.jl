@@ -12,6 +12,45 @@ struct SCOPFResult
     smooth_reactive_epsilon::Union{Nothing,Float64}
     solver::String
     reactive_assignments::Union{Nothing,Vector{ReactiveControlAssignment}}
+    tap_settings::Dict{Symbol,Dict{Int,Float64}}
+    shunt_settings::Dict{Symbol,Dict{Int,Float64}}
+    tap_controls::Vector{TapControl}
+    shunt_controls::Vector{ShuntControl}
+    control_policy::SCOPFControlPolicy
+end
+
+# Compatibility for pre-M9 internal callers and schema readers.
+SCOPFResult(states, balancing_power, objective, termination_status, primal_status,
+    mode, encoding, smooth_epsilon, smooth_reactive_relative_epsilon,
+    smooth_reactive_epsilon, solver, reactive_assignments) =
+    SCOPFResult(states, balancing_power, objective, termination_status, primal_status,
+        mode, encoding, smooth_epsilon, smooth_reactive_relative_epsilon,
+        smooth_reactive_epsilon, solver, reactive_assignments,
+        Dict{Symbol,Dict{Int,Float64}}(), Dict{Symbol,Dict{Int,Float64}}(),
+        TapControl[], ShuntControl[], SCOPFControlPolicy())
+
+function _scenario_tap_controls(study::Study, case::Case)
+    available = Set(b.id for b in case.network.branches if b.available)
+    TapControl[c for c in study.tap_controls if c.branch_id in available]
+end
+
+function _couple_equipment_family!(model, timing, limits, base, scenario)
+    for id in intersect(Set(keys(base)), Set(keys(scenario)))
+        if timing == :preventive || (!isnothing(limits) && !haskey(limits, id))
+            @constraint(model, scenario[id] == base[id])
+        elseif !isnothing(limits)
+            limit = limits[id]
+            @constraint(model, -limit <= scenario[id] - base[id] <= limit)
+        end
+    end
+end
+
+function _couple_equipment!(model, policy, base_taps, base_shunts, scenario)
+    _couple_equipment_family!(model, policy.taps, policy.tap_movement_limits,
+        base_taps, scenario.taps)
+    _couple_equipment_family!(model, policy.shunts, policy.shunt_movement_limits,
+        base_shunts, scenario.shunts)
+    nothing
 end
 
 function _add_response_constraints!(model, study, scenario, base, variables, prefix)
@@ -55,7 +94,10 @@ function solve_scopf(study::Study;
     silent::Bool = true,
     initial_states::AbstractDict = Dict(),
     fixed_base_state::Union{Nothing,ACState} = nothing,
+    fixed_base_tap_settings::AbstractDict = Dict{Int,Float64}(),
+    fixed_base_shunt_settings::AbstractDict = Dict{Int,Float64}(),
     _model_hook::Union{Nothing,Function} = nothing,
+    _phase1_power_balance::Bool = false,
 )
     study = _validated_study(study)
     encoding in (:smooth, :complementarity) || throw(ArgumentError("unknown control encoding"))
@@ -76,12 +118,32 @@ function solve_scopf(study::Study;
         model = Model(optimizer_factory)
     end
     silent && set_silent(model)
-    if !isnothing(fixed_base_state)
+    fixed_taps = Dict{Int,Float64}(fixed_base_tap_settings)
+    fixed_shunts = Dict{Int,Float64}(fixed_base_shunt_settings)
+    if isnothing(fixed_base_state)
+        isempty(fixed_taps) && isempty(fixed_shunts) ||
+            throw(ArgumentError("fixed equipment settings require fixed_base_state"))
+    else
         length(fixed_base_state.vm) == length(study.case.network.buses) &&
             length(fixed_base_state.va) == length(study.case.network.buses) &&
             length(fixed_base_state.pg) == length(study.case.generators) &&
             length(fixed_base_state.qg) == length(study.case.generators) ||
             throw(ArgumentError("fixed base state dimensions do not match the case"))
+        Set(keys(fixed_taps)) == Set(c.branch_id for c in study.tap_controls) ||
+            throw(ArgumentError("fixed base tap settings must match selected controls"))
+        Set(keys(fixed_shunts)) == Set(c.bank_id for c in study.shunt_controls) ||
+            throw(ArgumentError("fixed base shunt settings must match selected controls"))
+        for control in study.tap_controls
+            value = fixed_taps[control.branch_id]
+            isfinite(value) && control.lower <= value <= control.upper ||
+                throw(ArgumentError("fixed base tap setting lies outside its policy"))
+        end
+        for control in study.shunt_controls
+            value = fixed_shunts[control.bank_id]
+            policy = _shunt_policy(study.case, control)
+            isfinite(value) && policy.lower <= value <= policy.upper ||
+                throw(ArgumentError("fixed base shunt setting lies outside its policy"))
+        end
     end
     base_cost = 0.0
     variables = []
@@ -111,35 +173,55 @@ function solve_scopf(study::Study;
             @objective(model, Min, base_cost)
             continue
         end
+        scenario_taps = _scenario_tap_controls(study, case)
+        tap_arg = isempty(scenario_taps) ? nothing : scenario_taps
+        shunt_arg = isempty(study.shunt_controls) ? nothing : study.shunt_controls
         _, vars = if encoding == :smooth
             _build_acopf_model(case; voltage_epsilon=smooth_epsilon,
                 reactive_relative_epsilon=smooth_reactive_relative_epsilon,
                 reactive_epsilon=smooth_reactive_epsilon, silent=silent,
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
-                initial_state=initial, reactive_assignments=study.reactive_assignments)
+                initial_state=initial, reactive_assignments=study.reactive_assignments,
+                tap_controls=tap_arg, shunt_controls=shunt_arg,
+                power_balance_slacks=_phase1_power_balance)
         else
             _build_complementarity_opf_model(case; silent=silent,
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
-                initial_state=initial, reactive_assignments=study.reactive_assignments)
+                initial_state=initial, reactive_assignments=study.reactive_assignments,
+                tap_controls=tap_arg, shunt_controls=shunt_arg,
+                power_balance_slacks=_phase1_power_balance)
         end
         push!(variables, vars)
         if k > 1
             delta = _add_response_constraints!(model, study, case, variables[1], vars, prefix)
             isnothing(delta) || (deltas[id] = delta)
+            base_taps = isnothing(fixed_base_state) ? variables[1].taps : fixed_taps
+            base_shunts = isnothing(fixed_base_state) ? variables[1].shunts : fixed_shunts
+            _couple_equipment!(model, study.control_policy,
+                base_taps, base_shunts, vars)
         end
+    end
+    if _phase1_power_balance
+        slacks=model.ext[:power_balance_slacks]
+        isempty(slacks) && throw(ArgumentError("Phase-I requires optimized scenarios"))
+        @objective(model,Min,sum(slacks))
     end
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
     end
     isnothing(_model_hook) || _model_hook(model)
     if length(ids) == 1 && !isnothing(fixed_base_state)
+        tap_settings = Dict{Symbol,Dict{Int,Float64}}(:base => copy(fixed_taps))
+        shunt_settings = Dict{Symbol,Dict{Int,Float64}}(:base => copy(fixed_shunts))
         return SCOPFResult(Dict{Symbol,Union{Nothing,ACState{Float64}}}(:base =>
             ACState(Float64.(fixed_base_state.vm),Float64.(fixed_base_state.va),
                     Float64.(fixed_base_state.pg),Float64.(fixed_base_state.qg))),
             Dict{Symbol,Float64}(), base_cost, :NOT_RUN, :NO_SOLUTION, study.mode,
             encoding, Float64(smooth_epsilon),Float64(smooth_reactive_relative_epsilon),
             isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
-            "Fixed base evaluation (no optimization)", study.reactive_assignments)
+            "Fixed base evaluation (no optimization)", study.reactive_assignments,
+            tap_settings, shunt_settings, copy(study.tap_controls),
+            copy(study.shunt_controls), study.control_policy)
     end
     optimize!(model)
     states = Dict{Symbol,Union{Nothing,ACState{Float64}}}(id => nothing for id in ids)
@@ -148,6 +230,12 @@ function solve_scopf(study::Study;
             Float64.(fixed_base_state.pg),Float64.(fixed_base_state.qg))
     end
     balancing = Dict{Symbol,Float64}()
+    tap_settings = Dict{Symbol,Dict{Int,Float64}}(id => Dict{Int,Float64}() for id in ids)
+    shunt_settings = Dict{Symbol,Dict{Int,Float64}}(id => Dict{Int,Float64}() for id in ids)
+    if !isnothing(fixed_base_state)
+        tap_settings[:base] = copy(fixed_taps)
+        shunt_settings[:base] = copy(fixed_shunts)
+    end
     if has_values(model)
         for (id, vars) in zip(ids, variables)
             if id == :base && !isnothing(fixed_base_state)
@@ -158,6 +246,10 @@ function solve_scopf(study::Study;
             if all(v -> all(isfinite, v), values) && all(>(0), values[1])
                 states[id] = ACState(values...)
             end
+            tap_settings[id] = Dict(device_id => Float64(value(x)) for
+                (device_id, x) in vars.taps)
+            shunt_settings[id] = Dict(device_id => Float64(value(x)) for
+                (device_id, x) in vars.shunts)
         end
         for (id, delta) in deltas
             balancing[id] = value(delta)
@@ -167,7 +259,8 @@ function solve_scopf(study::Study;
         Symbol(string(termination_status(model))), Symbol(string(primal_status(model))),
         study.mode, encoding, Float64(smooth_epsilon), Float64(smooth_reactive_relative_epsilon),
         isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
-        solver_name(model), study.reactive_assignments)
+        solver_name(model), study.reactive_assignments, tap_settings, shunt_settings,
+        copy(study.tap_controls), copy(study.shunt_controls), study.control_policy)
 end
 
 solve(study::Study; kwargs...) = solve_scopf(study; kwargs...)

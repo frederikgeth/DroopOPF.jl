@@ -1,0 +1,79 @@
+{
+  "avr_selection": [
+    {
+      "bus_id": 241,
+      "generator_id": 43,
+      "normalized_q_headroom": 0.41904968886355626,
+      "setpoint": 1.0419558672677067
+    },
+    {
+      "bus_id": 7039,
+      "generator_id": 54,
+      "normalized_q_headroom": 0.41109348158279024,
+      "setpoint": 1.0268309482005595
+    },
+    {
+      "bus_id": 230,
+      "generator_id": 38,
+      "normalized_q_headroom": 0.4051035957331576,
+      "setpoint": 1.039616520636898
+    }
+  ],
+  "contract": {
+    "generator_outage_id": 69,
+    "line_outage_id": 10,
+    "max_cpu_seconds_per_solve": 60.0,
+    "max_iterations_per_solve": 1000,
+    "tap_branch_id": 1,
+    "tap_movement_budget": 0.005,
+    "tap_relative_bounds": [
+      0.99,
+      1.01
+    ]
+  },
+  "direct": {
+    "objective": 103.45586178782708,
+    "physical_valid": true,
+    "primal_status": "FEASIBLE_POINT",
+    "termination_status": "LOCALLY_SOLVED",
+    "valid": true,
+    "violations": {
+      "base": [],
+      "generator_69": [],
+      "line_10": []
+    }
+  },
+  "fixed_seed": {
+    "objective": 252.02796329293665,
+    "physical_valid": false,
+    "primal_status": "INFEASIBLE_POINT",
+    "termination_status": "TIME_LIMIT",
+    "valid": false,
+    "violations": {
+      "base": [
+        "avr",
+        "power_balance",
+        "branch_thermal"
+      ],
+      "generator_69": [
+        "avr",
+        "power_balance",
+        "active_power_response"
+      ],
+      "line_10": [
+        "avr",
+        "power_balance",
+        "active_power_response"
+      ]
+    }
+  },
+  "kind": "DroopOPF.S2Qualification",
+  "network": 300,
+  "s1_scorecard_unchanged": true,
+  "solver": "ipopt",
+  "staged": {
+    "note": "fixed seed invalid",
+    "valid": false
+  },
+  "stages": null
+}

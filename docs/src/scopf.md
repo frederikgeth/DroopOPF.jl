@@ -1,6 +1,6 @@
-# Security-constrained AC OPF (M2)
+# Security-constrained AC OPF (M2 and M9.1)
 
-M2 jointly optimizes one base dispatch and a fully enumerated set of line and
+The SCOPF engine jointly optimizes one base dispatch and a fully enumerated set of line and
 generator outages. Droop settings remain fixed across scenarios. Each scenario
 has its own AC voltages, angles, active generation, and reactive generation.
 This is a small-network reference formulation, with no screening or decomposition.
@@ -51,6 +51,80 @@ In both modes:
 - Disconnected base networks and islanding contingencies are rejected before solving.
 - Reactive capability is M1's constant Q interval with a permitted P interval;
   a curved P-dependent capability boundary remains outside this implementation.
+
+## Equipment and reactive-control timing (M9.1)
+
+`Study` may select continuous transformer ratios and simple-bank susceptances
+with the same `TapControl` and `ShuntControl` policies used by base-case design.
+Timing is explicit:
+
+```julia
+policy = SCOPFControlPolicy(
+    taps = :preventive,       # default
+    shunts = :preventive,     # default
+    reactive = :automatic,    # the only supported reactive timing
+    # Optional M9.2 maps: listed devices receive ± movement budgets;
+    # selected but unlisted corrective devices are frozen.
+    tap_movement_limits = nothing,
+    shunt_movement_limits = nothing,
+)
+
+study = Study(case;
+    contingencies,
+    participation,
+    reactive_assignments,
+    tap_controls = [TapControl(11; lower=0.95, upper=1.05)],
+    shunt_controls = [ShuntControl(201)],
+    control_policy = policy,
+)
+```
+
+Preventive equipment has one setting shared by the base case and every
+scenario in which the device remains available. Corrective equipment has an
+independent bounded setting in each scenario. These options may be selected
+separately for taps and shunts. A controlled transformer that is itself
+outaged has no contingency setting or coupling equation. This is availability,
+not corrective movement.
+
+Reactive modes are automatic: the assignment, droop curve, AVR voltage target,
+FixedQ schedule, and regulated location are shared across scenarios, while Q,
+voltage, AVR limit regime, and the set of surviving common-location regulators
+respond to scenario physics. Scenario-specific voltage targets or droop
+parameters are not introduced. A branch-terminal regulator is disabled when
+its monitoring branch is outaged, as in the fixed-equipment SCOPF path.
+
+Tap ratios and shunt susceptances remain continuous relaxations. Corrective
+timing asserts that movement is allowed in the modeled post-contingency stage;
+it does not supply a response time, switching count, discrete recovery, or
+dynamic feasibility claim. The caller is responsible for making that timing
+credible for the equipment represented.
+
+M9.2 movement maps refine corrective timing. `nothing` retains M9.1 behavior:
+every selected corrective device may choose any setting inside its absolute
+control bounds. A supplied dictionary declares the allowed-action set. Listed
+devices satisfy `abs(setting[c]-setting[base]) <= limit`; selected devices
+omitted from the dictionary are frozen at their base setting. Limits are finite,
+nonnegative, and independently replayed by the validator.
+
+Long assessments can solve the two M9.3 stages in separate processes and then
+call `assemble_scopf_response_stages(immediate_study, settled_study, immediate,
+settled)`. This performs the same independent validation and metric assembly as
+`assess_scopf_response_stages` without rerunning either solve. The S2 public
+runner uses this path so an external wall timeout cannot erase a completed
+stage.
+
+The process-isolated S2 example also supports a **separate recovery lane** that
+seeds a fixed-equipment solve from a direct SCOPF witness across every scenario.
+It is diagnostic evidence only: its outcome must not overwrite the declared
+FreeQ-base fixed-seed qualification lane. A physically replay-valid solution
+with a rejected solver status may be used as an initialization witness, but is
+still rejected for solver-acceptance reporting.
+
+When the direct equipment-aware result is already independently valid, M9.3 may
+also be anchored directly to its saved base state and equipment settings. This
+is distinct from claiming success for a nominal-equipment staging lane. Reports
+must identify the anchor lineage and keep immediate, settled, physical-replay,
+and solver-acceptance outcomes separate.
 
 The objective is the existing M1 base schedule-deviation objective:
 
@@ -103,11 +177,45 @@ sequence of results, warm-starting all scenario states. It stops after solver
 failure or a missing state. Independently validate the final result. For other
 initial points, pass a dictionary through `initial_states` to `solve_scopf`.
 
+Equipment variables use each control's `initial` value. For difficult joint
+models, first solve the fixed-equipment SCOPF and pass its scenario states as a
+staged start; then seed a corrective run's control initials from the validated
+preventive settings. A solver's infeasible termination is retained and is not
+treated as a physical infeasibility certificate.
+
+`result.tap_settings` and `result.shunt_settings` are scenario-indexed maps of
+the selected controls only. Fixed-base evaluation accepts an `ACState`; studies
+with selected equipment must also pass the exact saved base maps through
+`fixed_base_tap_settings` and `fixed_base_shunt_settings`. Missing or extra
+settings are rejected rather than guessed.
+
+M9.3 pairs two assessments around that same saved base:
+
+```julia
+assessment = assess_scopf_response_stages(
+    immediate_preventive_study,
+    settled_corrective_study,
+    validated_base_result,
+)
+write_scopf_stage_assessment("stages.json", assessment)
+println(markdown_report(assessment))
+```
+
+The immediate study must freeze taps and shunts. The settled study may apply
+M9.2 budgets. The report compares voltage, thermal and generator-Q margins plus
+equipment movement. It represents two steady-state equilibria, not elapsed
+time, dynamics, switching sequences, or transient stability.
+
 ## Independent acceptance checks
 
 `equilibrium_report(study, result)` rebuilds the outage cases and checks AC
 balance, both ends of branch flows, generator and voltage limits, exact droop
-replay, disabled generators, reference angles, and response-policy coupling.
+replay, disabled generators, reference angles, active-response coupling, and
+equipment timing. For every scenario it reconstructs a physical network from
+the reported tap and shunt settings before calculating residuals. Missing,
+out-of-bounds, nonfinite, or unexpectedly present settings are rejected; for
+preventive controls, deviation from the base setting is reported separately as
+`equipment_coupling_violation`.
 The report records tolerances and scenario-specific failures.
 
 - `physical_valid` requires exact-curve equilibrium and all physical/coupling checks.
@@ -134,6 +242,14 @@ julia --project=. examples/m2_workflow.jl /tmp/droopopf-m2
 The example writes a study, result, and validation report as JSON, plus a Markdown
 report. It reloads the JSON files, independently validates the restored result,
 and deliberately corrupts an outage result to demonstrate rejection.
+
+The M9.1 workflow stages a preventive continuous tap/shunt SCOPF from a
+fixed-equipment witness, then solves a separately declared corrective-timing
+study. Both are independently validated and persisted:
+
+```sh
+julia --project=. examples/m9_1_equipment_scopf.jl /tmp/droopopf-m9-1
+```
 
 ```julia
 write_study("study.json", study)
@@ -175,11 +291,13 @@ scenario set differs from the study is rejected instead of producing a partial
 figure. The graphics explain a validated result; the independent numerical
 report remains the acceptance authority.
 
-JSON documents use a document-kind tag. Study schema v6 and result schema v2
-persist optional reactive-control assignments; older supported documents reload
-with legacy attachment semantics. Study files contain
-all case data, contingencies, and the response policy. Result files contain
-scenario states, balancing powers, solver/status, encoding, and smoothing widths.
+JSON documents use a document-kind tag. Study schema v8 and result schema v4
+persist optional reactive-control assignments, selected tap/shunt policies,
+the timing/movement policy, and scenario equipment settings. Older supported documents
+reload with legacy attachment semantics, no optimized equipment, and the
+default preventive policy. Study files contain all case data, contingencies,
+and response policy. Result files contain scenario states, balancing powers,
+equipment settings, solver/status, encoding, and smoothing widths.
 Nonfinite diagnostics are written as JSON `null`; missing states remain `null`.
 Report files are diagnostic exports; reports are regenerated from study/results,
 not trusted as proof of validity. Save the Julia project/manifest alongside an

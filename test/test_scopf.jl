@@ -1,4 +1,5 @@
 include(joinpath(@__DIR__, "..", "examples", "m2_case.jl"))
+using JSON
 
 @testset "M2 contingency data and physics" begin
     case = m2_case()
@@ -114,6 +115,201 @@ end
     tighter_report = equilibrium_report(tighter,corrected)
     @test all(r.valid for r in values(tighter_report.scenarios))
     @test :active_power_response in tighter_report.violations[:generator_9]
+end
+
+@testset "M9.1 equipment timing and independent replay" begin
+    source = m2_case()
+    bank = ShuntBank(201, 30; step_susceptances=(0.02,),
+        step_conductances=(0.0,), legal_states=((0,), (1,), (2,), (3,)),
+        state=(1,), nominal_state=(1,))
+    case = Case("m9-equipment"; base_power=source.base_power,
+        base_frequency=source.base_frequency,
+        network=ACNetwork(source.network.buses, source.network.branches;
+            shunts=source.network.shunts, banks=[bank]), loads=source.loads,
+        generators=source.generators, controls=source.controls,
+        attachments=source.attachments)
+    taps = [TapControl(11; lower=0.95, upper=1.05, initial=1.0, nominal=1.0)]
+    shunts = [ShuntControl(201; lower=0.0, upper=0.06, initial=0.02, nominal=0.02)]
+    contingencies = [Contingency(:line_22; branch_ids=[22]),
+        Contingency(:generator_9; generator_ids=[9])]
+    assignments = reactive_control_assignments(case)
+    policy = SCOPFControlPolicy()
+    study = Study(case; contingencies, participation=Dict(7=>2.0, 9=>1.0),
+        reactive_assignments=assignments, tap_controls=taps,
+        shunt_controls=shunts, control_policy=policy)
+    # Stage the enlarged nonlinear solve from the established fixed-equipment
+    # SCOPF. This is deliberately part of the regression contract: an unseeded
+    # equipment solve can select an infeasible Ipopt restoration point.
+    seed_study = Study(source; contingencies,
+        participation=Dict(7=>2.0, 9=>1.0),
+        reactive_assignments=reactive_control_assignments(source))
+    seed = solve_scopf(seed_study; smooth_epsilon=1e-5)
+    @test equilibrium_report(seed_study, seed).valid
+    result = solve_scopf(study; smooth_epsilon=1e-5, initial_states=seed.states)
+    report = equilibrium_report(study, result)
+    @test report.valid
+    phase1 = solve_scopf(study; smooth_epsilon=1e-5,
+        initial_states=result.states,_phase1_power_balance=true)
+    @test phase1.objective <= 1e-7
+    @test equilibrium_report(study,phase1).physical_valid
+    @test result.control_policy == policy
+    @test result.reactive_assignments == assignments
+    @test result.tap_controls == taps
+    @test result.shunt_controls == shunts
+    @test all(isapprox(result.tap_settings[id][11], result.tap_settings[:base][11];
+        atol=1e-8) for id in (:line_22, :generator_9))
+    @test all(isapprox(result.shunt_settings[id][201], result.shunt_settings[:base][201];
+        atol=1e-8) for id in (:line_22, :generator_9))
+    @test maximum(values(report.equipment_coupling_violation)) < 1e-8
+
+    exact_taps = [TapControl(11; lower=0.95, upper=1.05,
+        initial=result.tap_settings[:base][11], nominal=1.0)]
+    exact_shunts = [ShuntControl(201; lower=0.0, upper=0.06,
+        initial=result.shunt_settings[:base][201], nominal=0.02)]
+    exact_study = Study(case; contingencies,
+        participation=Dict(7=>2.0, 9=>1.0),
+        reactive_assignments=assignments, tap_controls=exact_taps,
+        shunt_controls=exact_shunts)
+    exact = solve_scopf(exact_study; encoding=:complementarity,
+        initial_states=result.states)
+    @test exact.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+    @test equilibrium_report(exact_study, exact; power_tolerance=1e-5,
+        droop_tolerance=1e-4, limit_tolerance=1e-5,
+        coupling_tolerance=1e-5).valid
+
+    corrupted = deepcopy(result)
+    corrupted.tap_settings[:line_22][11] += 0.01
+    bad = equilibrium_report(study, corrupted)
+    @test :equipment_response in bad.violations[:line_22]
+    @test :power_balance in bad.violations[:line_22]
+
+    corrective_taps = [TapControl(11; lower=0.95, upper=1.05,
+        initial=result.tap_settings[:base][11], nominal=1.0)]
+    corrective_shunts = [ShuntControl(201; lower=0.0, upper=0.06,
+        initial=result.shunt_settings[:base][201], nominal=0.02)]
+    corrective = Study(case; contingencies, mode=:corrective,
+        redispatch_limits=Dict(7=>0.8, 9=>0.8), tap_controls=corrective_taps,
+        shunt_controls=corrective_shunts,
+        control_policy=SCOPFControlPolicy(taps=:corrective, shunts=:corrective))
+    corrected = solve_scopf(corrective; smooth_epsilon=1e-5,
+        initial_states=result.states)
+    @test equilibrium_report(corrective, corrected).valid
+
+    movement_policy = SCOPFControlPolicy(taps=:corrective, shunts=:corrective,
+        tap_movement_limits=Dict(11=>0.005),
+        shunt_movement_limits=Dict(201=>0.01))
+    settled_study = Study(case; contingencies,
+        participation=Dict(7=>2.0, 9=>1.0), reactive_assignments=assignments,
+        tap_controls=corrective_taps, shunt_controls=corrective_shunts,
+        control_policy=movement_policy)
+    stages = assess_scopf_response_stages(study, settled_study, result;
+        immediate_solve_kwargs=(; smooth_epsilon=1e-5,
+            initial_states=result.states),
+        validation_kwargs=(; coupling_tolerance=1e-5))
+    @test stages.immediate_report.valid
+    @test stages.settled_report.valid
+    @test all(m.immediate_movement.tap < 1e-8 &&
+        m.immediate_movement.shunt < 1e-8 for m in values(stages.scenario_metrics))
+    @test all(m.settled_movement.tap <= 0.005 + 1e-6 &&
+        m.settled_movement.shunt <= 0.01 + 1e-6
+        for m in values(stages.scenario_metrics))
+    assembled = assemble_scopf_response_stages(study, settled_study,
+        stages.immediate, stages.settled;
+        validation_kwargs=(; coupling_tolerance=1e-5))
+    @test assembled.immediate_report.valid == stages.immediate_report.valid
+    @test assembled.settled_report.valid == stages.settled_report.valid
+    @test assembled.scenario_metrics == stages.scenario_metrics
+    @test occursin("paired steady-state", markdown_report(stages))
+    over_budget = deepcopy(stages.settled)
+    over_budget.tap_settings[:line_22][11] =
+        over_budget.tap_settings[:base][11] + 0.006
+    @test :equipment_response in
+        equilibrium_report(settled_study, over_budget).violations[:line_22]
+
+    outaged = Study(case; contingencies=[Contingency(:line_11; branch_ids=[11])],
+        participation=Dict(7=>1.0, 9=>1.0), tap_controls=taps,
+        shunt_controls=shunts)
+    outaged_seed_study = Study(source;
+        contingencies=[Contingency(:line_11; branch_ids=[11])],
+        participation=Dict(7=>1.0, 9=>1.0))
+    outaged_seed = solve_scopf(outaged_seed_study; smooth_epsilon=1e-5)
+    outaged_result = solve_scopf(outaged; smooth_epsilon=1e-5,
+        initial_states=outaged_seed.states)
+    @test !haskey(outaged_result.tap_settings[:line_11], 11)
+    @test equilibrium_report(outaged, outaged_result).valid
+
+    @test_throws ArgumentError SCOPFControlPolicy(taps=:automatic)
+    @test_throws ArgumentError SCOPFControlPolicy(shunts=:automatic)
+    @test_throws ArgumentError SCOPFControlPolicy(reactive=:corrective)
+    @test_throws ArgumentError SCOPFControlPolicy(
+        tap_movement_limits=Dict(11=>0.01))
+    @test_throws ArgumentError SCOPFControlPolicy(taps=:corrective,
+        tap_movement_limits=Dict(11=>-0.01))
+    @test_throws ArgumentError Study(case; tap_controls=taps,
+        control_policy=SCOPFControlPolicy(taps=:corrective,
+            tap_movement_limits=Dict(999=>0.01)))
+    @test_throws ArgumentError evaluate_contingencies(study, result.states[:base])
+    policy_only = Study(source; control_policy=SCOPFControlPolicy(
+        taps=:corrective, shunts=:corrective))
+    fixed_policy = evaluate_contingencies(policy_only, seed.states[:base])
+    @test fixed_policy.control_policy == policy_only.control_policy
+    @test equilibrium_report(policy_only, fixed_policy).valid
+
+    mktempdir() do dir
+        restored_study = read_study(write_study(joinpath(dir, "m9-study.json"), study))
+        @test restored_study.control_policy == study.control_policy
+        @test restored_study.tap_controls == taps
+        @test restored_study.shunt_controls == shunts
+        restored_result = read_scopf_result(
+            write_scopf_result(joinpath(dir, "m9-result.json"), result))
+        @test restored_result.tap_settings == result.tap_settings
+        @test restored_result.shunt_settings == result.shunt_settings
+        @test equilibrium_report(restored_study, restored_result).valid
+        nonfinite_equipment = deepcopy(result)
+        nonfinite_equipment.tap_settings[:base][11] = NaN
+        nonfinite_path = write_scopf_result(
+            joinpath(dir,"m9-nonfinite-equipment.json"),nonfinite_equipment)
+        @test isnan(read_scopf_result(nonfinite_path).tap_settings[:base][11])
+        restored_budget = read_study(write_study(
+            joinpath(dir, "m9-budget-study.json"), settled_study))
+        @test restored_budget.control_policy == movement_policy
+        stage_path = write_scopf_stage_assessment(
+            joinpath(dir, "m9-stage-assessment.json"), stages)
+        @test JSON.parsefile(stage_path)["kind"] == "DroopOPF.SCOPFStageAssessment"
+
+        v7_study = JSON.parsefile(joinpath(dir, "m9-study.json"))
+        v7_study["schema_version"] = 7
+        delete!(v7_study["data"]["control_policy"], "tap_movement_limits")
+        delete!(v7_study["data"]["control_policy"], "shunt_movement_limits")
+        v7_path = joinpath(dir, "m9-v7-study.json")
+        write(v7_path, JSON.json(v7_study))
+        @test isnothing(read_study(v7_path).control_policy.tap_movement_limits)
+
+        legacy_study = JSON.parsefile(joinpath(dir, "m9-study.json"))
+        legacy_study["schema_version"] = 6
+        for field in ("tap_controls", "shunt_controls", "control_policy")
+            delete!(legacy_study["data"], field)
+        end
+        legacy_study_path = joinpath(dir, "m8-study.json")
+        write(legacy_study_path, JSON.json(legacy_study))
+        migrated_study = read_study(legacy_study_path)
+        @test isempty(migrated_study.tap_controls)
+        @test isempty(migrated_study.shunt_controls)
+        @test migrated_study.control_policy == SCOPFControlPolicy()
+
+        legacy_result = JSON.parsefile(joinpath(dir, "m9-result.json"))
+        legacy_result["schema_version"] = 2
+        for field in ("tap_settings", "shunt_settings", "tap_controls",
+            "shunt_controls", "control_policy")
+            delete!(legacy_result["data"], field)
+        end
+        legacy_result_path = joinpath(dir, "m8-result.json")
+        write(legacy_result_path, JSON.json(legacy_result))
+        migrated_result = read_scopf_result(legacy_result_path)
+        @test isempty(migrated_result.tap_settings)
+        @test isempty(migrated_result.shunt_settings)
+        @test migrated_result.control_policy == SCOPFControlPolicy()
+    end
 end
 
 @testset "M2 security changes base dispatch" begin

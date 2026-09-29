@@ -1,0 +1,38 @@
+{
+  "kind": "DroopOPF.S2QualificationMatrix",
+  "status": "active_initial_matrix",
+  "s1_scorecard_unchanged": true,
+  "contract": {
+    "networks": [118, 300],
+    "solvers": ["ipopt", "madnlp", "ccopt"],
+    "direct_and_staged_reported_separately": true,
+    "physical_and_solver_acceptance_reported_separately": true
+  },
+  "cells": [
+    {"network": 118, "solver": "ipopt", "direct_valid": true, "staged_valid": true, "immediate_valid": true, "settled_valid": true},
+    {"network": 118, "solver": "madnlp", "direct_valid": true, "staged_valid": true, "immediate_valid": false, "settled_valid": false, "stage_status": "ITERATION_LIMIT"},
+    {"network": 118, "solver": "ccopt", "direct_valid": true, "staged_valid": true, "immediate_valid": true, "settled_valid": true},
+    {"network": 300, "solver": "ipopt", "direct_valid": true, "fixed_seed_valid": false, "fixed_seed_status": "TIME_LIMIT", "staged_valid": null, "direct_immediate_valid": true, "direct_settled_valid": false, "direct_settled_physical_valid": true, "direct_settled_status": "ITERATION_LIMIT"},
+    {"network": 300, "solver": "madnlp", "direct_valid": true, "direct_status": "LOCALLY_SOLVED", "fixed_seed_valid": null, "fixed_seed_status": "WALL_TIMEOUT_180S", "direct_immediate_valid": false, "direct_settled_valid": false},
+    {"network": 300, "solver": "ccopt", "direct_valid": false, "direct_physical_valid": true, "direct_status": "SLOW_PROGRESS", "fixed_seed_valid": null, "fixed_seed_status": "WALL_TIMEOUT_180S", "direct_immediate_valid": false, "direct_settled_valid": true, "direct_settled_status": "ALMOST_LOCALLY_SOLVED"}
+  ],
+  "recovery_lane": {
+    "name": "direct_witness_fixed_equipment_seed",
+    "separate_from_declared_fixed_seed": true,
+    "ieee300": {
+      "ipopt": {"valid": false, "status": "TIME_LIMIT", "remaining_violation_family": "power_balance"},
+      "madnlp": {"valid": null, "status": "WALL_TIMEOUT_180S"},
+      "ccopt": {"valid": null, "status": "WALL_TIMEOUT_180S", "direct_seed_physical_valid": true, "direct_seed_status_rejected": "SLOW_PROGRESS"}
+    }
+  },
+  "ipopt_contingency_homotopy": {
+    "line_only_physical_valid": true,
+    "line_only_status": "TIME_LIMIT",
+    "generator_only_valid": true,
+    "generator_only_status": "LOCALLY_SOLVED",
+    "line_first_full_valid": false,
+    "generator_first_full_valid": false,
+    "remaining_violation_family": "line_10_power_balance"
+  },
+  "conclusion": "M9.1 direct physical feasibility is established in every completed cell. Solver acceptance passes five of six direct cells; IEEE-300 CCOpt is physical but status-rejected. Process-isolated retries reconfirmed the invalid Ipopt TIME_LIMIT fixed seed and bounded MadNLP/CCOpt fixed-seed attempts at an external 180-second wall timeout without artifacts. IEEE-300 later-stage qualification remains open; these bounded no-results are not infeasibility evidence."
+}

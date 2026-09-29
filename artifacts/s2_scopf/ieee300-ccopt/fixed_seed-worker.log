@@ -1,0 +1,80 @@
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+
+[54691] signal 15: Terminated: 15
+in expression starting at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/examples/s2_scopf_qualification.jl:247
+__psynch_cvwait at /usr/lib/system/libsystem_kernel.dylib (unknown line)
+unknown function (ip: 0x0) at (unknown file)
+gc_sweep_pool at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:1420 [inlined]
+_jl_gc_collect at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:3189
+ijl_gc_collect at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:3461
+maybe_collect at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:349 [inlined]
+jl_gc_small_alloc_inner at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:725 [inlined]
+jl_gc_small_alloc_noinline at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:783 [inlined]
+jl_gc_alloc_ at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/gc-stock.c:797
+jl_alloc_genericmemory_unchecked at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/genericmemory.c:41
+GenericMemory at ./boot.jl:588 [inlined]
+Array at ./boot.jl:647 [inlined]
+Array at ./boot.jl:660 [inlined]
+similar at ./array.jl:377 [inlined]
+similar at ./abstractarray.jl:822 [inlined]
+_unsafe_getindex at ./multidimensional.jl:968 [inlined]
+_getindex at ./multidimensional.jl:956 [inlined]
+getindex at ./abstractarray.jl:1342 [inlined]
+#_eval_lag_hess_wrapper!#18 at /Users/rahmatheidari/.julia/packages/MadNLP/ojXCn/src/Callbacks/nlpmodels.jl:1011
+_eval_lag_hess_wrapper! at /Users/rahmatheidari/.julia/packages/MadNLP/ojXCn/src/Callbacks/nlpmodels.jl:991 [inlined]
+macro expansion at ./timing.jl:461 [inlined]
+#eval_lag_hess_wrapper!#144 at /Users/rahmatheidari/.julia/packages/MadNLP/ojXCn/src/IPM/callbacks.jl:83
+eval_lag_hess_wrapper! at /Users/rahmatheidari/.julia/packages/MadNLP/ojXCn/src/IPM/callbacks.jl:77 [inlined]
+homotopy! at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:370
+#solve_homotopy!#72 at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:156
+solve_homotopy! at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:100 [inlined]
+#solve_homotopy!#70 at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:93
+solve_homotopy! at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:88 [inlined]
+#solve_homotopy!#71 at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:97 [inlined]
+solve_homotopy! at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/src/Solvers/relaxation/solver.jl:96
+unknown function (ip: 0x36cdb03af) at (unknown file)
+optimize! at /Users/rahmatheidari/.julia/packages/CCOpt/QFgON/ext/CCOptMathOptInterface/CCOptMathOptInterface.jl:0
+optimize! at /Users/rahmatheidari/.julia/packages/MathOptInterface/13jDB/src/MathOptInterface.jl:122 [inlined]
+optimize! at /Users/rahmatheidari/.julia/packages/MathOptInterface/13jDB/src/Utilities/cachingoptimizer.jl:370
+unknown function (ip: 0x36c87c2df) at (unknown file)
+optimize! at /Users/rahmatheidari/.julia/packages/MathOptInterface/13jDB/src/Bridges/bridge_optimizer.jl:367 [inlined]
+optimize! at /Users/rahmatheidari/.julia/packages/MathOptInterface/13jDB/src/MathOptInterface.jl:122 [inlined]
+optimize! at /Users/rahmatheidari/.julia/packages/MathOptInterface/13jDB/src/Utilities/cachingoptimizer.jl:370
+unknown function (ip: 0x34ff9c37f) at (unknown file)
+#optimize!#96 at /Users/rahmatheidari/.julia/packages/JuMP/Y8Mtc/src/optimizer_interface.jl:633
+optimize! at /Users/rahmatheidari/.julia/packages/JuMP/Y8Mtc/src/optimizer_interface.jl:569 [inlined]
+#solve_scopf#366 at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/src/scopf.jl:218
+unknown function (ip: 0x328f5fda7) at (unknown file)
+solve_scopf at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/src/scopf.jl:87
+unknown function (ip: 0x328f14537) at (unknown file)
+#s2_solve#14 at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/examples/s2_scopf_qualification.jl:0
+s2_solve at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/examples/s2_scopf_qualification.jl:48
+unknown function (ip: 0x328f0c3f3) at (unknown file)
+run_s2_stage at /Users/rahmatheidari/Documents/repositories/remote/DroopOPF.jl/examples/s2_scopf_qualification.jl:125
+unknown function (ip: 0x112f59cc3) at (unknown file)
+jl_apply at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/./julia.h:2391 [inlined]
+do_call at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/interpreter.c:123
+eval_body at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/interpreter.c:581
+jl_interpret_toplevel_thunk at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/interpreter.c:898
+jl_toplevel_eval_flex at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/toplevel.c:1035
+jl_toplevel_eval_flex at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/toplevel.c:975
+ijl_toplevel_eval at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/toplevel.c:1047 [inlined]
+ijl_toplevel_eval_in at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/toplevel.c:1092
+eval at ./boot.jl:489
+include_string at ./loading.jl:2870
+_include at ./loading.jl:2930
+include at ./Base.jl:306
+exec_options at ./client.jl:317
+_start at ./client.jl:550
+jfptr__start_70416.1 at /Users/rahmatheidari/.julia/juliaup/julia-1.12.4+0.aarch64.apple.darwin14/Julia-1.12.app/Contents/Resources/julia/lib/julia/sys.dylib (unknown line)
+jl_apply at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/./julia.h:2391 [inlined]
+true_main at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/jlapi.c:971
+jl_repl_entrypoint at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XG3Q6T6R70.0/build/default-honeycrisp-XG3Q6T6R70-0/julialang/julia-release-1-dot-12/src/jlapi.c:1139
+unknown function (ip: 0x0) at (unknown file)
+Allocations: 273565058 (Pool: 273563413; Big: 1645); GC: 71

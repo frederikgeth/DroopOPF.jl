@@ -1,5 +1,12 @@
 # M4 scale-up decision
 
+!!! note "Historical checkpoint"
+
+    This page records the v0.4.0 decision. Its statements that M9 remained
+    downstream were accurate at that checkpoint. M9 was subsequently
+    implemented and released in v0.9.0; current status is maintained in
+    [Milestones and S1 status](milestones.md).
+
 ## Decision
 
 Do not begin a P2 scaling algorithm yet. M4 finds no performance bottleneck at

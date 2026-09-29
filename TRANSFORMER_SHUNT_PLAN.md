@@ -1,9 +1,9 @@
 # Transformer and switched-shunt extension
 
-Updated planning scope, 2026-09-19. Branch `transformers` starts at local `main`
-commit `e4d68ed` (v0.4.0). This revision records the agreed continuous-first direction and the AVR extension;
-M5.1-M5.4 and M6.1-M6.3 are implemented and validated below; later slices remain planned.
-ROADMAP.md owns sequencing and status; this branch is not a new release.
+Originally drafted on 2026-09-19 from the `transformers` branch. This document
+retains the historical decisions and validation slices; `ROADMAP.md` owns current
+status. M5–M8 are released, M9 is implemented and released in v0.9.0 with bounded
+S2 public qualification, and M10 remains planned.
 This is a selective extension of current main, not a copy of the earlier
 brainstorming worktree's M5-M13 numbering.
 
@@ -250,18 +250,20 @@ Dependency: M8 can start after M5.4; it need not wait for shunts or joint M7.3.
 Targets and deadbands remain fixed policy inputs initially. Co-design of AVR
 targets with droop is a later explicit experiment, not hidden corrective freedom.
 
-## M9: equipment response in SCOPF (AVR stages deferred)
+## M9: equipment response in SCOPF
 
 Extend M2/M3 builders and validators. M5/M6 already provide fixed-equipment SCOPF;
 this milestone adds decision sharing and response-policy coupling.
 
 | Slice | Small change | Validation and required visual |
 |---|---|---|
-| M9.1 | Shared preventive continuous tap/shunt settings | Scenario-by-device setting table; no-contingency equivalence; independent shared-setting perturbation check |
-| M9.2 | Explicit bounded corrective equipment settings | Base-to-contingency ratio/B movement versus permitted bounds; preventive/corrective margin comparison |
-| M9.3 **deferred** | Before-tap-response and AVR-settled contingency assessments | Paired voltage/thermal/Q margins, frozen versus settled taps, target errors and saturation status |
+| M9.1 **released; bounded S2 gate complete** | Shared preventive settings, explicit corrective setting timing, and automatic shared reactive assignments | Scenario-by-device setting table; outage behavior; independent reconstructed replay and coupling perturbation checks |
+| M9.2 **implemented** | Explicit corrective-action budgets relative to base | Base-to-contingency ratio/B movement versus per-device/per-scenario delta limits; allowed-action checks; preventive/corrective margin comparison |
+| M9.3 **implemented** | Before-equipment-response and AVR/equipment-settled contingency assessments | Paired voltage/thermal/Q margins, frozen versus settled equipment, target errors and saturation status |
 
-M9.1/M9.2 require applicable M7 controls; M9.3 additionally requires M8. Before
+S2 is the public IEEE-118/300 qualification campaign for M9.1. It is separate
+from S1, which remains open for deeper work on the unchanged frozen base-case
+reliability contract. M9.1/M9.2 require applicable M7 controls; M9.3 additionally requires M8. Before
 permitted tap response, freeze positions at their pre-event values. After AVR
 settling, enforce the declared AVR policy and limits. These are two steady-state
 assessments, not a simulated transient trajectory. Match active dispatch recourse
@@ -363,11 +365,10 @@ local; M9 adds security-constrained equipment decisions.
 
 ## Revised execution priority (2026-09-20)
 
-AVR (M8 and M9.3) joins complex-bank optimization in the post-scaling backlog.
-Its specification is preserved for later review. Work now follows the ROADMAP's
-S1 base-case gate, M9.1 preventive sharing, M9.2 bounded corrective equipment, and
-S2/M10 security scaling. M10 applies to supported simple models first; it does not
-wait for deferred AVR features. Initial synthetic evidence is in
+M8 is released and M9.1 is synthetically qualified. Work now follows the
+ROADMAP's S2 public qualification, M9.2 corrective-action budgets, and M9.3/M10
+response-stage and comparative evidence. S1 remains a separate active
+investigation. M10 applies to supported simple models first. Initial synthetic evidence is in
 [the connected scaling experiment](artifacts/scaling_initial/report.md).
 Report failure coverage, validated AC/policy feasibility and meaningful timing/size
 curves. Medium public networks and diverse starts remain required before claiming

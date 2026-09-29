@@ -7,6 +7,37 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-29
+
+### Added
+
+- M9.1 SCOPF control policy with continuous tap and simple-bank variables,
+  preventive sharing by default, explicit corrective timing, automatic shared
+  reactive assignments, scenario equipment persistence, and independent
+  reconstructed-network validation.
+- M9.2 per-device corrective movement budgets and allowed-action semantics,
+  including independent base-to-contingency delta validation and schema v8/v4
+  persistence with v7/v3 migration.
+- M9.3 paired immediate-frozen and settled-recourse steady-state assessment with
+  a shared saved base, comparative voltage/thermal/Q margins, and JSON/Markdown
+  reporting.
+- Initial S2 IEEE-118/300 direct/staged qualification evidence, kept separate
+  from S1 and retaining time-limit, slow-progress, and interrupted cells.
+- Frozen S2 initial scorecard plus an artifact-generated 29-cell IEEE-118
+  expansion across equipment families, timing, reactive-control mix, holdout
+  outages, multiple transformer locations, and +3% load stress, with SVG figures.
+- Bounded same-model warm retries for the four initial expansion misses,
+  recovering the physically valid Ipopt holdout while retaining three CCOpt
+  exact-droop failures as separate evidence.
+- Diagnostic SCOPF Phase-I power-balance restoration followed only by an exact
+  unchanged-model retry; elastic results are never accepted as SCOPF solutions.
+
+### Fixed
+
+- Preserve nonfinite SCOPF tap and shunt settings across JSON evidence
+  round-trips as `NaN`/`null`, allowing failed-stage reports to be reloaded and
+  independently assessed instead of crashing on `Float64(nothing)`.
+
 ## [0.8.0] - 2026-09-28
 
 ### Added
@@ -120,7 +151,8 @@ First public M1 milestone release.
   assessed using physical residuals, objective values, and droop regimes.
 - Security constraints and droop-curve optimization are planned for M2 and M3.
 
-[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.7.0...v0.8.0
 [0.4.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...v0.3.0

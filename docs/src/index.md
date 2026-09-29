@@ -7,10 +7,10 @@ equipment design, and security-constrained workflows.
 
 !!! note "Current status"
 
-    v0.8.0 releases M8 explicit FreeQ, FixedQ, AVR, and Volt–VAr assignments
-    plus AVR-aware base-case equipment design. The frozen S1 IEEE 118/300
-    reliability gate remains open; the qualified AVR lane is separate evidence.
-    Coordinated preventive/corrective equipment policy remains M9.
+    v0.9.0 releases M9 equipment-aware SCOPF: preventive/corrective continuous
+    equipment timing, bounded corrective movement, and paired immediate/settled
+    assessments. The frozen S1 IEEE 118/300 reliability gate remains open and
+    separate. S2's bounded public scorecard is retained with its failures.
 
 ## Formulations
 
@@ -21,6 +21,8 @@ equipment design, and security-constrained workflows.
 | Exact PWL droop graph with CCOpt | `solve_opf_complementarity(case)` |
 | Explicit reactive modes | `ReactiveControlAssignment(...)` |
 | Continuous equipment and reactive-control design | `optimize_joint_design(...)` |
+| Equipment-aware SCOPF | `solve_scopf(Study(...; tap_controls, shunt_controls, control_policy))` |
+| Paired response-stage assessment | `assess_scopf_response_stages(...)` |
 | Independent equilibrium checks | `equilibrium_report(case, result)` |
 | Droop operating-point plot | `write_droop_plot(...)` |
 | Validated M3 slope sweep | `sweep_droop_slope(...)` |

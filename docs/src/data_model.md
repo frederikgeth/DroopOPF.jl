@@ -81,7 +81,8 @@ for that call; omitted generators have bounded, free Q. `FixedQ` adds a Q
 schedule equality and the independent validator reports `:fixed_q` when its
 error exceeds `power_tolerance`. Unavailable generators retain zero output.
 AVR is supported by both the smooth and CCOpt base-case entry points.
-Study JSON v6 and SCOPF result JSON v2 store optional assignments explicitly.
+Study JSON v8 and SCOPF result JSON v4 store optional assignments explicitly,
+along with M9 equipment controls, timing, movement budgets, and scenario settings.
 Readers preserve `nothing` for older documents, which retains legacy attachment
 semantics. Restored assignments are revalidated and SCOPF validation rejects a
 study/result assignment mismatch. Joint design accepts the same optional
@@ -289,7 +290,9 @@ MATPOWER GS/BS remains fixed admittance and does not infer bank identities or st
 
 Study schema v4 requires `network.banks` and preserves all metadata. Schema v5
 adds optional reactive-control assignments; schema v6 adds `branch_id` to a
-branch-terminal location. Readers
+branch-terminal location; schema v7 adds selected continuous equipment and its
+SCOPF timing policy; schema v8 adds optional corrective movement-limit maps.
+Readers
 migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas.
 Existing branch/generator contingencies preserve supplied bank states. M6 uses
 fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization
@@ -322,8 +325,10 @@ relaxations, without discrete-position recovery or switching-count interpretatio
 separately checks bounds and fixed settings. A failed solve can have no state or
 ratios; physical validation is then unavailable and overall validity is false.
 
-The public entry point accepts a base `Case`; a `Study` is rejected until M9 adds
-scenario policy coupling. The current implementation uses the smooth encoding
+The dedicated base-case entry point accepts a `Case`. M9.1 also accepts the same
+controls on `Study`, with explicit scenario policy coupling through
+`SCOPFControlPolicy`; see [SCOPF](scopf.md#equipment-and-reactive-control-timing-m91).
+The current implementation uses the smooth encoding
 with Ipopt by default and supports the existing optimizer-factory interface.
 See [M7.1 evidence](equipment_optimization.md) for sweeps and comparisons.
 

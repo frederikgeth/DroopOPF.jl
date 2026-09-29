@@ -374,8 +374,9 @@ cells (7/12 with a strict `LOCALLY_SOLVED` status gate): only IEEE-300 load
 with a full smooth k3 cross-seed recovers a valid exact point
 (`ALMOST_LOCALLY_SOLVED`, complementarity residual `2.484e-8`, tap movement
 from the seed about `5.18e-9`). The original `LOCALLY_INFEASIBLE` result is
-therefore basin-sensitive rather than physical infeasibility. SCOPF integration
-remains open.
+therefore basin-sensitive rather than physical infeasibility. M9.1 SCOPF policy
+integration is now implemented and synthetically qualified; public IEEE
+qualification remains open.
 Pure FreeQ/FixedQ calls through CCOpt
 delegate to MadNLP and must not count as independent third-solver evidence.
 
@@ -623,6 +624,78 @@ For SCOPF:
 - corrective tap/shunt movement is allowed only with justified response time;
 - scenario-specific independent equipment settings are forbidden unless explicitly
   modelling corrective controls.
+
+### M9.1 implementation checkpoint
+
+The SCOPF study now carries selected continuous `TapControl` and `ShuntControl`
+policies plus an explicit `SCOPFControlPolicy`. Taps and shunts default to
+preventive timing and are constrained to the base setting in every scenario
+where they remain available. Either family may instead be declared corrective,
+which permits an independently bounded setting in each scenario. An outaged
+controlled transformer has no scenario variable; that absence is checked and
+is not counted as corrective movement.
+
+Reactive behavior is deliberately `:automatic`, not preventive or corrective:
+the assignment, AVR setpoint, FixedQ schedule, Volt–VAr curve, and regulated
+location are shared, while reactive output, voltage, limit regime, and surviving
+common-location AVR group respond to scenario physics. This prevents accidental
+scenario-specific voltage targets while preserving actual automatic response.
+
+The result persists scenario-indexed tap and shunt settings. Independent
+validation reconstructs every outage network with those reported settings,
+checks their key sets and bounds, replays AC/control physics, and separately
+reports preventive equipment-coupling error. Deliberately corrupted settings
+are rejected. Study schema v8 and SCOPF-result schema v4 retain backward reading
+of older studies as fixed-equipment, preventive-policy cases.
+
+Synthetic regressions cover preventive and corrective timing, tap outages,
+persistence, corruption detection, fixed-base rejection when settings are
+unavailable, and staged initialization. The latter is important: the enlarged
+nonlinear model can terminate at an infeasible restoration point from a direct
+start even when a validated staged witness exists. That outcome remains a
+solver-start failure, not an infeasibility claim.
+
+The bounded **S2 equipment-aware SCOPF public qualification** gate is complete.
+It retains direct and staged IEEE-118/300 results separately, compares
+Ipopt/MadNLP and exact CCOpt, and reports solver status, physical replay,
+equipment coupling, and seed lineage. Broader reliability work remains active;
+S1 continues independently against its unchanged frozen contract.
+
+The remaining M9 feature slices are distinct from S2:
+
+- **M9.2 — explicit corrective-action budgets (implemented):** constrain movement from the
+  base setting per device/scenario, declare which actions are available, and
+  validate those delta limits independently. M9.1 already supports corrective
+  scenario settings within absolute equipment bounds; it does not yet represent
+  movement time or action count; M9.2 now supplies base-to-contingency movement
+  budgets.
+- **M9.3 — staged response assessment (implemented):** compare the immediate contingency state
+  with preventive equipment frozen against a later AVR/equipment-settled state.
+  Report voltage, thermal and Q margins, AVR target error and saturation. These
+  are two steady-state assessments, not a transient trajectory.
+
+S2 large-case execution is now process-isolated and resumable. Each stage has
+an external 180-second wall limit in addition to solver limits. The IEEE-300
+retry reconfirmed Ipopt's invalid `TIME_LIMIT` fixed seed; MadNLP and CCOpt were
+terminated at the external wall limit without producing fixed-seed artifacts.
+Those are bounded no-results, not infeasibility evidence, so IEEE-300 staged and
+paired-response qualification remains open.
+
+A separate direct-witness recovery lane initializes every fixed-equipment
+scenario from the direct M9.1 result instead of leaving contingency states cold.
+Ipopt still ended at `TIME_LIMIT`, although only power-balance residuals
+remained; MadNLP and CCOpt reached the same external wall limit without an
+artifact. This excludes that simple all-scenario seed substitution as a complete
+recovery, without changing the declared fixed-seed S2 lane.
+
+Contingency-count homotopy was tested in both orders for IEEE-300 Ipopt. The
+line-only stage is physically valid but status-rejected, while generator-only is
+valid `LOCALLY_SOLVED`; adding the second contingency in either order leaves a
+line-outage power-balance residual at `TIME_LIMIT`. Separately, M9.3 is now run
+directly from the equipment-aware M9.1 base result: Ipopt immediate passes and
+its settled state is physical but status-rejected; CCOpt settled passes while
+its immediate state does not; both MadNLP stages remain invalid. These paired
+results do not close the still-missing staged-M9.1 IEEE-300 lane.
 
 ## Recommended immediate execution order
 

@@ -12,6 +12,7 @@ include("complementarity.jl")
 include("scopf.jl")
 include("validation.jl")
 include("scopf_validation.jl")
+include("scopf_stages.jl")
 include("multistart.jl")
 include("diagnostics.jl")
 include("scopf_io.jl")
@@ -33,9 +34,11 @@ export TapControl, TapOPFResult, optimize_taps, with_tap_settings, validate_tap_
 export write_tap_design, read_tap_design, tap_design_metrics
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
+export write_scopf_stage_assessment
 export write_scopf_multistart, write_scopf_diagnostics
-export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
+export Contingency, Study, SCOPFControlPolicy, scenario_case, SCOPFResult, solve_scopf
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
+export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
 export DroopBreakpointDiagnostic, SCOPFFinding, SCOPFDiagnostics, scopf_diagnostics
 export SCOPFBenchmarkSample, SCOPFBenchmarkReport, benchmark_scopf, write_scopf_benchmark

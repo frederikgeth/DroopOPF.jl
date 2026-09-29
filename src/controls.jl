@@ -33,6 +33,46 @@ without changing the physical assignment.
 """
 abstract type ReactiveControlMode end
 
+"""Explicit continuous tap policy. Omitted branches remain fixed at supplied ratios."""
+struct TapControl
+    branch_id::Int
+    lower::Float64
+    upper::Float64
+    initial::Union{Nothing,Float64}
+    nominal::Union{Nothing,Float64}
+    function TapControl(id::Integer; lower::Real, upper::Real, initial=nothing, nominal=nothing)
+        id > 0 || throw(ArgumentError("branch ID must be positive"))
+        isfinite(lower) && isfinite(upper) && 0 < lower <= upper ||
+            throw(ArgumentError("tap bounds must be finite, positive and ordered"))
+        isnothing(initial) || (isfinite(initial) && lower <= initial <= upper) ||
+            throw(ArgumentError("initial tap must lie within bounds"))
+        isnothing(nominal) || (isfinite(nominal) && nominal > 0) ||
+            throw(ArgumentError("nominal tap must be finite and positive"))
+        new(Int(id), Float64(lower), Float64(upper),
+            isnothing(initial) ? nothing : Float64(initial),
+            isnothing(nominal) ? nothing : Float64(nominal))
+    end
+end
+
+"""Select a simple bank for continuous susceptance optimization."""
+struct ShuntControl
+    bank_id::Int
+    lower::Union{Nothing,Float64}
+    upper::Union{Nothing,Float64}
+    initial::Union{Nothing,Float64}
+    nominal::Union{Nothing,Float64}
+    function ShuntControl(id::Integer; lower=nothing, upper=nothing, initial=nothing, nominal=nothing)
+        id > 0 || throw(ArgumentError("bank ID must be positive"))
+        all(x -> isnothing(x) || (x isa Real && isfinite(x)),
+            (lower, upper, initial, nominal)) ||
+            throw(ArgumentError("shunt settings must be finite"))
+        isnothing(lower) || isnothing(upper) || lower <= upper ||
+            throw(ArgumentError("reversed shunt bounds"))
+        new(Int(id), map(x -> isnothing(x) ? nothing : Float64(x),
+            (lower, upper, initial, nominal))...)
+    end
+end
+
 """Generator Q is bounded only by its declared capability."""
 struct FreeQ <: ReactiveControlMode end
 

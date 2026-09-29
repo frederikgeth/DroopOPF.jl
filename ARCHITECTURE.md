@@ -645,7 +645,9 @@ The design is informed by:
 [ROADMAP.md](ROADMAP.md) owns implementation status for M5-M10; [TRANSFORMER_SHUNT_PLAN.md](TRANSFORMER_SHUNT_PLAN.md)
 defines the validation slices and required reporting/visualization bundles.
 M5 fixed-transformer physics and all M6 fixed-shunt/bank slices are implemented;
-M7 base-case tap, simple-bank and joint droop optimization is implemented; M8-M10 remain planned. The confirmed
+M7 base-case tap, simple-bank and joint droop optimization is implemented; M8
+reactive controls and M9 equipment-aware SCOPF are released, while M10 remains
+planned. The confirmed
 [pre-M5.1 architecture review](TRANSFORMER_SHUNT_PLAN.md#pre-m51-architecture-review--confirmed)
 records the starting decisions approved by the user on 2026-09-18.
 
@@ -727,9 +729,9 @@ This preserves the boundary between physical data, optimization policy and valid
 - Results: `TapOPFResult` records every branch ratio, the policy and the ordinary AC OPF result. Versioned result JSON supports replay; no input mutation or implicit rounding occurs.
 - Validation: reconstruct the network at solved ratios and use M5/M6 independent currents and powers. Solver success, policy compliance and physical validity are distinct. `tap_design_metrics` reports supplied/nominal deviations, branch active losses and shunt active consumption without altering the objective.
 
-This slice supports the existing smooth NLP and its optimizer factory; it does not
-add a complementarity tap-design encoding. Phase shift and droop parameters stay
-fixed. Equipment decision sharing across contingencies remains M9.
+This historical M7.1 slice initially supported the smooth NLP only. The later M8
+release added complementarity equipment-design parity, and M9 now owns equipment
+decision sharing across contingencies. Phase shift remains fixed.
 
 ### M7.2 simple-bank contract (implemented)
 
