@@ -12,7 +12,7 @@ function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,Regu
     ACState,ACOPFResult,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
     SCOPFFinding,SCOPFDiagnostics,TapControl,ShuntControl,SCOPFControlPolicy,
-    SCOPFStageAssessment})
+    SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank})
     return Dict(string(k) => _json_data(getfield(x,k)) for k in fieldnames(typeof(x)))
 end
 function _json_data(x::VoltVarDroop)
@@ -62,6 +62,15 @@ write_scopf_multistart(path::AbstractString, result::SCOPFMultiStartResult) =
 """Write breakpoint distances and structured findings to versioned JSON."""
 write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
     _write_scopf_json(path, "DroopOPF.SCOPFDiagnostics", diagnostics)
+
+"""Write a structurally classified N-1 candidate catalog to JSON."""
+write_contingency_catalog(path::AbstractString, catalog::ContingencyCatalog) =
+    _write_scopf_json(path, "DroopOPF.ContingencyCatalog", catalog)
+
+"""Write an exact-evaluation contingency ranking to JSON."""
+write_contingency_ranking(path::AbstractString,
+    ranks::AbstractVector{<:ContingencyRank}) =
+    _write_scopf_json(path, "DroopOPF.ContingencyRanking", ranks)
 
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)

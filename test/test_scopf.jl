@@ -28,6 +28,26 @@ using JSON
     @test_throws ArgumentError Study(case; participation=Dict(7=>NaN))
     @test_throws ArgumentError Study(case; redispatch_limits=Dict(7=>-0.1))
     @test_throws ArgumentError Study(case; mode=:corrective, participation=Dict(7=>1.0))
+
+    catalog = contingency_catalog(case)
+    @test length(catalog.entries) == length(case.network.branches) + length(case.generators)
+    @test length(eligible_contingencies(catalog)) == length(catalog.entries)
+    @test isempty(excluded_contingencies(catalog))
+    @test occursin("Candidates are structurally classified", markdown_report(catalog))
+    mktempdir() do directory
+        path = write_contingency_catalog(joinpath(directory, "catalog.json"), catalog)
+        @test occursin("DroopOPF.ContingencyCatalog", read(path, String))
+    end
+
+    island_case = Case("catalog-island"; base_power=100.0, base_frequency=50.0,
+        network=ACNetwork([Bus(1; reference=true), Bus(2)],
+            [Branch(1, 1, 2; resistance=0.01, reactance=0.1, thermal_limit=5.0)]),
+        loads=[Load(1, 2; p=0.2, q=0.1)],
+        generators=[Generator(1, 1; p_min=0.0, p_max=1.0, q_min=-1.0,
+            q_max=1.0, initial_p=0.2, initial_q=0.0)])
+    island_catalog = contingency_catalog(island_case)
+    @test isempty(eligible_contingencies(island_catalog))
+    @test only(excluded_contingencies(island_catalog)).reason == :islanding_unsupported
 end
 
 @testset "M2 full enumeration and independent validation" begin
@@ -52,6 +72,22 @@ end
     @test occursin("generator_9", markdown_report(report))
     @test all(g.available for g in case.generators)
     @test all(b.available for b in case.network.branches)
+
+    catalog = contingency_catalog(case)
+    line_entry = only(filter(entry -> entry.device_kind == :branch &&
+        entry.device_id == 22, catalog.entries))
+    rank_study = Study(case; contingencies=[line_entry.contingency],
+        participation=Dict(7=>1.0, 9=>1.0))
+    rank_result = solve_scopf(rank_study; smooth_epsilon=1e-5)
+    ranks = rank_contingencies(catalog, equilibrium_report(rank_study, rank_result))
+    @test length(ranks) == 1
+    @test only(ranks).contingency_id == :branch_22
+    @test all(rank.classification == :accepted for rank in ranks)
+    @test occursin("Evaluated contingency ranking", markdown_report(ranks))
+    mktempdir() do directory
+        path = write_contingency_ranking(joinpath(directory, "ranking.json"), ranks)
+        @test occursin("DroopOPF.ContingencyRanking", read(path, String))
+    end
 
     baseline = solve_opf(case)
     empty = solve_scopf(Study(case))

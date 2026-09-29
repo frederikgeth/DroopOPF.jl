@@ -5,6 +5,31 @@ generator outages. Droop settings remain fixed across scenarios. Each scenario
 has its own AC voltages, angles, active generation, and reactive generation.
 This is a small-network reference formulation, with no screening or decomposition.
 
+## M10 contingency catalog and baseline assessment
+
+`contingency_catalog(case)` deterministically enumerates every available
+single branch and generator outage. Each candidate records its device ID and a
+structural disposition. Connected outages and generator outages are
+`eligible`; a branch outage that islands the network is retained as `excluded`
+with reason `islanding_unsupported`. Excluded does not mean safe: the present
+single-reference-angle formulation has no island balancing policy.
+
+The M10 runner evaluates the eligible catalog in numbered batches against one
+independently validated, fixed base OPF state:
+
+```sh
+julia --project=. examples/m10_contingency_baseline.jl 118 artifacts/m10/ieee118-batch001 1 1
+```
+
+It writes both the complete catalog and the exact outcomes for that batch.
+`rank_contingencies(catalog, report)` ranks only outages represented in the
+report; invalid or physical-only outcomes remain visible ahead of accepted
+ones, and unlisted outages are never presumed safe. This is a fixed-base
+security assessment, not a security-constrained redispatch solve. Complete all
+batches before comparing ranking or filtering methods to the enumeration
+baseline. No PTDF/LODF screening, constraint generation, or parallel execution
+is enabled until that baseline has been measured.
+
 ## Response contract
 
 All active/reactive powers and redispatch limits are per-unit on `case.base_power`;

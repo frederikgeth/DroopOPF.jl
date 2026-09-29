@@ -5,6 +5,7 @@ include("controls.jl")
 include("network.jl")
 include("domain.jl")
 include("contingencies.jl")
+include("contingency_catalog.jl")
 include("physics.jl")
 include("matpower.jl")
 include("jump.jl")
@@ -36,7 +37,10 @@ export write_tap_design, read_tap_design, tap_design_metrics
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
 export write_scopf_stage_assessment
 export write_scopf_multistart, write_scopf_diagnostics
+export write_contingency_catalog, write_contingency_ranking
 export Contingency, Study, SCOPFControlPolicy, scenario_case, SCOPFResult, solve_scopf
+export ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank
+export contingency_catalog, eligible_contingencies, excluded_contingencies, rank_contingencies
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
 export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
