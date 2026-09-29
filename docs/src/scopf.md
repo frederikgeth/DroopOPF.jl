@@ -41,6 +41,14 @@ recorded as `cpu_limited_unresolved`:
 ```sh
 sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
 ```
+
+On an unconstrained runner, use `m10_campaign.sh` to execute a resumable range
+of numbered batches. A nonzero batch exit is recorded and later batches still
+run, preserving the full evidence set instead of silently dropping failures:
+
+```sh
+sh examples/m10_campaign.sh 118 artifacts/m10 1 1 231 180
+```
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
