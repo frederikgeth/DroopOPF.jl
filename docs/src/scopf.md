@@ -22,6 +22,10 @@ julia --project=. examples/m10_contingency_baseline.jl 118 artifacts/m10/ieee118
 ```
 
 It writes both the complete catalog and the exact outcomes for that batch.
+The first batch creates a source-hashed `ieee118-base-state.json` beside the
+batch directories; later batches reuse that state only after independently
+revalidating it. Thus every batch assesses the identical, solver-accepted base
+without repeatedly optimizing a new base dispatch.
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
