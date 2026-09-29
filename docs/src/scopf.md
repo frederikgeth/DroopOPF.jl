@@ -32,6 +32,14 @@ independently to the base and each contingency batch. They begin after model
 construction, so production runs need an external process supervisor for an
 end-to-end budget. A bounded solver failure is retained as an unresolved
 outcome; it is never converted into a safety or screening assertion.
+
+Use the supplied POSIX supervisor for a bounded batch. It records its own
+completion or timeout in `supervisor.md` and retains `run.log` even if the
+child never reaches Ipopt:
+
+```sh
+sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
+```
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
