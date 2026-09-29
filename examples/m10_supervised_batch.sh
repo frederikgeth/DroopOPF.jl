@@ -65,6 +65,7 @@ finished=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 outcome=completed
 [ "$timed_out" = true ] && outcome=timed_out_unresolved
 [ "$status" -ne 0 ] && [ "$timed_out" = false ] && outcome=child_failed_unresolved
+[ "$status" -eq 152 ] && [ "$timed_out" = false ] && outcome=cpu_limited_unresolved
 cat >> "$output/supervisor.md" <<EOF
 - Finished: $finished
 - Child exit status: $status

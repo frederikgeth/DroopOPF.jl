@@ -35,7 +35,8 @@ outcome; it is never converted into a safety or screening assertion.
 
 Use the supplied POSIX supervisor for a bounded batch. It records its own
 completion or timeout in `supervisor.md` and retains `run.log` even if the
-child never reaches Ipopt:
+child never reaches Ipopt. An operating-system CPU-limit signal is explicitly
+recorded as `cpu_limited_unresolved`:
 
 ```sh
 sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
