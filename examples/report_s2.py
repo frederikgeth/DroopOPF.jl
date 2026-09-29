@@ -131,8 +131,17 @@ lines=["# S2 frozen initial scorecard and expansion","",
 "| Network | Solver | Direct M9.1 | Fixed seed | Staged M9.1 | M9.3 immediate | M9.3 settled | M9.3 lineage |",
 "|---:|---|---|---|---|---|---|---|"]
 for r in rows:lines.append(f"| {r['network']} | {r['solver']} | {cell(r,'direct')} | {cell(r,'fixed')} | {cell(r,'staged')} | {cell(r,'immediate')} | {cell(r,'settled')} | {r['lineage']} |")
-lines += ["","## Expanded IEEE-118 matrix","",
+lines += ["","### How to read the core matrix","",
+"- **Network** is the IEEE test-case bus count; **Solver** is the nonlinear or exact-complementarity backend.",
+"- **Direct M9.1** solves the equipment-aware SCOPF directly from its declared starts, with the selected M9.1 preventive equipment policy.",
+"- **Fixed seed** solves the corresponding fixed-equipment SCOPF, seeded only from the FreeQ base-case anchor. It is a staging prerequisite, not an M9.1 equipment result. (The column is *seed*, not speed.)",
+"- **Staged M9.1** solves the same equipment-aware M9.1 study using every scenario state from an accepted fixed-seed result. It is reported separately from the direct path.",
+"- **M9.3 immediate** assesses the saved M9.1 base with taps and shunts frozen in every contingency. **M9.3 settled** then permits only the declared bounded corrective equipment movement. Both are steady-state assessments, not transient simulations.",
+"- **M9.3 lineage** identifies whether the paired assessment is anchored to the staged M9.1 result or, when that staging path is unavailable, an independently valid direct M9.1 result.",
+"- **accepted** requires independent physical replay and an accepted solver termination; **physical only** passes replay but is status-rejected; **invalid** fails replay; **not run** means a required prior stage was not accepted.",
+"","## Expanded IEEE-118 matrix","",
 "The public case retains its supplied electrical state. Fixed shunt 34 at bus 34 (B=0.14 pu) is represented by an equivalent one-step bank at its supplied state, then continuously bounded to ±10% for this explicitly labelled overlay. Tap movement is limited to 0.005 pu and shunt movement to 0.014 pu in corrective cells. Mixed control replaces one of three AVRs with a Volt–VAr controller using a ±0.005 pu deadband, slope 0.05, and the FreeQ anchor output.","",
+"Here **Reactive** selects AVR-only or mixed AVR/Volt–VAr assignments; **Equipment** selects the controlled tap, shunt, joint pair, or multi-location set; **Timing** is preventive or bounded corrective; **Profile** is nominal, held-out outage, or +3% load stress; and **Load** is the fixed demand multiplier. **Status** is the solver termination, **Physical** is independent replay validity, **Accepted** additionally requires an accepted status, and **Warm retry** reports a separately retained same-model scenario-state retry.","",
 "![Expanded matrix](expanded_matrix.svg)","","![Matched objectives](expanded_objectives.svg)","",
 "| Solver | Reactive | Equipment | Timing | Profile | Load | Status | Physical | Accepted | Warm retry | Objective |",
 "|---|---|---|---|---|---:|---|---|---|---|---:|"]
