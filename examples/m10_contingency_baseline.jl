@@ -72,9 +72,16 @@ case; islanding outages remain recorded as unsupported exclusions.
 """
 function m10_contingency_baseline(name::AbstractString, output::AbstractString;
     batch_size::Integer=1, batch_number::Integer=1,
-    base_cache::Union{Nothing,AbstractString}=nothing)
+    base_cache::Union{Nothing,AbstractString}=nothing,
+    base_max_cpu_time::Real=120.0, scenario_max_cpu_time::Real=120.0,
+    max_iter::Integer=1_000)
     batch_size > 0 || throw(ArgumentError("batch_size must be positive"))
     batch_number > 0 || throw(ArgumentError("batch_number must be positive"))
+    isfinite(base_max_cpu_time) && base_max_cpu_time > 0 ||
+        throw(ArgumentError("base_max_cpu_time must be positive and finite"))
+    isfinite(scenario_max_cpu_time) && scenario_max_cpu_time > 0 ||
+        throw(ArgumentError("scenario_max_cpu_time must be positive and finite"))
+    max_iter > 0 || throw(ArgumentError("max_iter must be positive"))
     mkpath(output)
     source = m10_source(name)
     case = load_matpower_case(source; base_frequency=60.0)
@@ -89,9 +96,34 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
 
     write_contingency_catalog(joinpath(output, "catalog.json"), catalog)
     write(joinpath(output, "catalog.md"), markdown_report(catalog) * "\n")
+    write(joinpath(output, "run-policy.md"), "# M10 run policy\n\n" *
+        "- Base CPU-time limit: $(base_max_cpu_time) seconds\n" *
+        "- Contingency-batch CPU-time limit: $(scenario_max_cpu_time) seconds\n" *
+        "- Ipopt iteration limit: $(max_iter)\n\n" *
+        "A time or iteration limit is an unresolved outcome, never a safety claim.\n")
 
-    base = isfile(cache_path) ? m10_read_base_cache(cache_path, source, case) :
-        m10_write_base_cache(cache_path, source, case, solve_opf(case))
+    base = if isfile(cache_path)
+        m10_read_base_cache(cache_path, source, case)
+    else
+        base_result = solve_opf(case; optimizer_attributes=Dict(
+            "max_cpu_time" => Float64(base_max_cpu_time), "max_iter" => Int(max_iter)))
+        if isnothing(base_result.state)
+            write(joinpath(output, "base-outcome.md"), "# M10 base outcome\n\n" *
+                "- Solver status: `$(base_result.termination_status)`\n" *
+                "- Primal status: `$(base_result.primal_status)`\n" *
+                "- State: unavailable\n")
+            error("base OPF returned no state; retained bounded outcome")
+        end
+        base_report = equilibrium_report(case, base_result)
+        if !base_report.valid
+            write(joinpath(output, "base-outcome.md"), "# M10 base outcome\n\n" *
+                "- Solver status: `$(base_result.termination_status)`\n" *
+                "- Primal status: `$(base_result.primal_status)`\n" *
+                "- Independently valid: false\n")
+            error("base OPF failed independent validation; retained bounded outcome")
+        end
+        m10_write_base_cache(cache_path, source, case, base_result)
+    end
     write(joinpath(output, "baseline.md"), "# M10 fixed-base assessment\n\n" *
         "- Source SHA-256: `$(bytes2hex(sha256(read(source))))`\n" *
         "- Eligible catalog entries: $(length(eligible))\n" *
@@ -106,7 +138,8 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
 
     participation = Dict(g.id => 1.0 for g in case.generators if g.available)
     study = Study(case; contingencies=batch, participation=participation)
-    result = evaluate_contingencies(study, base.state)
+    result = evaluate_contingencies(study, base.state; optimizer_attributes=Dict(
+        "max_cpu_time" => Float64(scenario_max_cpu_time), "max_iter" => Int(max_iter)))
     report = equilibrium_report(study, result)
     ranks = rank_contingencies(catalog, report)
     write_study(joinpath(output, "study.json"), study)

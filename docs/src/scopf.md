@@ -26,6 +26,10 @@ The first batch creates a source-hashed `ieee118-base-state.json` beside the
 batch directories; later batches reuse that state only after independently
 revalidating it. Thus every batch assesses the identical, solver-accepted base
 without repeatedly optimizing a new base dispatch.
+The runner writes `run-policy.md` before solving. Its default 120-second
+CPU-time and 1,000-iteration limits apply independently to the base and each
+contingency batch. A bounded solver failure is retained as an unresolved
+outcome; it is never converted into a safety or screening assertion.
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
