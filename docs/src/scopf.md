@@ -84,6 +84,18 @@ After enumeration, generate metric-specific coverage and diagnostic rankings:
 ```sh
 julia --project=. examples/m10_campaign_report.jl artifacts/m10/ieee118-campaign
 ```
+
+Only after complete exact enumeration, benchmark the inexpensive base-state
+loading/outage-size heuristic:
+
+```sh
+julia --project=. examples/m10_screening_benchmark.jl artifacts/m10/ieee118-campaign
+```
+
+The benchmark reports unresolved-case recall at fixed evaluation budgets and
+the smallest retrospective budget that captures every unresolved exact
+outcome. It does not activate filtering: thresholds selected and evaluated on
+the same campaign cannot establish out-of-sample safety.
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
