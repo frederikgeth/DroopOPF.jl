@@ -12,7 +12,8 @@ function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,Regu
     ACState,ACOPFResult,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
     SCOPFFinding,SCOPFDiagnostics,TapControl,ShuntControl,SCOPFControlPolicy,
-    SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank})
+    SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank,
+    ContingencyAssessment, ContingencyScreeningScore})
     # Heterogeneous field generators cause recursive inference through the
     # entire Study/Case graph. JSON objects intentionally have dynamic values.
     data = Dict{String,Any}()

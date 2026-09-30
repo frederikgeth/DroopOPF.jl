@@ -12,6 +12,7 @@
 | M9.1 — explicit SCOPF equipment timing | Released in v0.9.0; synthetic qualification complete | [SCOPF policy](scopf.md#equipment-and-reactive-control-timing-m91) |
 | M9.2 — corrective-action movement budgets | Implemented and synthetically validated | Per-device allowed-action maps and independent delta checks |
 | M9.3 — paired immediate/settled assessment | Implemented and synthetically validated | Fixed-base equipment replay and paired margin reporting |
+| M10 — general N-1 catalog, evaluation, ranking, and screening evidence | Implemented and synthetically unit-tested; IEEE reliability baselines retained separately | [M10 contingency assessment](scopf.md#m10-contingency-catalog-and-baseline-assessment) |
 | S2 — equipment-aware SCOPF public qualification | Initial bounded gate complete; broader reliability qualification remains active and independent of S1 | [Retained S2 evidence](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/s2_scopf/qualification_report.md) |
 
 M7 permits continuous tap ratios and simple-bank susceptances. Discrete tap
@@ -50,8 +51,9 @@ failures are documented rather than hidden.
 | Same-case witness diagnostics | 7/12 unresolved cells recover strictly; failures separate basin, residual-gate, and termination behavior | [current S1 report](s1_summary.md#same-case-witness-diagnostic) |
 | Physically qualified AVR lane | Ipopt/MadNLP validate 24/24 staged cells; direct CCOpt validates 11/12 physically and the remaining point is cross-seed recoverable | [current S1 report](s1_summary.md#qualified-avr-lane) |
 
-IEEE 118/300 are explicit reliability workloads, not unit tests. Their retained
-commands and artifacts live under `artifacts/s1_ccopt_*`.
+IEEE 118/300 are explicit S1/S2 and M10 reliability workloads, not unit tests.
+Their retained commands and artifacts live under `artifacts/s1_ccopt_*`,
+`artifacts/s2_scopf`, and `artifacts/m10_contingencies`.
 
 ## Finding the evidence
 

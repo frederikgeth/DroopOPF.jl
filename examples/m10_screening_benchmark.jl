@@ -11,51 +11,27 @@ function m10_screening_rows(output::AbstractString)
     cache = joinpath(dirname(output), "ieee$(name)-base-state.json")
     base = m10_read_base_cache(cache, source, case)
     catalog = contingency_catalog(case)
-    entries = Dict(string(entry.contingency.id) => entry for entry in catalog.entries
-        if entry.disposition == :eligible)
     outcomes = Dict(row["contingency_id"] => row for row in campaign["outcomes"]
         if get(row, "completed", false) === true)
-    Set(keys(entries)) == Set(keys(outcomes)) ||
+    scores = contingency_screening_scores(case, base.state; catalog)
+    Set(string(score.contingency_id) for score in scores) == Set(keys(outcomes)) ||
         error("campaign outcomes do not exactly cover the eligible catalog")
 
-    flows = branch_flows(case.network, base.state)
-    branch_index = Dict(branch.id => i for (i, branch) in enumerate(case.network.branches))
-    generator_index = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
-    total_generation = sum(abs, base.state.pg)
     rows = Dict{String,Any}[]
-    for (id, entry) in entries
-        raw_score = if entry.device_kind == :branch
-            i = branch_index[entry.device_id]
-            limit = case.network.branches[i].thermal_limit
-            isfinite(limit) && limit > 0 ?
-                max(abs(flows.from[i]), abs(flows.to[i])) / limit : 0.0
-        else
-            i = generator_index[entry.device_id]
-            total_generation > 0 ? abs(base.state.pg[i]) / total_generation : 0.0
-        end
+    for score in scores
+        id = string(score.contingency_id)
         outcome = outcomes[id]
         push!(rows, Dict{String,Any}(
             "contingency_id" => id,
-            "device_kind" => string(entry.device_kind),
-            "device_id" => entry.device_id,
-            "raw_score" => raw_score,
+            "device_kind" => string(score.device_kind),
+            "device_id" => score.device_id,
+            "raw_score" => score.raw_score,
+            "screening_score" => score.percentile_score,
             "classification" => outcome["classification"],
             "unresolved" => outcome["classification"] != "accepted",
         ))
     end
-
-    # Raw scores have different units by device family. Convert each family to
-    # an empirical percentile before producing one combined priority queue.
-    for device in ("branch", "generator")
-        group = filter(row -> row["device_kind"] == device, rows)
-        ordered = sort(group; by=row -> (row["raw_score"], row["contingency_id"]))
-        denominator = max(length(ordered) - 1, 1)
-        for (rank, row) in enumerate(ordered)
-            row["screening_score"] = (rank - 1) / denominator
-        end
-    end
-    return sort(rows; by=row -> (-row["screening_score"], -row["raw_score"],
-        row["contingency_id"]))
+    return rows
 end
 
 function m10_screening_benchmark(output::AbstractString)

@@ -2,6 +2,7 @@ using Test
 using DroopOPF
 
 @testset "DroopOPF" begin
+    include("test_unit_scope.jl")
     include("test_curves.jl")
     include("test_controls.jl")
     include("test_reactive_control_modes.jl")
@@ -13,6 +14,7 @@ using DroopOPF
     include("test_opf.jl")
     include("test_sparse_balance.jl")
     include("test_scopf.jl")
+    include("test_m10_contingencies.jl")
     include("test_solver_compatibility.jl")
     include("test_validation.jl")
     include("test_matpower.jl")

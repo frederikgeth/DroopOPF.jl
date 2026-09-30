@@ -7,6 +7,26 @@ This is a small-network reference formulation, with no screening or decompositio
 
 ## M10 contingency catalog and baseline assessment
 
+M10's core capability is network-size agnostic. Given any validated `Case` and
+fixed base `ACState`, `evaluate_contingency_catalog` evaluates every eligible
+entry independently and returns its solver result, independent report, and
+rank. `contingency_screening_scores` supplies deterministic within-device
+priority percentiles without classifying a low-scored outage as safe:
+
+```julia
+catalog = contingency_catalog(case)
+assessments = evaluate_contingency_catalog(case, base_state;
+    catalog, participation=participation)
+scores = contingency_screening_scores(case, base_state; catalog)
+```
+
+The default unit suite exercises catalog ordering, full eligible enumeration,
+fixed-base validation, accepted/unresolved classification, ranking, JSON
+persistence, structural island exclusions, screening scores, and sparse model
+construction on synthetic networks of eight buses or fewer. IEEE-118 and
+IEEE-300 are excluded from unit tests and reserved for S1/S2 and explicit M10
+reliability campaigns.
+
 Use normal Julia compilation for performance runs. The supervisor no longer
 uses `--compile=min`, which slows numerical model construction. Power-balance
 expressions for the imported FreeQ baseline contain only nonzero admittance

@@ -6,7 +6,7 @@ include(joinpath(@__DIR__, "..", "examples", "s1_frozen_contract_ledger.jl"))
     mktempdir() do tmp
         solver_dir = joinpath(tmp, "solver")
         mkpath(solver_dir)
-        attempt_name = "public118-load1.0-ipopt-anchor-attempt1"
+        attempt_name = "synthetic5-load1.0-ipopt-anchor-attempt1"
         write(joinpath(solver_dir, attempt_name * "-design.json"), "{}\n")
         write(joinpath(solver_dir, attempt_name * "-diagnostics.json"), "{}\n")
         write(joinpath(solver_dir, attempt_name * "-start.json"), "{}\n")
@@ -29,8 +29,8 @@ include(joinpath(@__DIR__, "..", "examples", "s1_frozen_contract_ledger.jl"))
             ),
         )
         row = Dict(
-            "name" => "public118-load1.0-ipopt-anchor",
-            "buses" => 118,
+            "name" => "synthetic5-load1.0-ipopt-anchor",
+            "buses" => 5,
             "solver" => "ipopt",
             "valid" => false,
             "tags" => Dict("load_factor" => 1.0, "start" => "anchor"),
@@ -41,7 +41,7 @@ include(joinpath(@__DIR__, "..", "examples", "s1_frozen_contract_ledger.jl"))
         write(summary, JSON.json([row]))
         feasibility = joinpath(tmp, "feasibility.json")
         write(feasibility, JSON.json(Dict("groups" => Dict(
-            "public118_load1.0" => Dict("witnesses" => ["known-valid-cell"]),
+            "public5_load1.0" => Dict("witnesses" => ["known-valid-cell"]),
         ))))
 
         out = joinpath(tmp, "out")

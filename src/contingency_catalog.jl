@@ -33,6 +33,15 @@ struct ContingencyRank
     termination_status::Symbol
 end
 
+"""A cheap pre-solve priority score; it is not a safety classification."""
+struct ContingencyScreeningScore
+    contingency_id::Symbol
+    device_kind::Symbol
+    device_id::Int
+    raw_score::Float64
+    percentile_score::Float64
+end
+
 function _connected_after_branch_outage(case::Case, branch_id::Int)
     network = case.network
     isnothing(network) && return false
@@ -90,6 +99,54 @@ eligible_contingencies(catalog::ContingencyCatalog) =
 excluded_contingencies(catalog::ContingencyCatalog) =
     ContingencyCatalogEntry[entry for entry in catalog.entries if entry.disposition == :excluded]
 
+"""
+    contingency_screening_scores(case, state; catalog=contingency_catalog(case))
+
+Prioritize eligible outages using base-state branch loading within the branch
+family and active-power share within the generator family. Scores are empirical
+within-family percentiles so unlike raw quantities can share one queue. This is
+a screening feature only: low score never means safe.
+"""
+function contingency_screening_scores(case::Case, state::ACState;
+    catalog::ContingencyCatalog=contingency_catalog(case))
+    catalog.case_id == case.id || throw(ArgumentError("catalog case ID does not match case"))
+    length(state.pg) == length(case.generators) ||
+        throw(ArgumentError("state generator vector does not match case"))
+    flows = branch_flows(case.network, state)
+    branch_indices = Dict(branch.id => i for (i, branch) in enumerate(case.network.branches))
+    generator_indices = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
+    total_generation = sum(abs, state.pg)
+    entries = [entry for entry in catalog.entries if entry.disposition == :eligible]
+    raw = Dict{Symbol,Float64}()
+    for entry in entries
+        raw[entry.contingency.id] = if entry.device_kind == :branch
+            i = branch_indices[entry.device_id]
+            limit = case.network.branches[i].thermal_limit
+            isfinite(limit) && limit > 0 ?
+                max(abs(flows.from[i]), abs(flows.to[i])) / limit : 0.0
+        else
+            i = generator_indices[entry.device_id]
+            total_generation > 0 ? abs(state.pg[i]) / total_generation : 0.0
+        end
+    end
+    scores = ContingencyScreeningScore[]
+    for kind in (:branch, :generator)
+        family = filter(entry -> entry.device_kind == kind, entries)
+        values = sort([raw[entry.contingency.id] for entry in family])
+        denominator = max(length(values) - 1, 1)
+        for entry in family
+            value = raw[entry.contingency.id]
+            percentile = length(values) == 1 ? 1.0 :
+                (searchsortedlast(values, value) - 1) / denominator
+            push!(scores, ContingencyScreeningScore(entry.contingency.id, kind,
+                entry.device_id, value, percentile))
+        end
+    end
+    sort!(scores; by=score -> (-score.percentile_score, -score.raw_score,
+        string(score.contingency_id)))
+    return scores
+end
+
 function markdown_report(catalog::ContingencyCatalog)
     lines = ["# Contingency catalog: $(catalog.case_id)", "",
         "Candidates are structurally classified before solving. Excluded entries are retained; they are not safe contingencies.", "",
@@ -144,6 +201,7 @@ function rank_contingencies(catalog::ContingencyCatalog, report)
     sort!(ranks; by=x -> (-x.severity, string(x.contingency_id)))
     return ranks
 end
+
 
 function markdown_report(ranks::AbstractVector{<:ContingencyRank})
     lines = ["# Evaluated contingency ranking", "",

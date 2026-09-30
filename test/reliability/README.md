@@ -1,9 +1,10 @@
 # Reliability workloads
 
-IEEE 118 and IEEE 300 are intentionally excluded from `test/runtests.jl`.
-They are retained as explicit reliability workloads because their solve time,
-initialization sensitivity, and solver outcomes are evidence—not unit-test
-assertions.
+IEEE 118 and IEEE 300 are intentionally excluded from `test/runtests.jl`
+across every milestone. They are retained only as explicit S1/S2 and M10
+reliability workloads because their solve time, initialization sensitivity,
+and solver outcomes are evidence—not unit-test assertions. Unit coverage must
+use deterministic synthetic or small public fixtures.
 
 Run the frozen exact-CCOpt lane with:
 
