@@ -429,8 +429,34 @@ end
         residuals = read(paths.residuals,String)
         @test occursin("Residual / tolerance",residuals)
         @test occursin("PASS",residuals)
+        inputs = read(paths.inputs,String)
+        @test occursin("line 22",inputs)
+        @test occursin("generator 9",inputs)
+        @test occursin("preventive",inputs)
+        margins = read(paths.margins,String)
+        @test occursin("Thermal",margins)
+        @test occursin("Q max",margins)
+        deltas = read(paths.response_deltas,String)
+        @test occursin("max |ΔV|",deltas)
+        @test occursin("max |ΔP|",deltas)
+        matrix = read(paths.validation_matrix,String)
+        @test occursin("AC balance",matrix)
+        @test occursin("PASS",matrix)
         missing = deepcopy(result)
         missing.states[:line_22] = nothing
         @test_throws ArgumentError write_scopf_droop_plot(joinpath(directory,"bad.svg"),study,missing)
+        corrupted = deepcopy(result)
+        corrupted.states[:generator_9].qg[2] = 0.1
+        invalid_matrix = write_scopf_validation_matrix_plot(
+            joinpath(directory,"invalid-matrix.svg"),study,corrupted)
+        @test occursin("FAIL",read(invalid_matrix,String))
+        invalid_margins = write_scopf_margin_plot(
+            joinpath(directory,"invalid-margins.svg"),study,corrupted)
+        @test startswith(read(invalid_margins,String),"<svg")
+        evaluation = write_scopf_evaluation_report(
+            joinpath(directory,"evaluation.md"),study,result; plot_paths=paths)
+        evaluation_text = read(evaluation,String)
+        @test occursin("Declared scenario inputs",evaluation_text)
+        @test occursin("Numerical validation",evaluation_text)
     end
 end

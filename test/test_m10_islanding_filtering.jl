@@ -128,6 +128,13 @@ end
         audit_screened_ids=[:generator_1])
     @test_throws ArgumentError assess_contingency_pipeline(case, flat;
         screening_enabled=false, audit_screened_ids=[:branch_1])
+    audit_failure = assess_contingency_pipeline(case, flat;
+        audit_screened_ids=[:branch_1],
+        optimizer_attributes=Dict("max_iter"=>0))
+    @test !audit_failure.checks.complete
+    @test !audit_failure.checks.screening_audit_pass
+    @test first(audit_failure.combined_ranking).classification ==
+        :screening_audit_failure
 
     mktempdir() do directory
         path = write_contingency_pipeline(joinpath(directory, "pipeline.json"), pipeline)
@@ -165,4 +172,24 @@ end
     @test first(retained_error.combined_ranking).classification == :evaluation_error
     @test_throws ArgumentError assess_contingency_pipeline(no_generator_island,
         no_generator_flat; catalog=branch_catalog, continue_on_error=false)
+end
+
+@testset "M10 conservative fallback edge cases" begin
+    case = m10_filter_mesh_case()
+    flat = ACState(ones(4), zeros(4), zeros(2), zeros(2))
+    voltage_guard = filter_contingencies(case, flat; voltage_guard=0.11)
+    @test all(d.action == :exact && d.reason == :voltage_guard
+        for d in voltage_guard if d.device_kind in (:line, :transformer))
+    loaded = Case("m10-filter-loaded"; base_power=case.base_power,
+        base_frequency=case.base_frequency, network=case.network,
+        loads=[Load(1, 2; p=0.2, q=0.05)], generators=case.generators,
+        controls=case.controls, attachments=case.attachments)
+    loaded_result = solve_opf(loaded)
+    @test equilibrium_report(loaded, loaded_result).valid
+    thermal_guard = filter_contingencies(loaded, loaded_result.state;
+        voltage_guard=0.0, loading_threshold=1e-12)
+    @test any(d.action == :exact && d.reason == :predicted_thermal_risk
+        for d in thermal_guard if d.device_kind in (:line, :transformer))
+    @test all(d.action == :exact && d.reason == :generator_outage
+        for d in thermal_guard if d.device_kind == :generator)
 end

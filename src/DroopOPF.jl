@@ -24,6 +24,7 @@ include("scopf_io.jl")
 include("benchmarking.jl")
 include("plotting.jl")
 include("scopf_plotting.jl")
+include("scopf_evaluation_plotting.jl")
 include("droop_sweep.jl")
 include("droop_optimization.jl")
 include("droop_design_multistart.jl")
@@ -79,6 +80,9 @@ export solver_operating_points, write_droop_plot, write_solver_comparison_plot
 export scopf_operating_points, write_scopf_droop_plot, write_scopf_voltage_plot
 export write_scopf_branch_loading_plot, write_scopf_dispatch_plot
 export write_scopf_residual_plot, write_scopf_validation_plots
+export write_scopf_input_plot, write_scopf_margin_plot
+export write_scopf_response_delta_plot, write_scopf_validation_matrix_plot
+export write_scopf_evaluation_report
 export DroopSlopeSweepPoint, DroopSlopeSweep, sweep_droop_slope, best_droop_slope
 export write_droop_slope_sweep, read_droop_slope_sweep, write_droop_slope_sweep_plot
 export DroopSettings, DroopDesignResult, with_droop_settings

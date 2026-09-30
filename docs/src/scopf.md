@@ -430,7 +430,8 @@ restored_report = equilibrium_report(restored_study, restored_result)
 
 ## Visual validation
 
-The end-to-end workflow also writes five self-contained SVG figures:
+The end-to-end workflow writes nine self-contained SVG figures. Five detailed
+operating plots are retained:
 
 - `m2_droop_operating_points.svg` overlays base and contingency operating
   points on the exact volt-var curves. Marker shape identifies the scenario;
@@ -445,6 +446,20 @@ The end-to-end workflow also writes five self-contained SVG figures:
   residuals divided by their acceptance tolerances. The horizontal threshold
   is one; bars below it pass.
 
+Four cross-scenario evaluation plots connect declared inputs to independently
+checked outputs:
+
+- `scopf_declared_inputs.svg` lists each outage, active-power response policy,
+  and preventive/corrective tap and shunt timing;
+- `scopf_operating_margins.svg` shows voltage, thermal, generator-P, and
+  generator-Q margins, with near-limit and violated cells highlighted;
+- `scopf_response_deltas.svg` compares maximum voltage, angle, active-power,
+  and reactive-power changes from the saved base state on a logarithmic scale;
+- `scopf_validation_matrix.svg` maps every scenario to independent state,
+  balance, droop/AVR, voltage, thermal, capability, availability, response, and
+  equipment checks. It is intentionally writable for invalid results so
+  negative controls and failed solves can be investigated visually.
+
 Generate the complete bundle with:
 
 ```julia
@@ -458,6 +473,12 @@ Individual writers are available when only one view is needed:
 scenario set differs from the study is rejected instead of producing a partial
 figure. The graphics explain a validated result; the independent numerical
 report remains the acceptance authority.
+
+Run `julia --project=. examples/scopf_edge_case_evaluation.jl OUTPUT` to produce
+matched bundles for an accepted base/line/generator study and a deliberately
+invalid negative control with nonzero reactive output on the outaged generator.
+Each directory includes `evaluation.md`, which embeds all nine figures and the
+authoritative numerical validation report in one reviewable input/output index.
 
 JSON documents use a document-kind tag. Study schema v8 and result schema v4
 persist optional reactive-control assignments, selected tap/shunt policies,

@@ -338,7 +338,7 @@ function write_scopf_residual_plot(path::AbstractString, study::Study, result::S
     return path
 end
 
-"""Write the complete M2 visual-validation bundle and return its file paths."""
+"""Write the complete SCOPF input/output validation bundle and return its file paths."""
 function write_scopf_validation_plots(directory::AbstractString, study::Study, result::SCOPFResult)
     mkpath(directory)
     paths = (
@@ -347,11 +347,19 @@ function write_scopf_validation_plots(directory::AbstractString, study::Study, r
         branch_loading = joinpath(directory,"m2_branch_loading.svg"),
         dispatch = joinpath(directory,"m2_generator_dispatch.svg"),
         residuals = joinpath(directory,"m2_validation_residuals.svg"),
+        inputs = joinpath(directory,"scopf_declared_inputs.svg"),
+        margins = joinpath(directory,"scopf_operating_margins.svg"),
+        response_deltas = joinpath(directory,"scopf_response_deltas.svg"),
+        validation_matrix = joinpath(directory,"scopf_validation_matrix.svg"),
     )
     write_scopf_droop_plot(paths.droop,study,result)
     write_scopf_voltage_plot(paths.voltage,study,result)
     write_scopf_branch_loading_plot(paths.branch_loading,study,result)
     write_scopf_dispatch_plot(paths.dispatch,study,result)
     write_scopf_residual_plot(paths.residuals,study,result)
+    write_scopf_input_plot(paths.inputs,study)
+    write_scopf_margin_plot(paths.margins,study,result)
+    write_scopf_response_delta_plot(paths.response_deltas,study,result)
+    write_scopf_validation_matrix_plot(paths.validation_matrix,study,result)
     return paths
 end
