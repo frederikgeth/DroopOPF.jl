@@ -22,6 +22,9 @@ assessments = evaluate_contingency_catalog(case, base_state;
 scores = contingency_screening_scores(case, base_state; catalog)
 decisions = filter_contingencies(case, base_state; catalog,
     loading_threshold=0.8, voltage_guard=0.02)
+pipeline = assess_contingency_pipeline(case, base_state; catalog,
+    audit_screened_ids=[:branch_11])
+write_contingency_pipeline("pipeline.json", pipeline)
 ```
 
 The default unit suite exercises catalog ordering, full eligible enumeration,
@@ -82,6 +85,29 @@ the base voltage is outside the guard band. Singular or uncertain calculations,
 near-limit base voltages, and predicted thermal risk all fall back to exact AC
 evaluation. Screening is a workload decision, not an AC security certificate;
 thresholds require held-out reliability qualification before operational use.
+
+`assess_contingency_pipeline` executes those routes and provides the integrated
+checks around them. It validates the base state, requires exactly one decision
+for every catalog entry, checks decision identity against the catalog, retains
+per-contingency evaluation errors, and independently validates every executed
+AC result. Generator outages always use exact fixed-base SCOPF assessment;
+islanding branches use retained-component AC assessment; screened connected
+branches remain explicitly `screened_not_evaluated`.
+
+The optional `audit_screened_ids` list selects deterministic screened cases for
+an exact AC cross-check. An unresolved audited case becomes
+`screening_audit_failure`, moves to the top of the combined ranking, and makes
+the pipeline completeness check fail. `screening_enabled=false` converts every
+otherwise screened connected outage into an exact baseline run. The result
+reports `routing_complete` separately from `full_ac_coverage` and
+`all_outcomes_accepted`; therefore a successfully routed filtered run cannot be
+mistaken for complete AC security assessment. The result
+contains separate branch and generator rankings plus a combined operational
+ranking. The combined ordering uses explicit tiers—screening-audit failure,
+evaluation error, invalid result, island load loss, physical-only result,
+accepted exact result, then unaudited screened entry—before severity and stable
+ID tie-breaks. Transformer outages remain in the branch family because the
+current data model represents two-terminal transformers as branches.
 
 The diagnostic baseline runner evaluates a numbered batch against one
 independently validated, fixed base OPF state:

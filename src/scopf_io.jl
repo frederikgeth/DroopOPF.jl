@@ -14,7 +14,8 @@ function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,Regu
     SCOPFFinding,SCOPFDiagnostics,TapControl,ShuntControl,SCOPFControlPolicy,
     SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank,
     ContingencyAssessment, ContingencyScreeningScore, IslandSelection,
-    IslandedContingencyAssessment, ContingencyFilterDecision})
+    IslandedContingencyAssessment, ContingencyFilterDecision,
+    ContingencyPipelineRank, ContingencyPipelineAssessment, ContingencyPipelineResult})
     # Heterogeneous field generators cause recursive inference through the
     # entire Study/Case graph. JSON objects intentionally have dynamic values.
     data = Dict{String,Any}()
@@ -79,6 +80,10 @@ write_contingency_catalog(path::AbstractString, catalog::ContingencyCatalog) =
 write_contingency_ranking(path::AbstractString,
     ranks::AbstractVector{<:ContingencyRank}) =
     _write_scopf_json(path, "DroopOPF.ContingencyRanking", ranks)
+
+"""Write the complete routed contingency pipeline and its checks to JSON."""
+write_contingency_pipeline(path::AbstractString, result::ContingencyPipelineResult) =
+    _write_scopf_json(path, "DroopOPF.ContingencyPipelineResult", result)
 
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)

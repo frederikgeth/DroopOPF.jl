@@ -16,6 +16,7 @@ include("scopf_validation.jl")
 include("contingency_assessment.jl")
 include("islanding.jl")
 include("contingency_filtering.jl")
+include("contingency_pipeline.jl")
 include("scopf_stages.jl")
 include("multistart.jl")
 include("diagnostics.jl")
@@ -40,7 +41,7 @@ export write_tap_design, read_tap_design, tap_design_metrics
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
 export write_scopf_stage_assessment
 export write_scopf_multistart, write_scopf_diagnostics
-export write_contingency_catalog, write_contingency_ranking
+export write_contingency_catalog, write_contingency_ranking, write_contingency_pipeline
 export Contingency, Study, SCOPFControlPolicy, scenario_case, SCOPFResult, solve_scopf
 export ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank
 export ContingencyAssessment, ContingencyScreeningScore
@@ -49,6 +50,8 @@ export evaluate_contingency_catalog, contingency_screening_scores
 export IslandSelection, IslandedContingencyAssessment
 export islanded_scenario_case, evaluate_islanding_contingency
 export ContingencyFilterDecision, filter_contingencies
+export ContingencyPipelineRank, ContingencyPipelineAssessment, ContingencyPipelineResult
+export assess_contingency_pipeline
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
 export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
