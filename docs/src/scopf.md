@@ -43,7 +43,7 @@ structural disposition. Connected outages and generator outages are
 with reason `islanding_unsupported`. Excluded does not mean safe: the present
 single-reference-angle formulation has no island balancing policy.
 
-The M10 runner evaluates the eligible catalog in numbered batches against one
+The diagnostic baseline runner evaluates a numbered batch against one
 independently validated, fixed base OPF state:
 
 ```sh
@@ -71,12 +71,18 @@ recorded as `cpu_limited_unresolved`:
 sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
 ```
 
-On an unconstrained runner, use `m10_campaign.sh` to execute a resumable range
-of numbered batches. A nonzero batch exit is recorded and later batches still
-run, preserving the full evidence set instead of silently dropping failures:
+For production enumeration, use `m10_campaign.sh` to execute a resumable range
+in one Julia process. Compilation is reused, every outcome is persisted before
+the next solve, and invalid outcomes do not stop later evaluations:
 
 ```sh
-sh examples/m10_campaign.sh 118 artifacts/m10 1 1 231 180
+sh examples/m10_campaign.sh 118 artifacts/m10/ieee118-campaign 1 all 120 1000
+```
+
+After enumeration, generate metric-specific coverage and diagnostic rankings:
+
+```sh
+julia --project=. examples/m10_campaign_report.jl artifacts/m10/ieee118-campaign
 ```
 `rank_contingencies(catalog, report)` ranks only outages represented in the
 report; invalid or physical-only outcomes remain visible ahead of accepted
