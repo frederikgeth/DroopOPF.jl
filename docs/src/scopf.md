@@ -26,6 +26,16 @@ startup and a new base solve. Both formulations returned the same 44-iteration
 local-infeasibility outcome, with constraint residual approximately 6.67e-4.
 These are single-case measurements, not a convergence or campaign-time guarantee.
 
+For complete enumeration, run `examples/m10_campaign.sh 118 OUTPUT`. The campaign
+loads the case and validated base state once, evaluates every eligible outage in
+one Julia process, and persists each outcome before continuing. Re-running the
+same command resumes explicitly completed outcomes. Optional positional arguments
+select the first and last eligible catalog indices, per-outage solver seconds,
+and iteration limit. `campaign.json` and `campaign.md` distinguish completion,
+accepted results, physical-only results, invalid results, and execution errors.
+The aggregate ranking contains completed exact evaluations only; it is produced
+after evaluation and is not a pre-solve filter.
+
 `contingency_catalog(case)` deterministically enumerates every available
 single branch and generator outage. Each candidate records its device ID and a
 structural disposition. Connected outages and generator outages are
