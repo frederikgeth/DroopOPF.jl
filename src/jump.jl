@@ -363,6 +363,11 @@ function _build_acopf_model(
         susceptance_matrix = imag.(Y)
 
         for i in 1:nbus
+            # Omit exact-zero admittances before constructing the expression tree.
+            # JuMP's legacy nonlinear graph otherwise retains dense dependencies.
+            # Preserve legacy droop warm-start trajectories used by CCOpt.
+            neighbors = isempty(case.controls) && isnothing(reactive_assignments) ?
+                [j for j in 1:nbus if !iszero(Y[i, j])] : collect(1:nbus)
             p_generation = sum(pg[k] for k in generators_at_bus[i]; init = 0.0)
             q_generation = sum(qg[k] for k in generators_at_bus[i]; init = 0.0)
             selected = [b for b in network.banks if haskey(shunts,b.id) && bus_indices[b.bus_id]==i]
@@ -383,7 +388,7 @@ function _build_acopf_model(
                 p_generation - load_p[i] - variable_g*vm[i]^2 + ppos-pneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
-                             susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
+                             susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in neighbors
                 ),
             )
             @NLconstraint(
@@ -391,7 +396,7 @@ function _build_acopf_model(
                 q_generation - load_q[i] + variable_b*vm[i]^2 + qpos-qneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
-                             susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
+                             susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in neighbors
                 ),
             )
         end

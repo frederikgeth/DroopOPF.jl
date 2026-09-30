@@ -37,8 +37,8 @@ EOF
 
 (
     ulimit -t "$seconds"
-    exec julia --compile=min --project="$project_dir" -e '
-        include("examples/m10_contingency_baseline.jl")
+    exec julia --project="$project_dir" -e '
+        include(joinpath(dirname(Base.active_project()), "examples", "m10_contingency_baseline.jl"))
         name, output, size, number, limit = ARGS
         m10_contingency_baseline(name, output;
             batch_size=parse(Int, size), batch_number=parse(Int, number),

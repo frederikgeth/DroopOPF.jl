@@ -13,7 +13,13 @@ function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,Regu
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
     SCOPFFinding,SCOPFDiagnostics,TapControl,ShuntControl,SCOPFControlPolicy,
     SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank})
-    return Dict(string(k) => _json_data(getfield(x,k)) for k in fieldnames(typeof(x)))
+    # Heterogeneous field generators cause recursive inference through the
+    # entire Study/Case graph. JSON objects intentionally have dynamic values.
+    data = Dict{String,Any}()
+    for k in fieldnames(typeof(x))
+        data[string(k)] = Base.invokelatest(_json_data, getfield(x, k))
+    end
+    return data
 end
 function _json_data(x::VoltVarDroop)
     # Curve knots are derived from these physical settings.

@@ -140,9 +140,15 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
 
     participation = Dict(g.id => 1.0 for g in case.generators if g.available)
     study = Study(case; contingencies=batch, participation=participation)
+    started = time_ns()
+    build_seconds = Ref(0.0)
+    println("Evaluating batch $batch_number ($(length(batch)) outages); base validated")
+    flush(stdout)
     result = evaluate_contingencies(study, base.state; optimizer_attributes=Dict(
         "max_cpu_time" => Float64(scenario_max_cpu_time),
-        "max_wall_time" => Float64(scenario_max_cpu_time), "max_iter" => Int(max_iter)))
+        "max_wall_time" => Float64(scenario_max_cpu_time), "max_iter" => Int(max_iter)),
+        _model_hook=model -> (build_seconds[] = (time_ns() - started) / 1e9))
+    evaluation_seconds = (time_ns() - started) / 1e9
     report = equilibrium_report(study, result)
     ranks = rank_contingencies(catalog, report)
     write_study(joinpath(output, "study.json"), study)
@@ -151,6 +157,13 @@ function m10_contingency_baseline(name::AbstractString, output::AbstractString;
     write_contingency_ranking(joinpath(output, "ranking.json"), ranks)
     write(joinpath(output, "report.md"), markdown_report(report) * "\n")
     write(joinpath(output, "ranking.md"), markdown_report(ranks) * "\n")
+    open(joinpath(output, "timing.json"), "w") do io
+        JSON.json(io, Dict("build_including_compilation_seconds" => build_seconds[],
+            "optimize_and_extract_seconds" => evaluation_seconds - build_seconds[],
+            "evaluation_seconds" => evaluation_seconds,
+            "termination_status" => string(result.termination_status),
+            "independently_valid" => report.valid); pretty=true)
+    end
     println("M10 assessed $(length(batch)) eligible contingencies in $(abspath(output))")
     return (; catalog, study, result, report, ranks)
 end

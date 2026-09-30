@@ -7,6 +7,25 @@ This is a small-network reference formulation, with no screening or decompositio
 
 ## M10 contingency catalog and baseline assessment
 
+Use normal Julia compilation for performance runs. The supervisor no longer
+uses `--compile=min`, which slows numerical model construction. Power-balance
+expressions for the imported FreeQ baseline contain only nonzero admittance
+entries; this preserves the equations while avoiding dense derivative graphs.
+Declared reactive-control paths retain their existing expression ordering to
+preserve sensitive CCOpt warm-start trajectories. Each completed baseline
+writes `timing.json` separating construction (including first-call compilation)
+from optimization and extraction. Compare warm runs in the same Julia process
+when measuring sustained throughput; a fresh process pays compilation again.
+
+On the development machine, the first IEEE-118 branch-outage evaluation with
+the saved base reduced equality-Jacobian entries from 55,606 to 2,028.
+The original Ipopt solve took 5.95 seconds; the sparse warmed evaluation took
+0.33 seconds (0.36 seconds including validation and persistence). The complete
+first runner call took 24.36 seconds, including compilation but excluding package
+startup and a new base solve. Both formulations returned the same 44-iteration
+local-infeasibility outcome, with constraint residual approximately 6.67e-4.
+These are single-case measurements, not a convergence or campaign-time guarantee.
+
 `contingency_catalog(case)` deterministically enumerates every available
 single branch and generator outage. Each candidate records its device ID and a
 structural disposition. Connected outages and generator outages are

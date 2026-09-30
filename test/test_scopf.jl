@@ -40,12 +40,13 @@ using JSON
     end
 
     island_case = Case("catalog-island"; base_power=100.0, base_frequency=50.0,
+        controls=VoltVarDroop[], attachments=GeneratorControlAttachment[],
         network=ACNetwork([Bus(1; reference=true), Bus(2)],
             [Branch(1, 1, 2; resistance=0.01, reactance=0.1, thermal_limit=5.0)]),
         loads=[Load(1, 2; p=0.2, q=0.1)],
         generators=[Generator(1, 1; p_min=0.0, p_max=1.0, q_min=-1.0,
             q_max=1.0, initial_p=0.2, initial_q=0.0)])
-    island_catalog = contingency_catalog(island_case)
+    island_catalog = contingency_catalog(island_case; include_generators=false)
     @test isempty(eligible_contingencies(island_catalog))
     @test only(excluded_contingencies(island_catalog)).reason == :islanding_unsupported
 end
