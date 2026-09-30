@@ -1,9 +1,11 @@
 # Security-constrained AC OPF (M2 and M9.1)
 
-The SCOPF engine jointly optimizes one base dispatch and a fully enumerated set of line and
+The SCOPF engine jointly optimizes one base dispatch and a declared set of line and
 generator outages. Droop settings remain fixed across scenarios. Each scenario
 has its own AC voltages, angles, active generation, and reactive generation.
-This is a small-network reference formulation, with no screening or decomposition.
+The joint formulation remains a small-network reference implementation. M10
+also provides a separate conservative pre-solve filter for independent
+contingency assessment; it is not applied inside the joint SCOPF model.
 
 ## M10 contingency catalog and baseline assessment
 
@@ -18,11 +20,14 @@ catalog = contingency_catalog(case)
 assessments = evaluate_contingency_catalog(case, base_state;
     catalog, participation=participation)
 scores = contingency_screening_scores(case, base_state; catalog)
+decisions = filter_contingencies(case, base_state; catalog,
+    loading_threshold=0.8, voltage_guard=0.02)
 ```
 
 The default unit suite exercises catalog ordering, full eligible enumeration,
 fixed-base validation, accepted/unresolved classification, ranking, JSON
-persistence, structural island exclusions, screening scores, and sparse model
+persistence, structural island detection, retained-component balancing,
+production-filter routing, screening scores, and sparse model
 construction on synthetic networks of eight buses or fewer. IEEE-118 and
 IEEE-300 are excluded from unit tests and reserved for S1/S2 and explicit M10
 reliability campaigns.
@@ -60,8 +65,23 @@ after evaluation and is not a pre-solve filter.
 single branch and generator outage. Each candidate records its device ID and a
 structural disposition. Connected outages and generator outages are
 `eligible`; a branch outage that islands the network is retained as `excluded`
-with reason `islanding_unsupported`. Excluded does not mean safe: the present
-single-reference-angle formulation has no island balancing policy.
+from the original single-component evaluator with reason
+`islanding_unsupported`. It can instead be passed to
+`evaluate_islanding_contingency`. That path retains the original-reference
+component unless another component has strictly more buses. If the larger
+component is selected, the bus of its available generator with greatest
+`p_max` becomes the reference (generator ID breaks ties). Only the retained
+component is balanced; discarded buses, load, and generation capacity are
+reported and are never classified as served or safe.
+
+`filter_contingencies` is a conservative routing layer. Generator outages go
+to exact AC evaluation. Structurally islanding branch outages go to the
+island-aware evaluator. Connected branch outages use a DC LODF estimate and
+are screened only when predicted loading is below the declared threshold and
+the base voltage is outside the guard band. Singular or uncertain calculations,
+near-limit base voltages, and predicted thermal risk all fall back to exact AC
+evaluation. Screening is a workload decision, not an AC security certificate;
+thresholds require held-out reliability qualification before operational use.
 
 The diagnostic baseline runner evaluates a numbered batch against one
 independently validated, fixed base OPF state:
@@ -121,8 +141,9 @@ report; invalid or physical-only outcomes remain visible ahead of accepted
 ones, and unlisted outages are never presumed safe. This is a fixed-base
 security assessment, not a security-constrained redispatch solve. Complete all
 batches before comparing ranking or filtering methods to the enumeration
-baseline. No PTDF/LODF screening, constraint generation, or parallel execution
-is enabled until that baseline has been measured.
+baseline. The production routing API uses LODF only after this exact baseline
+was established; it is not silently enabled in the historical IEEE campaigns.
+Constraint generation and parallel execution remain outside the current scope.
 
 ## Response contract
 
@@ -167,7 +188,9 @@ In both modes:
   within capability limits. Attach controls to every unit when autonomous
   volt-var equilibrium is the intended experiment.
 - Loads, branch ratings, and voltage limits are unchanged across scenarios.
-- Disconnected base networks and islanding contingencies are rejected before solving.
+- Disconnected base networks are rejected by the joint SCOPF formulation.
+  Islanding outages use the separate retained-component assessment described
+  above.
 - Reactive capability is M1's constant Q interval with a permitted P interval;
   a curved P-dependent capability boundary remains outside this implementation.
 

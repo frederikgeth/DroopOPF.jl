@@ -26,6 +26,7 @@ makedocs(
         "M4 scale-up decision" => "scale_up_decision.md",
         "M7 equipment optimization" => "equipment_optimization.md",
         "Milestones and S1 status" => "milestones.md",
+        "Future work" => "future_work.md",
         "S1 current decision report" => "s1_summary.md",
         "S1 joint formulation" => "joint_formulation.md",
         "S1 convergence evidence" => "s1_evidence.md",

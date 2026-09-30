@@ -53,6 +53,8 @@ reactive clipping directly as complementarity pairs.
 - [Data model: explicit reactive-control modes](data_model.md#explicit-reactive-control-modes) — FreeQ, FixedQ, AVR, Volt–VAr, regulated locations, sharing, and persistence.
 - [Milestones and S1 status](milestones.md) — release status, reliability gate,
   and direct links to retained solver evidence.
+- [Future work](future_work.md) — the canonical list of deferred capabilities,
+  qualification gates, and non-goals of the present steady-state scope.
 - [S1 current decision report](s1_summary.md) — authoritative scorecards,
   failure classification, evidence provenance, and the M9 entry decision.
 - [Examples](examples.md) — reproduce the M1 regime and solver studies.

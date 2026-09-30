@@ -51,16 +51,11 @@ Avoid spending early iterations on infrastructure that does not improve the proo
 
 ### Deferred
 
-- multiple islands;
-- frequency/active-power droop and dynamic governor response;
-- PV/PQ switching;
-- generator dynamic states;
-- frequency nadir and RoCoF;
-- multi-period studies;
-- storage and unit commitment;
-- PSS/E and PowerSystems adapters;
-- GPU, MPI, and distributed decomposition;
-- global optimality certificates.
+The maintained deferred-capability register is
+[docs/src/future_work.md](docs/src/future_work.md). It covers dynamic security,
+multi-island operation, production-filter qualification, discrete equipment,
+scale, adapters, and optimization guarantees without duplicating those lists
+across roadmap and milestone files.
 
 ## 4. Current milestone plan
 

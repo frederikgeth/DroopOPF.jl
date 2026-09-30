@@ -23,6 +23,9 @@ shunts preventive by default and explicitly selectable corrective timing.
 Independent replay reconstructs each scenario's reported equipment. Public-case
 qualification, discrete actions, and response-time evidence remain outside this
 completed synthetic slice.
+These and other deferred capabilities are maintained in the single
+[future-work register](future_work.md), rather than repeated as milestone-local
+task lists.
 
 S2 is a separate qualification campaign, not a replacement or completion of
 S1. Its initial IEEE-118/300 scorecard is frozen with direct, staged, immediate,
@@ -63,3 +66,4 @@ Their retained commands and artifacts live under `artifacts/s1_ccopt_*`,
 - Exact CCOpt, physical residuals, and reproduction commands:
   [S1 CCOpt pilot and frozen lane](s1_ccopt.md).
 - Overall roadmap and outstanding gates: [ROADMAP.md](https://github.com/frederikgeth/DroopOPF.jl/blob/main/ROADMAP.md).
+- Canonical deferred-capability register: [future work](future_work.md).

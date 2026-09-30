@@ -14,6 +14,8 @@ include("scopf.jl")
 include("validation.jl")
 include("scopf_validation.jl")
 include("contingency_assessment.jl")
+include("islanding.jl")
+include("contingency_filtering.jl")
 include("scopf_stages.jl")
 include("multistart.jl")
 include("diagnostics.jl")
@@ -44,6 +46,9 @@ export ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank
 export ContingencyAssessment, ContingencyScreeningScore
 export contingency_catalog, eligible_contingencies, excluded_contingencies, rank_contingencies
 export evaluate_contingency_catalog, contingency_screening_scores
+export IslandSelection, IslandedContingencyAssessment
+export islanded_scenario_case, evaluate_islanding_contingency
+export ContingencyFilterDecision, filter_contingencies
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
 export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart

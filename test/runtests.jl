@@ -15,6 +15,7 @@ using DroopOPF
     include("test_sparse_balance.jl")
     include("test_scopf.jl")
     include("test_m10_contingencies.jl")
+    include("test_m10_islanding_filtering.jl")
     include("test_solver_compatibility.jl")
     include("test_validation.jl")
     include("test_matpower.jl")
