@@ -28,6 +28,8 @@ struct ContingencyPipelineResult
     assessments::Vector{ContingencyPipelineAssessment}
     combined_ranking::Vector{ContingencyPipelineRank}
     branch_ranking::Vector{ContingencyPipelineRank}
+    line_ranking::Vector{ContingencyPipelineRank}
+    transformer_ranking::Vector{ContingencyPipelineRank}
     generator_ranking::Vector{ContingencyPipelineRank}
     checks::NamedTuple
 end
@@ -195,10 +197,14 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         routing_complete, full_ac_coverage, all_outcomes_accepted,
         complete=routing_complete)
     combined = _sort_pipeline_ranks([assessment.rank for assessment in assessments])
-    branches = _sort_pipeline_ranks([rank for rank in combined if rank.device_kind == :branch])
+    branches = _sort_pipeline_ranks([rank for rank in combined
+        if rank.device_kind in (:line, :transformer)])
+    lines = _sort_pipeline_ranks([rank for rank in combined if rank.device_kind == :line])
+    transformers = _sort_pipeline_ranks([rank for rank in combined
+        if rank.device_kind == :transformer])
     generators = _sort_pipeline_ranks([rank for rank in combined if rank.device_kind == :generator])
-    ContingencyPipelineResult(case.id, assessments, combined, branches,
-        generators, checks)
+    ContingencyPipelineResult(case.id, assessments, combined, branches, lines,
+        transformers, generators, checks)
 end
 
 function markdown_report(result::ContingencyPipelineResult)

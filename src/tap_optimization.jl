@@ -28,7 +28,7 @@ function with_tap_settings(case::Case,taps::AbstractDict)
     all(id->any(b->b.id==id,net.branches),keys(taps)) || throw(ArgumentError("unknown tap branch ID"))
     branches=[Branch(b.id,b.from_bus,b.to_bus;resistance=b.resistance,reactance=b.reactance,
         charging=b.charging,thermal_limit=b.thermal_limit,available=b.available,
-        phase_shift=b.phase_shift,tap_ratio=get(taps,b.id,b.tap_ratio)) for b in net.branches]
+        phase_shift=b.phase_shift,tap_ratio=get(taps,b.id,b.tap_ratio),kind=b.kind) for b in net.branches]
     Case(case.id;base_power=case.base_power,base_frequency=case.base_frequency,
         network=ACNetwork(net.buses,branches;shunts=net.shunts,banks=net.banks),
         generators=case.generators,loads=case.loads,controls=case.controls,attachments=case.attachments)

@@ -64,10 +64,10 @@ accepted results, physical-only results, invalid results, and execution errors.
 The aggregate ranking contains completed exact evaluations only; it is produced
 after evaluation and is not a pre-solve filter.
 
-`contingency_catalog(case)` deterministically enumerates every available
-single branch and generator outage. Each candidate records its device ID and a
+`contingency_catalog(case)` deterministically enumerates every available line,
+transformer, and generator outage. Each candidate records its device ID and a
 structural disposition. Connected outages and generator outages are
-`eligible`; a branch outage that islands the network is retained as `excluded`
+`eligible`; a line or transformer outage that islands the network is retained as `excluded`
 from the original single-component evaluator with reason
 `islanding_unsupported`. It can instead be passed to
 `evaluate_islanding_contingency`. That path retains the original-reference
@@ -78,8 +78,8 @@ component is balanced; discarded buses, load, and generation capacity are
 reported and are never classified as served or safe.
 
 `filter_contingencies` is a conservative routing layer. Generator outages go
-to exact AC evaluation. Structurally islanding branch outages go to the
-island-aware evaluator. Connected branch outages use a DC LODF estimate and
+to exact AC evaluation. Structurally islanding line and transformer outages go to the
+island-aware evaluator. Connected network outages use a DC LODF estimate and
 are screened only when predicted loading is below the declared threshold and
 the base voltage is outside the guard band. Singular or uncertain calculations,
 near-limit base voltages, and predicted thermal risk all fall back to exact AC
@@ -91,8 +91,8 @@ checks around them. It validates the base state, requires exactly one decision
 for every catalog entry, checks decision identity against the catalog, retains
 per-contingency evaluation errors, and independently validates every executed
 AC result. Generator outages always use exact fixed-base SCOPF assessment;
-islanding branches use retained-component AC assessment; screened connected
-branches remain explicitly `screened_not_evaluated`.
+islanding line/transformer outages use retained-component AC assessment;
+screened connected network outages remain explicitly `screened_not_evaluated`.
 
 The optional `audit_screened_ids` list selects deterministic screened cases for
 an exact AC cross-check. An unresolved audited case becomes
@@ -101,13 +101,13 @@ the pipeline completeness check fail. `screening_enabled=false` converts every
 otherwise screened connected outage into an exact baseline run. The result
 reports `routing_complete` separately from `full_ac_coverage` and
 `all_outcomes_accepted`; therefore a successfully routed filtered run cannot be
-mistaken for complete AC security assessment. The result
-contains separate branch and generator rankings plus a combined operational
+mistaken for complete AC security assessment. The result contains aggregate
+network, line, transformer, and generator rankings plus a combined operational
 ranking. The combined ordering uses explicit tiers—screening-audit failure,
 evaluation error, invalid result, island load loss, physical-only result,
 accepted exact result, then unaudited screened entry—before severity and stable
-ID tie-breaks. Transformer outages remain in the branch family because the
-current data model represents two-terminal transformers as branches.
+ID tie-breaks. The aggregate network ranking is retained for compatibility,
+while line and transformer rankings are separate families.
 
 The diagnostic baseline runner evaluates a numbered batch against one
 independently validated, fixed base OPF state:

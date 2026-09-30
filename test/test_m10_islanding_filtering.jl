@@ -25,7 +25,8 @@ function m10_filter_mesh_case()
         Branch(2, 2, 3; resistance=0.01, reactance=0.1, thermal_limit=2.0),
         Branch(3, 3, 4; resistance=0.01, reactance=0.1, thermal_limit=2.0),
         Branch(4, 4, 1; resistance=0.01, reactance=0.1, thermal_limit=2.0),
-        Branch(5, 1, 3; resistance=0.01, reactance=0.15, thermal_limit=2.0),
+        Branch(5, 1, 3; resistance=0.01, reactance=0.15, thermal_limit=2.0,
+            kind=:transformer),
     ]
     generators = [
         Generator(1, 1; p_min=0.0, p_max=1.0, q_min=-1.0, q_max=1.0),
@@ -70,7 +71,9 @@ end
     @test count(decision -> decision.action == :screened, decisions) == 5
     @test count(decision -> decision.action == :exact, decisions) == 2
     @test all(decision.reason == :below_loading_threshold for decision in decisions
-        if decision.device_kind == :branch)
+        if decision.device_kind in (:line, :transformer))
+    @test count(decision -> decision.device_kind == :line, decisions) == 4
+    @test count(decision -> decision.device_kind == :transformer, decisions) == 1
     @test all(decision.reason == :generator_outage for decision in decisions
         if decision.device_kind == :generator)
     exact_assessments = evaluate_contingency_catalog(case, flat)
@@ -102,6 +105,8 @@ end
     @test pipeline.checks.exact_evaluated_count == 2
     @test length(pipeline.assessments) == 7
     @test length(pipeline.branch_ranking) == 5
+    @test length(pipeline.line_ranking) == 4
+    @test length(pipeline.transformer_ranking) == 1
     @test length(pipeline.generator_ranking) == 2
     audited = only(filter(a -> a.entry.contingency.id == :branch_1,
         pipeline.assessments))

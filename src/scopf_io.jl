@@ -41,7 +41,7 @@ end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        version = kind == "DroopOPF.Study" ? 8 : kind == "DroopOPF.SCOPFResult" ? 4 : 1
+        version = kind == "DroopOPF.Study" ? 9 : kind == "DroopOPF.SCOPFResult" ? 4 : 1
         JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
@@ -88,7 +88,7 @@ write_contingency_pipeline(path::AbstractString, result::ContingencyPipelineResu
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
     version = get(document,"schema_version",nothing)
-    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6, 7, 8) :
+    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6, 7, 8, 9) :
         kind == "DroopOPF.SCOPFResult" ? (1, 2, 3, 4) : (1,)
     version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
@@ -143,6 +143,12 @@ function _read_scopf_json(path, kind)
             else
                 all(haskey(b, k) for k in ("tap_ratio", "phase_shift")) ||
                     throw(ArgumentError("v2 study branches require tap_ratio and phase_shift"))
+            end
+            if version < 9
+                b["kind"] = "line"
+            else
+                get(b, "kind", nothing) in ("line", "transformer") ||
+                    throw(ArgumentError("v9 study branches require kind line or transformer"))
             end
         end
     end
@@ -229,7 +235,8 @@ function read_study(path::AbstractString)
     branches = Branch[Branch(b["id"],b["from_bus"],b["to_bus"]; resistance=Float64(b["resistance"]),
         reactance=Float64(b["reactance"]), charging=Float64(b["charging"]),
         thermal_limit=Float64(b["thermal_limit"]), available=b["available"],
-        tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"])) for b in n["branches"]]
+        tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"]),
+        kind=Symbol(b["kind"])) for b in n["branches"]]
     shunts = FixedShunt[FixedShunt(s["id"],s["bus_id"]; conductance=Float64(s["conductance"]),
         susceptance=Float64(s["susceptance"]), available=s["available"]) for s in n["shunts"]]
     banks = ShuntBank[ShuntBank(b["id"],b["bus_id"]; step_conductances=Float64.(b["step_conductances"]),

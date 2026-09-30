@@ -42,7 +42,8 @@ are unassessed—not feasible, served, or safe.
 
 M10 now has a coverage-checked assessment pipeline around conservative routing:
 structural island detection, exact evaluation of generator outages, a
-base-voltage guard, and DC LODF prediction for connected branch outages.
+base-voltage guard, and DC LODF prediction for connected line and transformer
+outages.
 Numerical uncertainty falls back to exact AC evaluation. Deterministic audit
 IDs can force selected screened cases through exact AC assessment, and audit
 failures invalidate pipeline completion. Small-network tests verify every
@@ -53,7 +54,7 @@ Before an operational deployment, thresholds must be frozen on training data
 and evaluated on separate networks and operating points, with unresolved-case
 recall, false-screen counts, runtime, and fallback rates reported. Useful later
 extensions include AC sensitivities, voltage/reactive-risk features, monitored
-element subsets, explicit line/transformer classification, generator-outage
+element subsets, transformer-specific AC/voltage sensitivity, generator-outage
 screening features, remedial-action screening, constraint generation, process
 parallelism, and auditable threshold/version persistence. IEEE-118 and
 IEEE-300 belong only to those reliability and robustness campaigns, never the

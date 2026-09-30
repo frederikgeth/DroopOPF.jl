@@ -93,7 +93,7 @@ function islanded_scenario_case(case::Case, contingency::Contingency,
         resistance=branch.resistance, reactance=branch.reactance,
         charging=branch.charging, thermal_limit=branch.thermal_limit,
         available=branch.available && !(branch.id in contingency.branch_ids),
-        tap_ratio=branch.tap_ratio, phase_shift=branch.phase_shift)
+        tap_ratio=branch.tap_ratio, phase_shift=branch.phase_shift, kind=branch.kind)
         for branch in network.branches
         if branch.from_bus in retained && branch.to_bus in retained]
     shunts = [shunt for shunt in network.shunts if shunt.bus_id in retained]

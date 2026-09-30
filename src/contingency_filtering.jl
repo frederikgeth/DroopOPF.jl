@@ -13,9 +13,9 @@ end
 
 Route N-1 candidates before exact AC evaluation. Generator outages always go
 to exact evaluation. Islanding branches go to the island-aware path. Connected
-branch outages use a lossless DC LODF prediction; numerical uncertainty and a
-tight base-voltage margin fall back to exact evaluation. Only low-loading,
-well-conditioned branch outages are screened.
+line and transformer outages use a lossless DC LODF prediction; numerical
+uncertainty and a tight base-voltage margin fall back to exact evaluation. Only
+low-loading, well-conditioned network outages are screened.
 """
 function filter_contingencies(case::Case, base_state::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
@@ -63,9 +63,10 @@ function filter_contingencies(case::Case, base_state::ACState;
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
                 :generator, entry.device_id, :exact, :generator_outage, nothing))
             continue
-        elseif minimum_voltage_margin <= voltage_guard
+        elseif entry.device_kind in (:line, :transformer) &&
+            minimum_voltage_margin <= voltage_guard
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
-                :branch, entry.device_id, :exact, :voltage_guard, nothing))
+                entry.device_kind, entry.device_id, :exact, :voltage_guard, nothing))
             continue
         end
         k = branch_index[entry.device_id]
@@ -85,13 +86,13 @@ function filter_contingencies(case::Case, base_state::ACState;
         end
         if isnothing(prediction)
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
-                :branch, entry.device_id, :exact, :numerical_fallback, nothing))
+                entry.device_kind, entry.device_id, :exact, :numerical_fallback, nothing))
         elseif prediction >= loading_threshold
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
-                :branch, entry.device_id, :exact, :predicted_thermal_risk, prediction))
+                entry.device_kind, entry.device_id, :exact, :predicted_thermal_risk, prediction))
         else
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
-                :branch, entry.device_id, :screened, :below_loading_threshold, prediction))
+                entry.device_kind, entry.device_id, :screened, :below_loading_threshold, prediction))
         end
     end
     return decisions

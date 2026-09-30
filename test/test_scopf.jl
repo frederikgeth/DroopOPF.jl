@@ -75,7 +75,7 @@ end
     @test all(b.available for b in case.network.branches)
 
     catalog = contingency_catalog(case)
-    line_entry = only(filter(entry -> entry.device_kind == :branch &&
+    line_entry = only(filter(entry -> entry.device_kind == :line &&
         entry.device_id == 22, catalog.entries))
     rank_study = Study(case; contingencies=[line_entry.contingency],
         participation=Dict(7=>1.0, 9=>1.0))

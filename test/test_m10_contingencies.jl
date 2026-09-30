@@ -32,7 +32,7 @@ import JSON
         Set(entry.contingency.id for entry in catalog.entries)
     @test issorted([score.percentile_score for score in scores]; rev=true)
     @test all(0.0 <= score.percentile_score <= 1.0 for score in scores)
-    @test count(score -> score.device_kind == :branch, scores) == 3
+    @test count(score -> score.device_kind == :line, scores) == 3
     @test count(score -> score.device_kind == :generator, scores) == 2
 
     invalid_base = deepcopy(base_state)

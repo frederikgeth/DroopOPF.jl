@@ -176,7 +176,7 @@ function Case(
                 Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in network.buses],
                 Branch{T}[Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance),
                     T(br.reactance), T(br.charging), T(br.thermal_limit), br.available,
-                    T(br.tap_ratio), T(br.phase_shift))
+                    T(br.tap_ratio), T(br.phase_shift), br.kind)
                     for br in network.branches],
                 FixedShunt{T}[FixedShunt{T}(s.id, s.bus_id, T(s.conductance),
                     T(s.susceptance), s.available) for s in network.shunts],

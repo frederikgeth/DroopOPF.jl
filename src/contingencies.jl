@@ -52,7 +52,7 @@ function scenario_case(case::Case{T}, contingency::Contingency) where {T}
         g.q_min, g.q_max, g.initial_p, g.initial_q) for g in case.generators]
     branches = [Branch{T}(b.id, b.from_bus, b.to_bus, b.resistance, b.reactance,
         b.charging, b.thermal_limit, b.available && !(b.id in contingency.branch_ids),
-        b.tap_ratio, b.phase_shift)
+        b.tap_ratio, b.phase_shift, b.kind)
         for b in case.network.branches]
     overlay = Case{T}(case.id * "/" * string(contingency.id), case.base_power,
         case.base_frequency, ACNetwork(case.network.buses, branches; shunts=case.network.shunts, banks=case.network.banks), case.loads,

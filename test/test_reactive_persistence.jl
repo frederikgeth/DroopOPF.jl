@@ -20,7 +20,7 @@ using JSON
         study_path = joinpath(dir, "study.json")
         write_study(study_path, study)
         document = JSON.parsefile(study_path)
-        @test document["schema_version"] == 8
+        @test document["schema_version"] == 9
         @test [a["mode"]["type"] for a in document["data"]["reactive_assignments"]] ==
             ["FreeQ", "FixedQ", "AVR", "VoltVarDroop"]
         restored = read_study(study_path)

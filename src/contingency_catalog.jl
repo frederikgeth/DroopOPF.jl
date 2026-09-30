@@ -7,7 +7,7 @@ struct ContingencyCatalogEntry
     reason::Symbol
     function ContingencyCatalogEntry(contingency::Contingency, device_kind::Symbol,
         device_id::Integer, disposition::Symbol, reason::Symbol)
-        device_kind in (:branch, :generator) ||
+        device_kind in (:line, :transformer, :generator) ||
             throw(ArgumentError("unsupported contingency device kind"))
         disposition in (:eligible, :excluded) ||
             throw(ArgumentError("contingency disposition must be :eligible or :excluded"))
@@ -66,7 +66,7 @@ Enumerate every available single branch and generator outage without silently
 discarding candidates. Branch outages that island the network are retained as
 `:excluded` with reason `:islanding_unsupported`, because the current SCOPF
 formulation has one reference angle and does not support island balancing.
-Generator outages and connected branch outages are `:eligible`.
+Generator outages and connected line/transformer outages are `:eligible`.
 """
 function contingency_catalog(case::Case; include_branches::Bool=true,
     include_generators::Bool=true)
@@ -77,7 +77,7 @@ function contingency_catalog(case::Case; include_branches::Bool=true,
         for branch in sort([b for b in case.network.branches if b.available]; by=x -> x.id)
             contingency = Contingency(Symbol("branch_", branch.id); branch_ids=[branch.id])
             connected = _connected_after_branch_outage(case, branch.id)
-            push!(entries, ContingencyCatalogEntry(contingency, :branch, branch.id,
+            push!(entries, ContingencyCatalogEntry(contingency, branch.kind, branch.id,
                 connected ? :eligible : :excluded,
                 connected ? :connected_n1 : :islanding_unsupported))
         end
@@ -119,7 +119,7 @@ function contingency_screening_scores(case::Case, state::ACState;
     entries = [entry for entry in catalog.entries if entry.disposition == :eligible]
     raw = Dict{Symbol,Float64}()
     for entry in entries
-        raw[entry.contingency.id] = if entry.device_kind == :branch
+        raw[entry.contingency.id] = if entry.device_kind in (:line, :transformer)
             i = branch_indices[entry.device_id]
             limit = case.network.branches[i].thermal_limit
             isfinite(limit) && limit > 0 ?
@@ -130,7 +130,7 @@ function contingency_screening_scores(case::Case, state::ACState;
         end
     end
     scores = ContingencyScreeningScore[]
-    for kind in (:branch, :generator)
+    for kind in (:line, :transformer, :generator)
         family = filter(entry -> entry.device_kind == kind, entries)
         values = sort([raw[entry.contingency.id] for entry in family])
         denominator = max(length(values) - 1, 1)
