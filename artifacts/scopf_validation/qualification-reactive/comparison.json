@@ -162,20 +162,20 @@
     },
     "decisions": [
       {
-        "action": "screened",
+        "action": "exact",
         "contingency_id": "branch_1",
         "device_id": 1,
         "device_kind": "line",
-        "predicted_loading": 0.1504747272863457,
-        "reason": "below_loading_threshold"
+        "predicted_loading": null,
+        "reason": "reactive_reserve_guard"
       },
       {
-        "action": "screened",
+        "action": "exact",
         "contingency_id": "branch_2",
         "device_id": 2,
         "device_kind": "transformer",
-        "predicted_loading": 0.1504747272863457,
-        "reason": "below_loading_threshold"
+        "predicted_loading": null,
+        "reason": "reactive_reserve_guard"
       },
       {
         "action": "exact",
@@ -202,8 +202,8 @@
             "contingency_id": "branch_1",
             "device_id": 1,
             "device_kind": "line",
-            "predicted_loading": 0.1504747272863457,
-            "reason": "screening_disabled"
+            "predicted_loading": null,
+            "reason": "reactive_reserve_guard"
           },
           "entry": {
             "contingency": {
@@ -404,8 +404,8 @@
             "contingency_id": "branch_2",
             "device_id": 2,
             "device_kind": "transformer",
-            "predicted_loading": 0.1504747272863457,
-            "reason": "screening_disabled"
+            "predicted_loading": null,
+            "reason": "reactive_reserve_guard"
           },
           "entry": {
             "contingency": {
@@ -1165,7 +1165,7 @@
             "total": 0
           }
         ],
-        "screened": 1,
+        "screened": 0,
         "screened_physical_failures": 0,
         "screened_unresolved": 0,
         "total": 1,
@@ -1185,7 +1185,7 @@
             "total": 0
           }
         ],
-        "screened": 1,
+        "screened": 0,
         "screened_physical_failures": 0,
         "screened_unresolved": 0,
         "total": 1,
@@ -1219,7 +1219,9 @@
     ],
     "no_observed_misses": true,
     "settings": {
+      "ac_risk_guard": true,
       "loading_threshold": 0.8,
+      "reactive_guard": 0.1,
       "solver_options": {
         "optimizer_attributes": {
           "max_iter": 300

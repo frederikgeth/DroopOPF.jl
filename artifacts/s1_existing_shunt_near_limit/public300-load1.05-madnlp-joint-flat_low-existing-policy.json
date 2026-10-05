@@ -1,0 +1,2319 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.02092175,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 6.65906125,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.186014917,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 14,
+        "tap": 129
+      },
+      "iterations": 405,
+      "julia_allocated_bytes": 253217744,
+      "model": {
+        "constraints": 3288,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 9780.724444873467,
+          "dual": 12.731993659988962,
+          "iterations": 405,
+          "primal": 1.1596057447604835e-11
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 916
+      },
+      "name": "public300-load1.05-madnlp-joint-flat_low-existing-attempt1",
+      "objective": 149.00980519130266,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.0019161014788380282,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 3.606446494641702e-5,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 2.220446049250313e-16,
+        "generator_q_min_margin": 0.024489747028281113,
+        "power_balance_max": 2.9822366798271105e-11,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 3.6064465819052316e-5,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "droop"
+        ],
+        "voltage_max_margin": 0.0015891189428325347,
+        "voltage_min_margin": 0.0016245678809194697
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 25, regulated bus 236",
+          "equipment": "generator",
+          "exceedance_pu": 2.606446494641702e-5,
+          "id": 40,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 3.606446494641702e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 35, regulated bus 7166",
+          "equipment": "generator",
+          "exceedance_pu": 1.6371255228196945e-5,
+          "id": 64,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 2.6371255228196944e-5
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1382400000,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 6.452123083,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "SLOW_PROGRESS",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "179b99f2c6d22b04b5d7150be225e886e8bed5e2cf5815c243378f1dbd96330f",
+        "dual_reset": "none; solver default initialization",
+        "family": "joint",
+        "load_factor": 1.05,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "flat_low",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": false,
+      "validate_seconds": 0.069851084
+    },
+    {
+      "build_seconds": 0.016700458,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 35.959503833,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.200204542,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 14,
+        "tap": 129
+      },
+      "iterations": 1000,
+      "julia_allocated_bytes": 533858688,
+      "model": {
+        "constraints": 3288,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 0.004157539229266451,
+          "dual": 478.70978112970084,
+          "iterations": 1000,
+          "primal": 0.0009287040719744843
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 916
+      },
+      "name": "public300-load1.05-madnlp-joint-flat_low-existing-attempt2",
+      "objective": 145.22737828148163,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "dual_initialized": true,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.0024127174427990283,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.0009287040719744843,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 3.710895586372942e-7,
+        "generator_q_min_margin": 0.028069096498907733,
+        "power_balance_max": 0.0003741075930844273,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.2965246968255073e-5,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance",
+          "droop"
+        ],
+        "voltage_max_margin": 0.0004192873494102134,
+        "voltage_min_margin": 0.00151665438553239
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 23, regulated bus 230",
+          "equipment": "generator",
+          "exceedance_pu": 0.0009187040719744843,
+          "id": 38,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.0009287040719744843
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0003731075930844273,
+          "id": 37,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.0003741075930844273
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00036395151544768676,
+          "id": 9001,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.0003649515154476868
+        },
+        {
+          "category": "droop",
+          "component": "control 25, regulated bus 236",
+          "equipment": "generator",
+          "exceedance_pu": 0.0002707610679698147,
+          "id": 40,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.0002807610679698147
+        },
+        {
+          "category": "droop",
+          "component": "control 7, regulated bus 138",
+          "equipment": "generator",
+          "exceedance_pu": 0.00023455232390874215,
+          "id": 14,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.00024455232390874215
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00022883884973015734,
+          "id": 119,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00022983884973015734
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00021010038170857326,
+          "id": 1190,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00021110038170857326
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00019865335539084972,
+          "id": 155,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00019965335539084972
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0001949835772642471,
+          "id": 120,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.0001959835772642471
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00019277836195605403,
+          "id": 1200,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00019377836195605402
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.0001914907803707021,
+          "id": 156,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.0001924907803707021
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.000184815988135829,
+          "id": 17,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.000185815988135829
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00013745578921367619,
+          "id": 7017,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00013845578921367618
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00013354701769965993,
+          "id": 238,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00013454701769965993
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00012631827519729677,
+          "id": 239,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00012731827519729677
+        },
+        {
+          "category": "droop",
+          "component": "control 26, regulated bus 239",
+          "equipment": "generator",
+          "exceedance_pu": 0.00010857397536019221,
+          "id": 42,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.00011857397536019221
+        },
+        {
+          "category": "droop",
+          "component": "control 12, regulated bus 153",
+          "equipment": "generator",
+          "exceedance_pu": 0.0001038526387016725,
+          "id": 21,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.0001138526387016725
+        },
+        {
+          "category": "droop",
+          "component": "control 19, regulated bus 191",
+          "equipment": "generator",
+          "exceedance_pu": 7.921913972415041e-5,
+          "id": 31,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 8.921913972415041e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 20, regulated bus 198",
+          "equipment": "generator",
+          "exceedance_pu": 7.901890033286009e-5,
+          "id": 32,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 8.901890033286008e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.648743540578196e-5,
+          "id": 15,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.748743540578196e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 28, regulated bus 243",
+          "equipment": "generator",
+          "exceedance_pu": 7.381377907312748e-5,
+          "id": 45,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 8.381377907312748e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.553080260976552e-5,
+          "id": 232,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.653080260976552e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 29, regulated bus 7001",
+          "equipment": "generator",
+          "exceedance_pu": 6.371846960380069e-5,
+          "id": 46,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 7.371846960380068e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.327800476695167e-5,
+          "id": 33,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.427800476695167e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.324975502938857e-5,
+          "id": 231,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.424975502938857e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.7841913649576585e-5,
+          "id": 73,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.884191364957658e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.4176833671115313e-5,
+          "id": 183,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.517683367111531e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.389429054952866e-5,
+          "id": 153,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.489429054952866e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.356628726419055e-5,
+          "id": 15,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.456628726419055e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.858293547596693e-5,
+          "id": 37,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.958293547596693e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.830167557487542e-5,
+          "id": 230,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.9301675574875414e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.812041186877492e-5,
+          "id": 9001,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.9120411868774916e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.7826779003419143e-5,
+          "id": 229,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.882677900341914e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.5579804786617277e-5,
+          "id": 7017,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.6579804786617274e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.932373126228173e-5,
+          "id": 74,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.0323731262281726e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.4170941802442626e-5,
+          "id": 34,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.5170941802442623e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.2832819555823515e-5,
+          "id": 122,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.383281955582351e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.015790137320218e-5,
+          "id": 157,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.115790137320218e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.839663702505868e-5,
+          "id": 239,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.939663702505868e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.7193218509109385e-5,
+          "id": 2040,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.8193218509109386e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 14, regulated bus 176",
+          "equipment": "generator",
+          "exceedance_pu": 2.6099503924191812e-5,
+          "id": 25,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 3.609950392419181e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.4879620808105796e-5,
+          "id": 238,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.5879620808105797e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.441889788854057e-5,
+          "id": 36,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.541889788854057e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 34, regulated bus 7130",
+          "equipment": "generator",
+          "exceedance_pu": 2.2868448208933644e-5,
+          "id": 62,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 3.286844820893364e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.168384974435378e-5,
+          "id": 130,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.268384974435378e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.1058880937550484e-5,
+          "id": 126,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.2058880937550485e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.0982336288667303e-5,
+          "id": 11,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.1982336288667303e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.8723137771321397e-5,
+          "id": 212,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.9723137771321397e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.841282544623557e-5,
+          "id": 196,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.941282544623557e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.78918426928808e-5,
+          "id": 23,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.88918426928808e-5
+        },
+        {
+          "category": "droop",
+          "component": "control 30, regulated bus 7002",
+          "equipment": "generator",
+          "exceedance_pu": 1.747304294414832e-5,
+          "id": 47,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 2.7473042944148318e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.736644113684116e-5,
+          "id": 7001,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.836644113684116e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.7006605317477664e-5,
+          "id": 1,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.8006605317477664e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.6793704598248125e-5,
+          "id": 21,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.7793704598248125e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.677012071713102e-5,
+          "id": 16,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.777012071713102e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.611967743459053e-5,
+          "id": 7,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.711967743459053e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5774966965948934e-5,
+          "id": 41,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6774966965948934e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5677372130402545e-5,
+          "id": 7011,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6677372130402546e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5647198603392254e-5,
+          "id": 20,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6647198603392255e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5549966840084806e-5,
+          "id": 143,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6549966840084807e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5451987105259302e-5,
+          "id": 211,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6451987105259303e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.4389141441363163e-5,
+          "id": 2,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.5389141441363163e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.4065562279481525e-5,
+          "id": 229,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.5065562279481526e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.4037754698521421e-5,
+          "id": 7023,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.5037754698521422e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.3775699383573481e-5,
+          "id": 230,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.4775699383573482e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.2868664444416367e-5,
+          "id": 242,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3868664444416368e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.2353738324672903e-5,
+          "id": 150,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3353738324672904e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.17211429146179e-5,
+          "id": 142,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.27211429146179e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1720029496704476e-5,
+          "id": 35,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2720029496704477e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.1500562907136192e-5,
+          "id": 154,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2500562907136192e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.0889217329752454e-5,
+          "id": 120,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1889217329752455e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.0603794937808942e-5,
+          "id": 1200,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1603794937808942e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.0570837229690766e-5,
+          "id": 20,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1570837229690767e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 9.415676628378056e-6,
+          "id": 87,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0415676628378057e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 9.344338807422026e-6,
+          "id": 121,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0344338807422027e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.957171890340177e-6,
+          "id": 7002,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.957171890340177e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.582707882094254e-6,
+          "id": 86,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.582707882094255e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.55620220333131e-6,
+          "id": 131,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.55620220333131e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.438294874541952e-6,
+          "id": 175,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.438294874541953e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.418576432940195e-6,
+          "id": 115,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.418576432940196e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.014195550882675e-6,
+          "id": 133,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 9.014195550882675e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.52111352522833e-6,
+          "id": 5,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 8.52111352522833e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.422538506414057e-6,
+          "id": 213,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 8.422538506414057e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.380988176570625e-6,
+          "id": 204,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 8.380988176570625e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 1, regulated bus 91",
+          "equipment": "generator",
+          "exceedance_pu": 7.377869704716941e-6,
+          "id": 7,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.7377869704716942e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.344461461723407e-6,
+          "id": 94,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 8.344461461723407e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 33, regulated bus 7039",
+          "equipment": "generator",
+          "exceedance_pu": 7.298446503444253e-6,
+          "id": 54,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.7298446503444254e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.255573918480863e-6,
+          "id": 42,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 8.255573918480863e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.929568351494609e-6,
+          "id": 171,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.929568351494609e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.623264154710263e-6,
+          "id": 7024,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.623264154710263e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.622301972709522e-6,
+          "id": 7003,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.622301972709522e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.441099637128801e-6,
+          "id": 241,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.441099637128801e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.1460073863272025e-6,
+          "id": 148,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 7.146007386327202e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.987323069029827e-6,
+          "id": 155,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.987323069029827e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.947882503993697e-6,
+          "id": 45,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.9478825039936964e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.720338411175808e-6,
+          "id": 214,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.720338411175808e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.482267543239662e-6,
+          "id": 102,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.4822675432396615e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.454129499289252e-6,
+          "id": 236,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.454129499289252e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.144225432158646e-6,
+          "id": 85,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.144225432158645e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.09767478210177e-6,
+          "id": 158,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.09767478210177e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.061151945901955e-6,
+          "id": 6,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.061151945901955e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.001806416799927e-6,
+          "id": 44,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 6.001806416799926e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.8520150059138134e-6,
+          "id": 7011,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.852015005913813e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.797581687172482e-6,
+          "id": 5,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.797581687172482e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.676839225365882e-6,
+          "id": 241,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.676839225365882e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.634926342423796e-6,
+          "id": 7166,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.634926342423796e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.586715771332962e-6,
+          "id": 166,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.586715771332962e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.551100523915054e-6,
+          "id": 237,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.5511005239150535e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.544160711301594e-6,
+          "id": 21,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.544160711301593e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.5420733757194365e-6,
+          "id": 245,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.542073375719436e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.414472694753592e-6,
+          "id": 10,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.4144726947535915e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.386432786247397e-6,
+          "id": 7166,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.386432786247397e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.287182753388464e-6,
+          "id": 7001,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.287182753388464e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.277088288457854e-6,
+          "id": 148,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.277088288457854e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.246884762499793e-6,
+          "id": 247,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 5.246884762499793e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 9, regulated bus 147",
+          "equipment": "generator",
+          "exceedance_pu": 3.903672476001105e-6,
+          "id": 18,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.3903672476001105e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.839121139799119e-6,
+          "id": 219,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.8391211397991185e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.772656278517751e-6,
+          "id": 195,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.772656278517751e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.6728959546271656e-6,
+          "id": 145,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.672895954627165e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.6489808487315545e-6,
+          "id": 151,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.648980848731554e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.6391310730697913e-6,
+          "id": 153,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.639131073069791e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.628085020996764e-6,
+          "id": 7003,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.628085020996764e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.561615468634539e-6,
+          "id": 127,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.561615468634539e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.3065037540618303e-6,
+          "id": 99,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.30650375406183e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.3048717284221996e-6,
+          "id": 73,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.304871728422199e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.299371332061597e-6,
+          "id": 211,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.299371332061597e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.190989178809446e-6,
+          "id": 221,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.1909891788094455e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.162348573810704e-6,
+          "id": 226,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.1623485738107036e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.130461062290536e-6,
+          "id": 212,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.130461062290536e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.1067005345230004e-6,
+          "id": 217,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.106700534523e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.038099866571221e-6,
+          "id": 7049,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 4.038099866571221e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 21, regulated bus 213",
+          "equipment": "generator",
+          "exceedance_pu": 3.027111227748022e-6,
+          "id": 33,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.3027111227748023e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.974791164429448e-6,
+          "id": 182,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.9747911644294476e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.691896705015907e-6,
+          "id": 248,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.691896705015907e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.669914693429921e-6,
+          "id": 9006,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.669914693429921e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.6196960735424002e-6,
+          "id": 234,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.6196960735424e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.582440599281256e-6,
+          "id": 49,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.582440599281256e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.5511638794005765e-6,
+          "id": 223,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.551163879400576e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.5213834926883794e-6,
+          "id": 180,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.521383492688379e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.4969884108448926e-6,
+          "id": 81,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.4969884108448923e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 35, regulated bus 7166",
+          "equipment": "generator",
+          "exceedance_pu": 2.4570423103431685e-6,
+          "id": 64,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.245704231034317e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.3998600872386933e-6,
+          "id": 3,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.399860087238693e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.2010076491673092e-6,
+          "id": 7061,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.201007649167309e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.194547359197664e-6,
+          "id": 159,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.1945473591976636e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.1515365044865187e-6,
+          "id": 116,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.1515365044865185e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.129218149044988e-6,
+          "id": 137,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.1292181490449877e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.0737911691502975e-6,
+          "id": 140,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.0737911691502973e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.022350712811317e-6,
+          "id": 170,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 3.022350712811317e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.8330017913802408e-6,
+          "id": 7012,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.8330017913802408e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.7781352568978513e-6,
+          "id": 179,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.7781352568978512e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.7450693108055369e-6,
+          "id": 201,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.745069310805537e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.7147264868299104e-6,
+          "id": 24,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.7147264868299104e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.7122974222137942e-6,
+          "id": 7002,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.712297422213794e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.696619465780703e-6,
+          "id": 141,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.696619465780703e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.6686558649569037e-6,
+          "id": 62,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.6686558649569037e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.623856047323514e-6,
+          "id": 7061,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.623856047323514e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.585855322652375e-6,
+          "id": 9055,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.585855322652375e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.5497655435913203e-6,
+          "id": 7139,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.5497655435913202e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.4633712832899946e-6,
+          "id": 129,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.4633712832899946e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.3591753294249785e-6,
+          "id": 4,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.3591753294249784e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.3563249276215004e-6,
+          "id": 235,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.3563249276215004e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.3515223246395323e-6,
+          "id": 216,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.3515223246395323e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.2783749868970915e-6,
+          "id": 7039,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.2783749868970915e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.2186180637651099e-6,
+          "id": 9055,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.21861806376511e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.1924743245360645e-6,
+          "id": 85,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.1924743245360645e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.140915854598191e-6,
+          "id": 218,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.140915854598191e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.131231350954721e-6,
+          "id": 117,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.131231350954721e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1258850144700859e-6,
+          "id": 178,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.125885014470086e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.1136021111090031e-6,
+          "id": 139,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.113602111109003e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.1134243404774545e-6,
+          "id": 3,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.1134243404774544e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.1035293583659965e-6,
+          "id": 9005,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.1035293583659964e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.0870040617782665e-6,
+          "id": 193,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.0870040617782665e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.08334944851174e-6,
+          "id": 7139,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.08334944851174e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.051376313261244e-6,
+          "id": 233,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.051376313261244e-6
+        },
+        {
+          "category": "droop",
+          "component": "control 10, regulated bus 149",
+          "equipment": "generator",
+          "exceedance_pu": 1.0451344921269615e-6,
+          "id": 19,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.1045134492126962e-5
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.02361356049785e-6,
+          "id": 88,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.02361356049785e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.0071323004744457e-6,
+          "id": 74,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 2.0071323004744457e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 9.552324217464446e-7,
+          "id": 61,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.9552324217464445e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 9.431396673930124e-7,
+          "id": 243,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.9431396673930124e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 9.372089870017817e-7,
+          "id": 140,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.9372089870017817e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 8.907075700763665e-7,
+          "id": 164,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.8907075700763665e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 8.416303506629817e-7,
+          "id": 10,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.8416303506629816e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 8.316973888765631e-7,
+          "id": 156,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.831697388876563e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.088782991476649e-7,
+          "id": 222,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.8088782991476648e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 8.006107129209248e-7,
+          "id": 7044,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.8006107129209248e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 7.060100794275002e-7,
+          "id": 16,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.7060100794275002e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.938434525132218e-7,
+          "id": 69,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6938434525132218e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 6.855448510266769e-7,
+          "id": 9,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6855448510266768e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 6.821482375917185e-7,
+          "id": 171,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6821482375917185e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 6.735137478851581e-7,
+          "id": 200,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.673513747885158e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 6.564747600256169e-7,
+          "id": 190,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.6564747600256169e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.974267015550492e-7,
+          "id": 195,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.5974267015550492e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.921854501499411e-7,
+          "id": 143,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.592185450149941e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.88875029767678e-7,
+          "id": 133,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.588875029767678e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.861877780132261e-7,
+          "id": 27,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.586187778013226e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 5.640455743037851e-7,
+          "id": 209,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.564045574303785e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.437642969517996e-7,
+          "id": 22,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.5437642969517995e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.905795924224919e-7,
+          "id": 183,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.4905795924224918e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.851719116748541e-7,
+          "id": 7012,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.485171911674854e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.839208595240905e-7,
+          "id": 213,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.4839208595240905e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.32695089231828e-7,
+          "id": 24,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.432695089231828e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.2621811949350534e-7,
+          "id": 124,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.4262181194935053e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 4.081440082858166e-7,
+          "id": 126,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.4081440082858165e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.8606754934017533e-7,
+          "id": 9005,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3860675493401753e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 3.288642894404568e-7,
+          "id": 169,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3288642894404568e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.228992239433524e-7,
+          "id": 182,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3228992239433524e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 3.086943119189343e-7,
+          "id": 162,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.3086943119189343e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.86472743000644e-7,
+          "id": 61,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.286472743000644e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.845960979390725e-7,
+          "id": 220,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2845960979390725e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.8261735790960456e-7,
+          "id": 114,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2826173579096045e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.3064411283735358e-7,
+          "id": 228,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2306441128373535e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.2864681539880398e-7,
+          "id": 6,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.228646815398804e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.2566559701553506e-7,
+          "id": 243,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.225665597015535e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 2.0802203174008587e-7,
+          "id": 2,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2080220317400858e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.0179948259746543e-7,
+          "id": 234,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.2017994825974654e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.926333252920696e-7,
+          "id": 214,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1926333252920696e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.861801836321462e-7,
+          "id": 146,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1861801836321462e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.8027022111277806e-7,
+          "id": 130,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.180270221112778e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.7632193319394678e-7,
+          "id": 7023,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1763219331939467e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.6997058426191601e-7,
+          "id": 9034,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.169970584261916e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.5161348324122064e-7,
+          "id": 91,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1516134832412206e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.3266390755484285e-7,
+          "id": 42,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1326639075548428e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 1.2640728833213193e-7,
+          "id": 7024,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1264072883321319e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1873584862642876e-7,
+          "id": 224,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1187358486264287e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 7.965494744455275e-8,
+          "id": 132,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0796549474445527e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 6.466149829564931e-8,
+          "id": 159,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0646614982956493e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "P",
+          "equipment": "bus",
+          "exceedance_pu": 5.493924246191644e-8,
+          "id": 86,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0549392424619164e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 4.00748466921073e-8,
+          "id": 7130,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0400748466921073e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.8413769033065296e-8,
+          "id": 228,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0284137690330653e-6
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 2.4577386932179524e-8,
+          "id": 216,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.0245773869321795e-6
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1382400000,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 35.74259725,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "ITERATION_LIMIT",
+      "tags": {
+        "attempt": 2,
+        "builder_start_overridden": true,
+        "context": "179b99f2c6d22b04b5d7150be225e886e8bed5e2cf5815c243378f1dbd96330f",
+        "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+        "family": "joint",
+        "load_factor": 1.05,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "seed_file": "public300-load1.05-madnlp-joint-flat_low-existing-recovery-seed.json",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "flat_low",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": false,
+      "validate_seconds": 0.071491041
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 42.902781209,
+  "events": [
+    "reset_multipliers",
+    "reset_multipliers",
+    "retry_limit_reached"
+  ],
+  "iterations": 1405,
+  "name": "public300-load1.05-madnlp-joint-flat_low-existing",
+  "selected": null,
+  "solver": "madnlp",
+  "tags": {
+    "family": "joint",
+    "load_factor": 1.05,
+    "network": 300,
+    "shunt_assumption": "continuous 0-to-source-admittance envelope",
+    "start": "flat_low",
+    "study": "s1_existing_shunt_family_matrix_v1"
+  },
+  "valid": false
+}

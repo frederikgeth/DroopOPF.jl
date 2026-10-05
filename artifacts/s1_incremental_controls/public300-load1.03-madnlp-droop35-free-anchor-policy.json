@@ -1,0 +1,167 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.011425292,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 14.231621542,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.1406545,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 0,
+        "tap": 0
+      },
+      "iterations": 737,
+      "julia_allocated_bytes": 323427104,
+      "model": {
+        "constraints": 3002,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 3.7205213077568584e-9,
+          "dual": 22.141864884386703,
+          "iterations": 737,
+          "primal": 0.10829682673544402
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 773
+      },
+      "name": "public300-load1.03-madnlp-droop35-free-anchor-attempt1",
+      "objective": 358.71303754719185,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 1.4462497865963542e-10,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 3.31758955279815e-5,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 4.63479254975141e-12,
+        "generator_q_min_margin": 0.007155967211653638,
+        "power_balance_max": 0.6335731168076855,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 3.317589552787048e-5,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance",
+          "droop"
+        ],
+        "voltage_max_margin": 2.1760371282653068e-13,
+        "voltage_min_margin": 1.7985612998927536e-13
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.6335721168076854,
+          "id": 117,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.6335731168076855
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.025625396512437476,
+          "id": 178,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.025626396512437477
+        },
+        {
+          "category": "droop",
+          "component": "control 32, regulated bus 7024",
+          "equipment": "generator",
+          "exceedance_pu": 2.3175895527981504e-5,
+          "id": 53,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 3.31758955279815e-5
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1344962560,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 14.079539208,
+      "solver": "madnlp",
+      "solver_valid": false,
+      "status": "LOCALLY_INFEASIBLE",
+      "tags": {
+        "adjustable_taps": 0,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "60842b73f8ffb43758dbff2c4da3cecce1ababc79168582bd451146a697ca7ce",
+        "droop_attachments": 35,
+        "dual_reset": "none; solver default initialization",
+        "free_droops": 35,
+        "free_shunts": 0,
+        "load_factor": 1.03,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "stage": "droop35-free",
+        "start": "anchor",
+        "study": "s1_incremental_controls_v1",
+        "synthetic_banks": 0
+      },
+      "valid": false,
+      "validate_seconds": 0.054092417
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 14.343157125,
+  "events": [
+    "termination_not_retryable"
+  ],
+  "iterations": 737,
+  "name": "public300-load1.03-madnlp-droop35-free-anchor",
+  "selected": null,
+  "solver": "madnlp",
+  "tags": {
+    "adjustable_taps": 0,
+    "droop_attachments": 35,
+    "free_droops": 35,
+    "free_shunts": 0,
+    "load_factor": 1.03,
+    "network": 300,
+    "stage": "droop35-free",
+    "start": "anchor",
+    "study": "s1_incremental_controls_v1",
+    "synthetic_banks": 0
+  },
+  "valid": false
+}

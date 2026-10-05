@@ -1,0 +1,1150 @@
+{
+  "acceptance": {
+    "exact_droop_tolerance_pu": 1.0e-5,
+    "independent_physical_validation_must_pass": true,
+    "relaxed_or_diagnostic_results_are_not_accepted": true,
+    "smooth_epsilon": 1.0e-6,
+    "solver_and_policy_must_accept": true
+  },
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "policy": "one-reset-v1",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "cell_count": 24,
+  "cells": [
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-ipopt-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-anchor-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-anchor-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-ipopt-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "6232ab862cb26e87964b9514e344df07bdf09836bf761cd51d9265fcd22e488b",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-anchor-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 3.229037638774468e-6,
+        "power_balance_max": 5.362377208939506e-14,
+        "smooth_exact_droop_gap": 3.2290376390103903e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-ipopt-flat_high",
+      "classification": "validated_feasible",
+      "declared_start": "flat_high",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_high-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_high-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-ipopt-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "dcd0e6767e3a00c3955eefaa464a4f7bed4947b7cedae3dce813819d32c3f776",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_high-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 3.894098932200052e-10,
+        "power_balance_max": 6.43931435950762e-12,
+        "smooth_exact_droop_gap": 1.7763568394002505e-15,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-ipopt-flat_low",
+      "classification": "validated_feasible",
+      "declared_start": "flat_low",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_low-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_low-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-ipopt-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "eda82ea5a6a1cded2fbc51d2c188f22494c684a0d97a9691394d40168461b079",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.0-ipopt-flat_low-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 3.313486835715418e-6,
+        "power_balance_max": 1.1582401704401946e-13,
+        "smooth_exact_droop_gap": 3.3134868359374625e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-madnlp-anchor",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "anchor",
+      "events": [
+        "reset_multipliers",
+        "reset_multipliers",
+        "retry_limit_reached"
+      ],
+      "final_status": "SLOW_PROGRESS",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-madnlp-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "ab2dc1190a77656a0a0f85a6f24a704b795efbbf7f20fd469ade2d7a0adce397",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.0-madnlp-anchor-attempt2",
+          "builder_start_overridden": true,
+          "context": "ab2dc1190a77656a0a0f85a6f24a704b795efbbf7f20fd469ade2d7a0adce397",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-anchor-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 2.4389136033597242e-5,
+        "power_balance_max": 1.2774503677093207e-13,
+        "smooth_exact_droop_gap": 2.4389136036900155e-5,
+        "violations": [
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-madnlp-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "termination_not_retryable"
+      ],
+      "final_status": "LOCALLY_INFEASIBLE",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_high-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_high-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-madnlp-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "bd134c2cf6245a9ce76674ba37797736de4cea2724d948f1308af9adfd5e723f",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_high-attempt1-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 2.3109788031827616e-7,
+        "power_balance_max": 8.595418821144563e-11,
+        "smooth_exact_droop_gap": 2.310978826775001e-7,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.0",
+      "cell": "public118-load1.0-madnlp-flat_low",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_low",
+      "events": [
+        "reset_multipliers",
+        "reset_multipliers",
+        "retry_limit_reached"
+      ],
+      "final_status": "SLOW_PROGRESS",
+      "known_witnesses": [
+        "public118-load1.0-ipopt-anchor",
+        "public118-load1.0-ipopt-flat_low",
+        "public118-load1.0-ipopt-flat_high"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.0-madnlp-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "2090e962b6ae8e70303939c9cd4093199143f50e4c7a0a535077f686fe2be943",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.0-madnlp-flat_low-attempt2",
+          "builder_start_overridden": true,
+          "context": "2090e962b6ae8e70303939c9cd4093199143f50e4c7a0a535077f686fe2be943",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.0-madnlp-flat_low-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 7.120317334973619e-6,
+        "power_balance_max": 4.909961326404755e-14,
+        "smooth_exact_droop_gap": 7.120317334335241e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-ipopt-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-anchor-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-anchor-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-ipopt-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "2e085a3409a0a4f845f4eb97ba308465042a5f407f2c1807081b2d2c404bcdc6",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-anchor-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 7.897051377409037e-7,
+        "power_balance_max": 4.96269692007445e-14,
+        "smooth_exact_droop_gap": 7.897051764321761e-7,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-ipopt-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "reset_multipliers",
+        "budget_exhausted"
+      ],
+      "final_status": "ITERATION_LIMIT",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-ipopt-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "c8a495643963a8e168dbfbcef810f73d4620ad8a7270a2bd36c3f4019c4fdb00",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.05-ipopt-flat_high-attempt2",
+          "builder_start_overridden": true,
+          "context": "c8a495643963a8e168dbfbcef810f73d4620ad8a7270a2bd36c3f4019c4fdb00",
+          "dual_reset": "constraint and bound dual starts zero; warm initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_high-attempt2-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 0.03272928045503731,
+        "power_balance_max": 0.007873602218070708,
+        "smooth_exact_droop_gap": 1.226796442210798e-14,
+        "violations": [
+          "power_balance",
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-ipopt-flat_low",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_low",
+      "events": [
+        "reset_multipliers",
+        "budget_exhausted"
+      ],
+      "final_status": "ITERATION_LIMIT",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-ipopt-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "f21004d920b8298b89a228fa8c451d7ca7e23ce071ad6989e5297d8937060ef8",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.05-ipopt-flat_low-attempt2",
+          "builder_start_overridden": true,
+          "context": "f21004d920b8298b89a228fa8c451d7ca7e23ce071ad6989e5297d8937060ef8",
+          "dual_reset": "constraint and bound dual starts zero; warm initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public118-load1.05-ipopt-flat_low-attempt2-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 0.04018795579370715,
+        "power_balance_max": 0.0005518818230549755,
+        "smooth_exact_droop_gap": 1.9984014443252818e-15,
+        "violations": [
+          "power_balance",
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-madnlp-anchor",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "anchor",
+      "events": [
+        "reset_multipliers",
+        "reset_multipliers",
+        "retry_limit_reached"
+      ],
+      "final_status": "SLOW_PROGRESS",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-madnlp-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "f67011f06b7e20fbd087892e46436d6d89149d38d708bc85c0c4fe8034278c37",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.05-madnlp-anchor-attempt2",
+          "builder_start_overridden": true,
+          "context": "f67011f06b7e20fbd087892e46436d6d89149d38d708bc85c0c4fe8034278c37",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-anchor-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 6.233579543934997e-6,
+        "power_balance_max": 3.660960423701454e-14,
+        "smooth_exact_droop_gap": 6.2335795435880526e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-madnlp-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "reset_multipliers",
+        "reset_multipliers",
+        "retry_limit_reached"
+      ],
+      "final_status": "SLOW_PROGRESS",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-madnlp-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "07cf7531d99938fc4f96e20cdc67457250645e92e3c0b91185d4bb846bcfb906",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-attempt1-start.json"
+        },
+        {
+          "attempt": "public118-load1.05-madnlp-flat_high-attempt2",
+          "builder_start_overridden": true,
+          "context": "07cf7531d99938fc4f96e20cdc67457250645e92e3c0b91185d4bb846bcfb906",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_high-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 6.2090559075078655e-6,
+        "power_balance_max": 4.6351811278100286e-14,
+        "smooth_exact_droop_gap": 6.209055907133165e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 118,
+      "case": "public118_load1.05",
+      "cell": "public118-load1.05-madnlp-flat_low",
+      "classification": "validated_feasible",
+      "declared_start": "flat_low",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public118-load1.05-ipopt-anchor",
+        "public118-load1.05-madnlp-flat_low"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_low-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_low-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public118-load1.05-madnlp-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "22a9c36a33cf702430db09899331c94987108366449e984a8ae2d3c61f31a407",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_madnlp/public118-load1.05-madnlp-flat_low-attempt1-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 2.532908281338564e-6,
+        "power_balance_max": 1.8385293287792592e-13,
+        "smooth_exact_droop_gap": 2.532908282781854e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-ipopt-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "accept"
+      ],
+      "final_status": "ALMOST_LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-anchor-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-anchor-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-ipopt-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "97ac98ee52ee32f1316dbd982a16b65b50c4cd0f66175b5d005e8039c4fa730f",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-anchor-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 1.622944356682865e-8,
+        "power_balance_max": 3.115285807098189e-13,
+        "smooth_exact_droop_gap": 1.6229443788873255e-8,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-ipopt-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "reset_multipliers",
+        "budget_exhausted"
+      ],
+      "final_status": "ITERATION_LIMIT",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-ipopt-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "30df9e572ab691ea26a3c239312dbdc64329938f2ae1daf075d9a10df19f1bb4",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.0-ipopt-flat_high-attempt2",
+          "builder_start_overridden": true,
+          "context": "30df9e572ab691ea26a3c239312dbdc64329938f2ae1daf075d9a10df19f1bb4",
+          "dual_reset": "constraint and bound dual starts zero; warm initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_high-attempt2-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 0.1681240566019837,
+        "power_balance_max": 2.1194121374856767e-5,
+        "smooth_exact_droop_gap": 2.574417432565923e-7,
+        "violations": [
+          "power_balance",
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-ipopt-flat_low",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_low",
+      "events": [
+        "reset_multipliers",
+        "budget_exhausted"
+      ],
+      "final_status": "ITERATION_LIMIT",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-ipopt-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "edf872c345771ebb16310c60e59ccb4556620c3aac787b0d617747bdb251fe39",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.0-ipopt-flat_low-attempt2",
+          "builder_start_overridden": true,
+          "context": "edf872c345771ebb16310c60e59ccb4556620c3aac787b0d617747bdb251fe39",
+          "dual_reset": "constraint and bound dual starts zero; warm initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.0-ipopt-flat_low-attempt2-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 2.3157293515172994,
+        "power_balance_max": 0.009528938905452478,
+        "smooth_exact_droop_gap": 4.064534955272592e-7,
+        "violations": [
+          "power_balance",
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-madnlp-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-anchor-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-anchor-attempt1-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-madnlp-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "cec4b5e63280557d43c12dd8f8947843625f2ac4b8fa7dae621beb14d18b0d49",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-anchor-attempt1-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 2.375877272697835e-14,
+        "power_balance_max": 1.3783696406477475e-12,
+        "smooth_exact_droop_gap": 4.440892098500626e-15,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-madnlp-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "reset_multipliers",
+        "diagnose_validation_failure"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-madnlp-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "90ebcd1541005c48ae1996c80009f06ca8becf862f21436f59a737a20391d677",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.0-madnlp-flat_high-attempt2",
+          "builder_start_overridden": true,
+          "context": "90ebcd1541005c48ae1996c80009f06ca8becf862f21436f59a737a20391d677",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_high-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": true,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 3.203462609908253e-5,
+        "power_balance_max": 1.54198875890188e-12,
+        "smooth_exact_droop_gap": 3.203462609700433e-5,
+        "violations": [
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.0",
+      "cell": "public300-load1.0-madnlp-flat_low",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_low",
+      "events": [
+        "reset_multipliers",
+        "budget_exhausted"
+      ],
+      "final_status": "ITERATION_LIMIT",
+      "known_witnesses": [
+        "public300-load1.0-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-attempt2-design.json",
+      "load_factor": 1.0,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.0-madnlp-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "8b8b7ab52ae7c0d5fc2785fb9107ecbd19827af771d7b28b98a9a84d5050a652",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.0-madnlp-flat_low-attempt2",
+          "builder_start_overridden": true,
+          "context": "8b8b7ab52ae7c0d5fc2785fb9107ecbd19827af771d7b28b98a9a84d5050a652",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.0-madnlp-flat_low-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 9.63717784741025e-7,
+        "power_balance_max": 9.829993388166258e-7,
+        "smooth_exact_droop_gap": 5.773159728050814e-15,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-ipopt-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "reset_multipliers",
+        "accept"
+      ],
+      "final_status": "ALMOST_LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-ipopt-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "3ec0cd3e7c5cc1c8fe12d39531d5f15b41dc847f92e3a2d330d83e34ff6ab862",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.05-ipopt-anchor-attempt2",
+          "builder_start_overridden": true,
+          "context": "3ec0cd3e7c5cc1c8fe12d39531d5f15b41dc847f92e3a2d330d83e34ff6ab862",
+          "dual_reset": "constraint and bound dual starts zero; warm initialization",
+          "recovery_seed": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-anchor-attempt2-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 2.5515058732494822e-8,
+        "power_balance_max": 6.544279007592024e-13,
+        "smooth_exact_droop_gap": 2.5515058510450217e-8,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-ipopt-flat_high",
+      "classification": "validated_feasible",
+      "declared_start": "flat_high",
+      "events": [
+        "accept"
+      ],
+      "final_status": "ALMOST_LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_high-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_high-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-ipopt-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "ee4ae680b25338388b35de4a1a5ec99a65030ff742f78fe205e0933918528147",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_high-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 1.998116357038171e-6,
+        "power_balance_max": 5.45785638905727e-13,
+        "smooth_exact_droop_gap": 1.998116357038171e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-ipopt-flat_low",
+      "classification": "validated_feasible",
+      "declared_start": "flat_low",
+      "events": [
+        "accept"
+      ],
+      "final_status": "ALMOST_LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_low-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_low-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-ipopt-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "ab06acbac1240ce6b8242b62c6c946ccffa29263b44decbd0e562e07028bbb73",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_ipopt/public300-load1.05-ipopt-flat_low-attempt1-start.json"
+        }
+      ],
+      "solver": "ipopt",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 1.998116357038171e-6,
+        "power_balance_max": 8.604783552357276e-13,
+        "smooth_exact_droop_gap": 1.998116357038171e-6,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-madnlp-anchor",
+      "classification": "validated_feasible",
+      "declared_start": "anchor",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-anchor-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-anchor-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-madnlp-anchor-attempt1",
+          "builder_start_overridden": false,
+          "context": "11970a726e76a33c7fe1351dd09ef585e67e82e737b5029ca528832f60f3bec5",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-anchor-attempt1-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 4.4614590000158216e-7,
+        "power_balance_max": 1.5893397709021428e-12,
+        "smooth_exact_droop_gap": 4.461459005566937e-7,
+        "violations": []
+      }
+    },
+    {
+      "attempt_count": 2,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-madnlp-flat_high",
+      "classification": "solver_path_failure_with_witness",
+      "declared_start": "flat_high",
+      "events": [
+        "reset_multipliers",
+        "reset_multipliers",
+        "retry_limit_reached"
+      ],
+      "final_status": "SLOW_PROGRESS",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-attempt2-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-attempt2-design.json",
+      "load_factor": 1.05,
+      "physical_valid": false,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-madnlp-flat_high-attempt1",
+          "builder_start_overridden": false,
+          "context": "c368472fd7c1ca0820232e256dd0b902ef531223fdcf1db090641672e1a01408",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-attempt1-start.json"
+        },
+        {
+          "attempt": "public300-load1.05-madnlp-flat_high-attempt2",
+          "builder_start_overridden": true,
+          "context": "c368472fd7c1ca0820232e256dd0b902ef531223fdcf1db090641672e1a01408",
+          "dual_reset": "constraint duals zero; bound multipliers use MadNLP native initialization",
+          "recovery_seed": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-recovery-seed.json",
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_high-attempt2-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": false,
+      "strict_accepted": false,
+      "strict_residuals": {
+        "exact_droop_max": 1.0622004840810106e-5,
+        "power_balance_max": 9.14823772291129e-13,
+        "smooth_exact_droop_gap": 1.0622004841698285e-5,
+        "violations": [
+          "droop"
+        ]
+      }
+    },
+    {
+      "attempt_count": 1,
+      "buses": 300,
+      "case": "public300_load1.05",
+      "cell": "public300-load1.05-madnlp-flat_low",
+      "classification": "validated_feasible",
+      "declared_start": "flat_low",
+      "events": [
+        "accept"
+      ],
+      "final_status": "LOCALLY_SOLVED",
+      "known_witnesses": [
+        "public300-load1.05-ipopt-flat_low",
+        "public300-load1.05-madnlp-anchor"
+      ],
+      "last_diagnostics": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_low-attempt1-diagnostics.json",
+      "last_retained_iterate": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_low-attempt1-design.json",
+      "load_factor": 1.05,
+      "physical_valid": true,
+      "policy_valid": true,
+      "seed_lineage": [
+        {
+          "attempt": "public300-load1.05-madnlp-flat_low-attempt1",
+          "builder_start_overridden": false,
+          "context": "bff6c09b7b4f8fb2bbd07b6531ed65734cccabd95dc3b3311e22aeacb53ab9ff",
+          "dual_reset": "none; solver default initialization",
+          "recovery_seed": null,
+          "start_snapshot": "artifacts/s1_policy_madnlp/public300-load1.05-madnlp-flat_low-attempt1-start.json"
+        }
+      ],
+      "solver": "madnlp",
+      "solver_valid": true,
+      "strict_accepted": true,
+      "strict_residuals": {
+        "exact_droop_max": 1.9984014443252818e-14,
+        "power_balance_max": 8.387734951043058e-13,
+        "smooth_exact_droop_gap": 7.993605777301127e-15,
+        "violations": []
+      }
+    }
+  ],
+  "classifications": {
+    "solver_path_failure_with_witness": 12,
+    "validated_feasible": 12
+  },
+  "dimensions": {
+    "load_factors": [
+      1.0,
+      1.05
+    ],
+    "networks": [
+      118,
+      300
+    ],
+    "solvers": [
+      "ipopt",
+      "madnlp"
+    ],
+    "starts": [
+      "anchor",
+      "flat_low",
+      "flat_high"
+    ]
+  },
+  "schema": "s1-frozen-contract-ledger-v1",
+  "scope": "unchanged 24-cell smooth S1 frozen acceptance matrix",
+  "source_files": [
+    {
+      "path": "artifacts/s1_policy_ipopt/summary.json",
+      "sha256": "29275c7ebff31eb36b1b787c151eea5f2eada852bfed63c3b09504f81938ab24"
+    },
+    {
+      "path": "artifacts/s1_policy_madnlp/summary.json",
+      "sha256": "310ed3eb2678e67add33b20bee50116b459f0b7343336f8911a9a44e547283a8"
+    },
+    {
+      "path": "artifacts/s1_feasibility_audit/summary.json",
+      "sha256": "b764569b75d881b0559a4b17097c8fc3d3133d2252eca21f27dbf8f639efb008"
+    }
+  ],
+  "strict_accept_count": 12
+}

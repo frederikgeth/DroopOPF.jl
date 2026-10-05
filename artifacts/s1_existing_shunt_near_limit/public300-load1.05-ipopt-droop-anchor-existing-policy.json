@@ -1,0 +1,172 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.011915542,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 3.329455083,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.13686725,
+      "free_counts": {
+        "droop": 35,
+        "shunt": 0,
+        "tap": 0
+      },
+      "iterations": 167,
+      "julia_allocated_bytes": 106688112,
+      "model": {
+        "constraints": 3002,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 773
+      },
+      "name": "public300-load1.05-ipopt-droop-anchor-existing-attempt1",
+      "objective": 328.17589410660935,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 3.2658320492373605e-12,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.004841759496843928,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 1.2238543511955413e-12,
+        "generator_q_min_margin": 0.007155967211661646,
+        "power_balance_max": 1.1611896571572777,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 4.693467836602849e-14,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance",
+          "droop"
+        ],
+        "voltage_max_margin": 5.1514348342607263e-14,
+        "voltage_min_margin": 4.807265696626928e-14
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 1.1611886571572778,
+          "id": 117,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 1.1611896571572777
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.15410245651260648,
+          "id": 178,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.15410345651260648
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.010260907822881917,
+          "id": 149,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.010261907822881916
+        },
+        {
+          "category": "droop",
+          "component": "control 10, regulated bus 149",
+          "equipment": "generator",
+          "exceedance_pu": 0.0048317594968439286,
+          "id": 19,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 0.004841759496843928
+        },
+        {
+          "category": "power_balance",
+          "component": "Q",
+          "equipment": "bus",
+          "exceedance_pu": 0.00013986532887443246,
+          "id": 9033,
+          "tolerance_pu": 1.0e-6,
+          "violation_pu": 0.00014086532887443246
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1342521344,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 3.1806705,
+      "solver": "ipopt",
+      "solver_valid": false,
+      "status": "LOCALLY_INFEASIBLE",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "6b1b2e6e448b94feec97c948e3db4a7c5f9d0c5e1492177b8ae094a2d290cc35",
+        "dual_reset": "none; solver default initialization",
+        "family": "droop",
+        "load_factor": 1.05,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "anchor",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": false,
+      "validate_seconds": 0.067378791
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 3.449571792,
+  "events": [
+    "termination_not_retryable"
+  ],
+  "iterations": 167,
+  "name": "public300-load1.05-ipopt-droop-anchor-existing",
+  "selected": null,
+  "solver": "ipopt",
+  "tags": {
+    "family": "droop",
+    "load_factor": 1.05,
+    "network": 300,
+    "shunt_assumption": "continuous 0-to-source-admittance envelope",
+    "start": "anchor",
+    "study": "s1_existing_shunt_family_matrix_v1"
+  },
+  "valid": false
+}

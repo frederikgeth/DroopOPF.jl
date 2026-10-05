@@ -1,0 +1,83 @@
+{
+  "bank_count": 12,
+  "bank_rule": "largest positive-Q load buses ordered by Q then bus ID; alternating capacitor/reactor single-step banks; step +/-0.01 pu B, G=0; legal counts 0:4; initially disconnected",
+  "costs_imported": false,
+  "droop_count": 37,
+  "droop_rule": "available generators with >1e-3 pu Q headroom; q0 and reference voltage from independently validated anchor; half-deadbands 0.005 pu; slope 0.04/(Qmax-Qmin); free slope range 0.5 to 2 times nominal",
+  "excluded_generators": [
+    {
+      "generator_id": 1,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 6,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 7,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 9,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 11,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 14,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 22,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 23,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 24,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 29,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 31,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 34,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 35,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 36,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 38,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 43,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    },
+    {
+      "generator_id": 47,
+      "reason": "unavailable or less than 1e-3 pu Q headroom at anchor"
+    }
+  ],
+  "kind": "synthetic study overlay, not measured equipment",
+  "source_angle_limits_enforced": false,
+  "source_sha256": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78",
+  "tap_count": 11,
+  "tap_rule": "available branches with explicit nonzero MATPOWER TAP; synthetic ratio bounds 0.95 to 1.05 times supplied ratio; phase fixed",
+  "unchanged": "network branches, supplied fixed shunts, generator capabilities and dispatch references"
+}

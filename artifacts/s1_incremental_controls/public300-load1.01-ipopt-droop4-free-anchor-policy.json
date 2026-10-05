@@ -1,0 +1,131 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.012620833,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 0.447219792,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.131600041,
+      "free_counts": {
+        "droop": 4,
+        "shunt": 0,
+        "tap": 0
+      },
+      "iterations": 25,
+      "julia_allocated_bytes": 85480096,
+      "model": {
+        "constraints": 2909,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 742
+      },
+      "name": "public300-load1.01-ipopt-droop4-free-anchor-attempt1",
+      "objective": 111.8894918447894,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 2.7067237340361316e-13,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 9.367506770274758e-17,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 3.5157987632317145e-13,
+        "generator_q_min_margin": 4.1759285625340576e-11,
+        "power_balance_max": 9.370282327836321e-12,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 9.367506770274758e-17,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 6.17284001691587e-14,
+        "voltage_min_margin": 9.259260025373806e-14
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1305329664,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 0.302996709,
+      "solver": "ipopt",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "adjustable_taps": 0,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "54f62bc8894603b84d4f174ce7dc3b09151b9c7f9d151b8ba226012f8be712e9",
+        "droop_attachments": 4,
+        "dual_reset": "none; solver default initialization",
+        "free_droops": 4,
+        "free_shunts": 0,
+        "load_factor": 1.01,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "stage": "droop4-free",
+        "start": "anchor",
+        "study": "s1_incremental_controls_v1",
+        "synthetic_banks": 0
+      },
+      "valid": true,
+      "validate_seconds": 0.009245292
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 0.469907042,
+  "events": [
+    "accept"
+  ],
+  "iterations": 25,
+  "name": "public300-load1.01-ipopt-droop4-free-anchor",
+  "selected": "public300-load1.01-ipopt-droop4-free-anchor-attempt1",
+  "solver": "ipopt",
+  "tags": {
+    "adjustable_taps": 0,
+    "droop_attachments": 4,
+    "free_droops": 4,
+    "free_shunts": 0,
+    "load_factor": 1.01,
+    "network": 300,
+    "stage": "droop4-free",
+    "start": "anchor",
+    "study": "s1_incremental_controls_v1",
+    "synthetic_banks": 0
+  },
+  "valid": true
+}

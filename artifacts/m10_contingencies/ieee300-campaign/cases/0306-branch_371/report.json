@@ -1,0 +1,85 @@
+{
+  "data": {
+    "case_id": "pglib_opf_case300_ieee",
+    "coupling_violation": {
+      "branch_371": 2.0420999893818674e-11
+    },
+    "encoded_droop_residual": {
+      "base": 0.0,
+      "branch_371": 0.0
+    },
+    "encoded_physical_valid": false,
+    "encoding": "smooth",
+    "equipment_coupling_violation": {
+      "branch_371": 0.0
+    },
+    "mode": "preventive",
+    "objective": 101.63069005455563,
+    "physical_valid": false,
+    "primal_status": "INFEASIBLE_POINT",
+    "scenario_ids": [
+      "base",
+      "branch_371"
+    ],
+    "scenarios": {
+      "base": {
+        "branch_thermal_min_margin": -1.1274182143417022e-8,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.0,
+        "generator_p_max_margin": -3.17120689707906e-8,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": -2.229714279877726e-8,
+        "generator_q_min_margin": 2.259129323431833e-8,
+        "power_balance_max": 4.0362779785141356e-10,
+        "smooth_epsilon": 0.0001,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 0.0001,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": -1.0582692944183236e-8,
+        "voltage_min_margin": -9.962886515779701e-9
+      },
+      "branch_371": {
+        "branch_thermal_min_margin": -1.1503369701237887e-8,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.0,
+        "generator_p_max_margin": -3.172796647632481e-8,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": -3.315135632675492e-8,
+        "generator_q_min_margin": 2.754258567910661e-9,
+        "power_balance_max": 1.7230755755205975,
+        "smooth_epsilon": 0.0001,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 0.0001,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "power_balance"
+        ],
+        "voltage_max_margin": -1.0589237930958006e-8,
+        "voltage_min_margin": -9.978609716299047e-9
+      }
+    },
+    "solver": "Ipopt",
+    "termination_status": "LOCALLY_INFEASIBLE",
+    "tolerances": {
+      "coupling_tolerance": 1.0e-6,
+      "droop_tolerance": 1.0e-5,
+      "limit_tolerance": 1.0e-6,
+      "power_tolerance": 1.0e-6,
+      "unavailable_tolerance": 1.0e-8
+    },
+    "valid": false,
+    "violations": {
+      "base": [],
+      "branch_371": [
+        "power_balance"
+      ]
+    }
+  },
+  "kind": "DroopOPF.SCOPFReport",
+  "schema_version": 1
+}

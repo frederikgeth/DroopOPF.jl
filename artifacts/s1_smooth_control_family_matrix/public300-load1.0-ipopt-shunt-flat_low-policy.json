@@ -1,0 +1,125 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.010993125,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 2.15496625,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.122091292,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 32,
+        "tap": 0
+      },
+      "iterations": 154,
+      "julia_allocated_bytes": 99428016,
+      "model": {
+        "constraints": 2996,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 770
+      },
+      "name": "public300-load1.0-ipopt-shunt-flat_low-attempt1",
+      "objective": 101.00302033617828,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 2.8821389719269064e-13,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.7763568394002505e-15,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 3.8516412281808243e-13,
+        "generator_q_min_margin": 3.435896118828994e-5,
+        "power_balance_max": 2.8750335445693054e-12,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.7763568394002505e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 8.948397578478762e-14,
+        "voltage_min_margin": 1.6253665080512292e-13
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1324580864,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 2.021880667,
+      "solver": "ipopt",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "all_controls_in_selected_families": true,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "93488c34155028032d9e4b8761cd0805d34b3435837c0fb672975d84bf879701",
+        "dual_reset": "none; solver default initialization",
+        "excluded_families": "fixed at supplied overlay values",
+        "family": "shunt",
+        "load_factor": 1.0,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "start": "flat_low",
+        "study": "s1_smooth_control_family_matrix_v1"
+      },
+      "valid": true,
+      "validate_seconds": 0.0043965
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 2.167978333,
+  "events": [
+    "accept"
+  ],
+  "iterations": 154,
+  "name": "public300-load1.0-ipopt-shunt-flat_low",
+  "selected": "public300-load1.0-ipopt-shunt-flat_low-attempt1",
+  "solver": "ipopt",
+  "tags": {
+    "all_controls_in_selected_families": true,
+    "excluded_families": "fixed at supplied overlay values",
+    "family": "shunt",
+    "load_factor": 1.0,
+    "network": 300,
+    "start": "flat_low",
+    "study": "s1_smooth_control_family_matrix_v1"
+  },
+  "valid": true
+}

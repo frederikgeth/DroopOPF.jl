@@ -1,0 +1,136 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.005034375,
+      "buses": 118,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 0.139171125,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.026051708,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 12,
+        "tap": 0
+      },
+      "iterations": 23,
+      "julia_allocated_bytes": 42219200,
+      "model": {
+        "constraints": 1319,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 9.927867623411412e-10,
+          "dual": 1.5404763370330651e-10,
+          "iterations": 23,
+          "primal": 2.0252421961686196e-9
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 356
+      },
+      "name": "public118-load1.0-madnlp-shunt12-free-anchor-attempt1",
+      "objective": 7.6193867800840716,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.10807914544041952,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 0.0,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 4.949401610776505e-8,
+        "generator_q_min_margin": 6.482034420329796e-8,
+        "power_balance_max": 6.366979166116948e-11,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 0.0,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 8.489096092745285e-10,
+        "voltage_min_margin": 0.06233345022004544
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1298497536,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 0.108083875,
+      "solver": "madnlp",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "adjustable_taps": 0,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "8e90863496d19766b2de82d8b16fd4df41d584a23d7e14b717aa38badef2a3d3",
+        "droop_attachments": 0,
+        "dual_reset": "none; solver default initialization",
+        "free_droops": 0,
+        "free_shunts": 12,
+        "load_factor": 1.0,
+        "network": 118,
+        "policy": "one-reset-v1",
+        "stage": "shunt12-free",
+        "start": "anchor",
+        "study": "s1_incremental_controls_v1",
+        "synthetic_banks": 12
+      },
+      "valid": true,
+      "validate_seconds": 0.001796042
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 118,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 0.144333083,
+  "events": [
+    "accept"
+  ],
+  "iterations": 23,
+  "name": "public118-load1.0-madnlp-shunt12-free-anchor",
+  "selected": "public118-load1.0-madnlp-shunt12-free-anchor-attempt1",
+  "solver": "madnlp",
+  "tags": {
+    "adjustable_taps": 0,
+    "droop_attachments": 0,
+    "free_droops": 0,
+    "free_shunts": 12,
+    "load_factor": 1.0,
+    "network": 118,
+    "stage": "shunt12-free",
+    "start": "anchor",
+    "study": "s1_incremental_controls_v1",
+    "synthetic_banks": 12
+  },
+  "valid": true
+}

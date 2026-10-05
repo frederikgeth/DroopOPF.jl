@@ -40,6 +40,60 @@ function _outage_label(case::Case, contingency::Contingency)
     join(parts, ", ")
 end
 
+"""Write a topology-and-equipment diagram for the network declared in a SCOPF study."""
+function write_scopf_network_plot(path::AbstractString, study::Study)
+    study = _validated_study(study)
+    network = study.case.network
+    buses = sort(network.buses; by = bus -> bus.id)
+    branches = sort(network.branches; by = branch -> branch.id)
+    width, height = 1240, max(650, 430 + 30 * length(branches))
+    cx, cy, radius = 370.0, 270.0, 175.0
+    positions = Dict{Int,Tuple{Float64,Float64}}()
+    for (index, bus) in enumerate(buses)
+        angle = 2 * pi * (index - 1) / length(buses) - pi / 2
+        positions[bus.id] = (cx + radius * cos(angle), cy + radius * sin(angle))
+    end
+    generators = Dict{Int,Vector{Generator}}()
+    for generator in study.case.generators
+        push!(get!(generators, generator.bus_id, Generator[]), generator)
+    end
+    loads = Dict{Int,Vector{Load}}()
+    for load in study.case.loads
+        push!(get!(loads, load.bus_id, Load[]), load)
+    end
+    open(path, "w") do io
+        println(io, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"$width\" height=\"$height\" viewBox=\"0 0 $width $height\">")
+        println(io, "<title>Declared AC network topology for SCOPF</title><desc>Base network equipment, limits, loads, and generator bounds. This is not a solved operating-state diagram.</desc>")
+        println(io, "<style>text{font-family:Arial,sans-serif;fill:#172033}.title{font-size:22px;font-weight:bold}.sub{font-size:12px;fill:#475569}.bus{fill:#fff;stroke:#1d4ed8;stroke-width:2}.ref{fill:#dbeafe;stroke:#0f3b91;stroke-width:3}.line{stroke:#2563eb;stroke-width:3}.transformer{stroke:#7c3aed;stroke-width:3;stroke-dasharray:8 5}.edge{font-size:10px}.detail{font-size:10px;fill:#475569}.head{font-size:15px;font-weight:bold}.table{font-size:10px}</style><rect width=\"100%\" height=\"100%\" fill=\"white\"/>")
+        println(io, "<text class=\"title\" x=\"30\" y=\"34\">Declared AC network: $(_svg_escape(study.case.id))</text><text class=\"sub\" x=\"30\" y=\"55\">Base equipment and constraints. Scenario-specific outages are shown in the declared-inputs and operating-state plots.</text>")
+        println(io, "<text class=\"head\" x=\"30\" y=\"91\">Topology</text><line class=\"line\" x1=\"30\" y1=\"110\" x2=\"68\" y2=\"110\"/><text class=\"sub\" x=\"74\" y=\"114\">line</text><line class=\"transformer\" x1=\"135\" y1=\"110\" x2=\"173\" y2=\"110\"/><text class=\"sub\" x=\"179\" y=\"114\">transformer</text><circle class=\"ref\" cx=\"293\" cy=\"110\" r=\"9\"/><text class=\"sub\" x=\"309\" y=\"114\">reference bus</text>")
+        for branch in branches
+            x1, y1 = positions[branch.from_bus]; x2, y2 = positions[branch.to_bus]
+            css = branch.kind == :transformer ? "transformer" : "line"
+            println(io, "<line class=\"$css\" x1=\"$(_svg_number(x1))\" y1=\"$(_svg_number(y1))\" x2=\"$(_svg_number(x2))\" y2=\"$(_svg_number(y2))\"/><text class=\"edge\" x=\"$(_svg_number((x1+x2)/2+4))\" y=\"$(_svg_number((y1+y2)/2-4))\">B$(branch.id) $(_svg_escape(string(branch.kind))) lim=$(_svg_number(branch.thermal_limit))</text>")
+        end
+        for bus in buses
+            x, y = positions[bus.id]; css = bus.reference ? "ref" : "bus"
+            println(io, "<circle class=\"$css\" cx=\"$(_svg_number(x))\" cy=\"$(_svg_number(y))\" r=\"18\"/><text text-anchor=\"middle\" font-size=\"11\" font-weight=\"bold\" x=\"$(_svg_number(x))\" y=\"$(_svg_number(y+4))\">Bus $(bus.id)</text>")
+            anchor, offset = x < cx ? ("end", -24) : x > cx ? ("start", 24) : ("middle", 0)
+            details = ["V [$(_svg_number(bus.v_min)), $(_svg_number(bus.v_max))]"]
+            append!(details, ["G$(g.id): P [$(_svg_number(g.p_min)), $(_svg_number(g.p_max))], Q [$(_svg_number(g.q_min)), $(_svg_number(g.q_max))]" for g in get(generators, bus.id, Generator[])])
+            append!(details, ["Load: P=$(_svg_number(l.p)), Q=$(_svg_number(l.q))" for l in get(loads, bus.id, Load[])])
+            for (i, detail) in enumerate(details)
+                println(io, "<text class=\"detail\" text-anchor=\"$anchor\" x=\"$(_svg_number(x+offset))\" y=\"$(_svg_number(y+31+12*(i-1)))\">$(_svg_escape(detail))</text>")
+            end
+        end
+        table_y = 520
+        println(io, "<text class=\"head\" x=\"30\" y=\"$table_y\">Branch and transformer inventory</text><rect x=\"30\" y=\"$(table_y+12)\" width=\"1180\" height=\"20\" fill=\"#1e3a8a\"/><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"40\" y=\"$(table_y+26)\">ID / kind</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"190\" y=\"$(table_y+26)\">endpoints</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"330\" y=\"$(table_y+26)\">r</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"420\" y=\"$(table_y+26)\">x</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"510\" y=\"$(table_y+26)\">tap</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"610\" y=\"$(table_y+26)\">shift</text><text fill=\"white\" font-size=\"11\" font-family=\"Arial\" x=\"710\" y=\"$(table_y+26)\">thermal limit</text>")
+        for (i, branch) in enumerate(branches)
+            y = table_y + 48 + 22 * (i - 1); fill = isodd(i) ? "#f8fafc" : "#e2e8f0"
+            println(io, "<rect x=\"30\" y=\"$(y-14)\" width=\"1180\" height=\"22\" fill=\"$fill\"/><text class=\"table\" x=\"40\" y=\"$y\">B$(branch.id) / $(_svg_escape(string(branch.kind)))</text><text class=\"table\" x=\"190\" y=\"$y\">$(branch.from_bus) → $(branch.to_bus)</text><text class=\"table\" x=\"330\" y=\"$y\">$(_svg_number(branch.resistance))</text><text class=\"table\" x=\"420\" y=\"$y\">$(_svg_number(branch.reactance))</text><text class=\"table\" x=\"510\" y=\"$y\">$(_svg_number(branch.tap_ratio))</text><text class=\"table\" x=\"610\" y=\"$y\">$(_svg_number(branch.phase_shift))</text><text class=\"table\" x=\"710\" y=\"$y\">$(_svg_number(branch.thermal_limit))</text>")
+        end
+        println(io, "</svg>")
+    end
+    path
+end
+
 """Plot declared outage, response, and equipment-policy inputs by scenario."""
 function write_scopf_input_plot(path::AbstractString, study::Study;
     title::AbstractString="SCOPF declared inputs by scenario")
@@ -225,6 +279,8 @@ function write_scopf_evaluation_report(path::AbstractString, study::Study,
         "- Reactive response: $(isnothing(study.reactive_assignments) ? (isempty(study.case.controls) ? "free Q within generator limits" : "declared legacy droop controls") : "explicit reactive assignments in evaluation-inputs.json")",
         "- Validation tolerances: `$(report.tolerances)`", "",
         "## Declared inputs and cross-scenario checks", "",
+        "![Declared network topology and equipment]($(basename(plots.network)))", "",
+        "The topology figure documents the declared base equipment and limits. It is not a solved operating-state diagram: the scenario-input table and detailed operating plots show each outage and its resulting state.", "",
         "![Declared scenario inputs]($(basename(plots.inputs)))", "",
         "![Operating margins]($(basename(plots.margins)))", "",
         "![Response deltas]($(basename(plots.response_deltas)))", "",

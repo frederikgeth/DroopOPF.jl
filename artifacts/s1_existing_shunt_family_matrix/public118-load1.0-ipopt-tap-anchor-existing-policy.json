@@ -1,0 +1,135 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.005426833,
+      "buses": 118,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 3.228484292,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.0298505,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 0,
+        "tap": 11
+      },
+      "iterations": 569,
+      "julia_allocated_bytes": 68072368,
+      "model": {
+        "constraints": 1354,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 355
+      },
+      "name": "public118-load1.0-ipopt-tap-anchor-existing-attempt1",
+      "objective": 7.603051629909416,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.11557499086936018,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.2710465079279754e-5,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 0.0,
+        "generator_q_min_margin": 0.0,
+        "power_balance_max": 4.88636908713147e-14,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.271046507936302e-5,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": false,
+        "violations": [
+          "droop"
+        ],
+        "voltage_max_margin": 7.949862990130896e-12,
+        "voltage_min_margin": 0.056455139862024994
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [
+        {
+          "category": "droop",
+          "component": "control 17, regulated bus 61",
+          "equipment": "generator",
+          "exceedance_pu": 2.7104650792797527e-6,
+          "id": 26,
+          "tolerance_pu": 1.0e-5,
+          "violation_pu": 1.2710465079279754e-5
+        }
+      ],
+      "physical_valid": false,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1326170112,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 3.193204083,
+      "solver": "ipopt",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "6ddad12f2a81a64d0cba63cce61e964333690ebb69de3f5cb33e573ed4a36166",
+        "dual_reset": "none; solver default initialization",
+        "family": "tap",
+        "load_factor": 1.0,
+        "network": 118,
+        "policy": "one-reset-v1",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "anchor",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": false,
+      "validate_seconds": 0.002139166
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 118,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 3.708850709,
+  "events": [
+    "diagnose_validation_failure"
+  ],
+  "iterations": 569,
+  "name": "public118-load1.0-ipopt-tap-anchor-existing",
+  "selected": null,
+  "solver": "ipopt",
+  "tags": {
+    "family": "tap",
+    "load_factor": 1.0,
+    "network": 118,
+    "shunt_assumption": "continuous 0-to-source-admittance envelope",
+    "start": "anchor",
+    "study": "s1_existing_shunt_family_matrix_v1"
+  },
+  "valid": false
+}

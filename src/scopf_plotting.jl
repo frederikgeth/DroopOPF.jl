@@ -397,6 +397,7 @@ function write_scopf_validation_plots(directory::AbstractString, study::Study, r
         branch_loading = joinpath(directory,"m2_branch_loading.svg"),
         dispatch = joinpath(directory,"m2_generator_dispatch.svg"),
         residuals = joinpath(directory,"m2_validation_residuals.svg"),
+        network = joinpath(directory,"scopf_network_topology.svg"),
         inputs = joinpath(directory,"scopf_declared_inputs.svg"),
         margins = joinpath(directory,"scopf_operating_margins.svg"),
         response_deltas = joinpath(directory,"scopf_response_deltas.svg"),
@@ -426,6 +427,7 @@ function write_scopf_validation_plots(directory::AbstractString, study::Study, r
                 cell_widths=[180, 1000])
         end
     end
+    write_scopf_network_plot(paths.network,study)
     write_scopf_input_plot(paths.inputs,study)
     write_scopf_margin_plot(paths.margins,study,result)
     write_scopf_validation_matrix_plot(paths.validation_matrix,study,result)

@@ -1,0 +1,130 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.006650084,
+      "buses": 118,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 0.866050375,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.037243458,
+      "free_counts": {
+        "droop": 37,
+        "shunt": 12,
+        "tap": 0
+      },
+      "iterations": 161,
+      "julia_allocated_bytes": 65094976,
+      "model": {
+        "constraints": 1430,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 3.014255511855919e-12,
+          "dual": 4.1008219252707134e-23,
+          "iterations": 161,
+          "primal": 1.0169642905566434e-13
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 393
+      },
+      "name": "public118-load1.05-madnlp-shunt_droop-flat_low-attempt1",
+      "objective": 12.094302281764012,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.09318023591702573,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.0169642905566434e-13,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 2.7755575615628914e-17,
+        "generator_q_min_margin": 0.052668154080589474,
+        "power_balance_max": 5.295763827461997e-14,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.6653345369377348e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.00350404415901151,
+        "voltage_min_margin": 0.02605945897504569
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1371897856,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 0.822156125,
+      "solver": "madnlp",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "all_controls_in_selected_families": true,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "979a0b1789e07e3c0b2a259cf52a41b7b5bc57c01e2d2953b33588fda90bdc06",
+        "dual_reset": "none; solver default initialization",
+        "excluded_families": "fixed at supplied overlay values",
+        "family": "shunt_droop",
+        "load_factor": 1.05,
+        "network": 118,
+        "policy": "one-reset-v1",
+        "start": "flat_low",
+        "study": "s1_smooth_control_family_matrix_v1"
+      },
+      "valid": true,
+      "validate_seconds": 0.027715667
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 118,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 0.929347167,
+  "events": [
+    "accept"
+  ],
+  "iterations": 161,
+  "name": "public118-load1.05-madnlp-shunt_droop-flat_low",
+  "selected": "public118-load1.05-madnlp-shunt_droop-flat_low-attempt1",
+  "solver": "madnlp",
+  "tags": {
+    "all_controls_in_selected_families": true,
+    "excluded_families": "fixed at supplied overlay values",
+    "family": "shunt_droop",
+    "load_factor": 1.05,
+    "network": 118,
+    "start": "flat_low",
+    "study": "s1_smooth_control_family_matrix_v1"
+  },
+  "valid": true
+}

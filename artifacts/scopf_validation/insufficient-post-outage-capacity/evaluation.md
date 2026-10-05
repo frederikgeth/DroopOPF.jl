@@ -35,6 +35,10 @@ The accompanying evaluation-inputs.json and evaluation-outputs.json contain the 
 
 ## Declared inputs and cross-scenario checks
 
+![Declared network topology and equipment](scopf_network_topology.svg)
+
+The topology figure documents the declared base equipment and limits. It is not a solved operating-state diagram: the scenario-input table and detailed operating plots show each outage and its resulting state.
+
 ![Declared scenario inputs](scopf_declared_inputs.svg)
 
 ![Operating margins](scopf_operating_margins.svg)

@@ -1,0 +1,131 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.009470375,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 0.650508209,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.112118041,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 0,
+        "tap": 0
+      },
+      "iterations": 46,
+      "julia_allocated_bytes": 87511600,
+      "model": {
+        "constraints": 2913,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 738
+      },
+      "name": "public300-load1.0-ipopt-droop16-fixed-anchor-attempt1",
+      "objective": 101.63069639959993,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_cpu_time": 60.0,
+        "max_iter": 1000,
+        "mu_strategy": "adaptive",
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 2.886579864025407e-13,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.7763568394002505e-15,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 3.587130592563881e-13,
+        "generator_q_min_margin": 1.2999738691793312e-10,
+        "power_balance_max": 2.518873998269555e-12,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.7763568394002505e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 6.927791673660977e-14,
+        "voltage_min_margin": 1.4810375148499588e-13
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1290207232,
+      "residual_convention": "Ipopt callback and explicitly labelled native unscaled residuals",
+      "solve_seconds": 0.528918292,
+      "solver": "ipopt",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "adjustable_taps": 0,
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "9bbc417522cade29e7a10d714908ddf717b507cde2a926d4f4378de52b4669b2",
+        "droop_attachments": 16,
+        "dual_reset": "none; solver default initialization",
+        "free_droops": 0,
+        "free_shunts": 0,
+        "load_factor": 1.0,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "stage": "droop16-fixed",
+        "start": "anchor",
+        "study": "s1_incremental_controls_v1",
+        "synthetic_banks": 0
+      },
+      "valid": true,
+      "validate_seconds": 0.003863333
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 0.661196583,
+  "events": [
+    "accept"
+  ],
+  "iterations": 46,
+  "name": "public300-load1.0-ipopt-droop16-fixed-anchor",
+  "selected": "public300-load1.0-ipopt-droop16-fixed-anchor-attempt1",
+  "solver": "ipopt",
+  "tags": {
+    "adjustable_taps": 0,
+    "droop_attachments": 16,
+    "free_droops": 0,
+    "free_shunts": 0,
+    "load_factor": 1.0,
+    "network": 300,
+    "stage": "droop16-fixed",
+    "start": "anchor",
+    "study": "s1_incremental_controls_v1",
+    "synthetic_banks": 0
+  },
+  "valid": true
+}

@@ -1,0 +1,128 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.014069625,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 2.590289292,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.180743583,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 0,
+        "tap": 129
+      },
+      "iterations": 132,
+      "julia_allocated_bytes": 151880256,
+      "model": {
+        "constraints": 3190,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 5.616796986674618e-11,
+          "dual": 1.3827602375824317e-11,
+          "iterations": 132,
+          "primal": 9.094947017729282e-13
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 867
+      },
+      "name": "public300-load1.05-madnlp-tap-flat_high-existing-attempt1",
+      "objective": 149.4318987041432,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 0.001945826947590934,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 2.042810365310288e-14,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 0.0,
+        "generator_q_min_margin": 0.024627269977362445,
+        "power_balance_max": 7.88119569605783e-13,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 8.215650382226158e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 0.0017254828763442198,
+        "voltage_min_margin": 0.0015834955035470832
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1382400000,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 2.395473209,
+      "solver": "madnlp",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "f43c6a7ed646317090f79ca0c3348e84fc0735933b3938cb3d7e239bde504746",
+        "dual_reset": "none; solver default initialization",
+        "family": "tap",
+        "load_factor": 1.05,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "flat_high",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": true,
+      "validate_seconds": 0.005060416
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 2.604423833,
+  "events": [
+    "accept"
+  ],
+  "iterations": 132,
+  "name": "public300-load1.05-madnlp-tap-flat_high-existing",
+  "selected": "public300-load1.05-madnlp-tap-flat_high-existing-attempt1",
+  "solver": "madnlp",
+  "tags": {
+    "family": "tap",
+    "load_factor": 1.05,
+    "network": 300,
+    "shunt_assumption": "continuous 0-to-source-admittance envelope",
+    "start": "flat_high",
+    "study": "s1_existing_shunt_family_matrix_v1"
+  },
+  "valid": true
+}

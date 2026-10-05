@@ -1,0 +1,128 @@
+{
+  "attempts": [
+    {
+      "build_seconds": 0.012104167,
+      "buses": 300,
+      "control_normalization": "none",
+      "droop_q_bounds": "explicit",
+      "droop_q_formulation": "explicit",
+      "elapsed_seconds": 3.93914,
+      "epsilon": 1.0e-6,
+      "extract_seconds": 0.128004334,
+      "free_counts": {
+        "droop": 0,
+        "shunt": 14,
+        "tap": 0
+      },
+      "iterations": 296,
+      "julia_allocated_bytes": 173298128,
+      "model": {
+        "constraints": 2960,
+        "control_coordinate_maps": [],
+        "droop_q_formulation": "explicit",
+        "final_native": {
+          "complementarity": 2.507050996689724e-9,
+          "dual": 2.9874724585292667e-12,
+          "iterations": 296,
+          "primal": 5.168914185560425e-10
+        },
+        "nonlinear_derivative_features": [
+          "Grad",
+          "Jac",
+          "JacVec",
+          "Hess",
+          "HessVec",
+          "ExprGraph"
+        ],
+        "reduced_droop_q_generator_ids": [],
+        "variables": 752
+      },
+      "name": "public300-load1.0-madnlp-shunt-anchor-existing-attempt1",
+      "objective": 101.62808397864319,
+      "options": {
+        "bound_frac": 1.0e-8,
+        "bound_push": 1.0e-8,
+        "bound_relax_factor": 0.0,
+        "max_iter": 1000,
+        "max_wall_time": 60.0,
+        "tol": 1.0e-8
+      },
+      "physical": {
+        "branch_thermal_min_margin": 7.338818441837702e-11,
+        "control_active_power_violation_max": 0.0,
+        "droop_residual_max": 1.7763568394002505e-15,
+        "generator_p_max_margin": 0.0,
+        "generator_p_min_margin": 0.0,
+        "generator_q_max_margin": 8.702408238470127e-11,
+        "generator_q_min_margin": 3.983798391924175e-8,
+        "power_balance_max": 1.333466670416783e-11,
+        "smooth_epsilon": 1.0e-6,
+        "smooth_exact_droop_gap": 1.7763568394002505e-15,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 1.0e-6,
+        "unavailable_generator_max": 0.0,
+        "valid": true,
+        "violations": [],
+        "voltage_max_margin": 1.340350053169459e-11,
+        "voltage_min_margin": 1.289379714108918e-11
+      },
+      "physical_check_status": "evaluated",
+      "physical_failures": [],
+      "physical_valid": true,
+      "policy_valid": true,
+      "process_lifetime_peak_rss_bytes": 1407516672,
+      "residual_convention": "MadNLP native solver-scaled residuals; not directly comparable to Ipopt unscaled values",
+      "solve_seconds": 3.799030166,
+      "solver": "madnlp",
+      "solver_valid": true,
+      "status": "LOCALLY_SOLVED",
+      "tags": {
+        "attempt": 1,
+        "builder_start_overridden": false,
+        "context": "0d87aa80411f73a965afe3b4cdef347a79c955869c3662008490ddf6a6f4de21",
+        "dual_reset": "none; solver default initialization",
+        "family": "shunt",
+        "load_factor": 1.0,
+        "network": 300,
+        "policy": "one-reset-v1",
+        "shunt_assumption": "continuous 0-to-source-admittance envelope",
+        "start": "anchor",
+        "study": "s1_existing_shunt_family_matrix_v1"
+      },
+      "valid": true,
+      "validate_seconds": 0.003999833
+    }
+  ],
+  "budget": {
+    "attempt_iterations": 1000,
+    "attempt_seconds": 60.0,
+    "clock": "wall deadline checked cooperatively at iteration callbacks; construction/validation cannot be preempted",
+    "total_iterations": 2000,
+    "total_seconds": 120.0
+  },
+  "budget_exceeded": {
+    "iterations": false,
+    "wall": false
+  },
+  "buses": 300,
+  "control_normalization": "none",
+  "droop_q_bounds": "explicit",
+  "droop_q_formulation": "explicit",
+  "elapsed_seconds": 3.951094833,
+  "events": [
+    "accept"
+  ],
+  "iterations": 296,
+  "name": "public300-load1.0-madnlp-shunt-anchor-existing",
+  "selected": "public300-load1.0-madnlp-shunt-anchor-existing-attempt1",
+  "solver": "madnlp",
+  "tags": {
+    "family": "shunt",
+    "load_factor": 1.0,
+    "network": 300,
+    "shunt_assumption": "continuous 0-to-source-admittance envelope",
+    "start": "anchor",
+    "study": "s1_existing_shunt_family_matrix_v1"
+  },
+  "valid": true
+}
