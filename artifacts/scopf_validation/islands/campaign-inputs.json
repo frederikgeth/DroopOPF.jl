@@ -1,0 +1,335 @@
+{
+  "contract": {
+    "base": {
+      "pg": [
+        0.04996861800702723,
+        0.05000177393985594,
+        0.05011834299823872
+      ],
+      "qg": [
+        0.009362850787289167,
+        0.00895125535063353,
+        0.02257324331329114
+      ],
+      "va": [
+        0.0,
+        -0.0016570427230682809,
+        -0.003314449152750917,
+        -0.009042551317912028,
+        -0.01478476343294424
+      ],
+      "vm": [
+        1.0995706184062268,
+        1.0994484690684871,
+        1.099329339250401,
+        1.097960646331676,
+        1.0966280679995621
+      ]
+    },
+    "case": {
+      "attachments": [],
+      "base_frequency": 50.0,
+      "base_power": 100.0,
+      "controls": [],
+      "generators": [
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 1,
+          "initial_p": 0.0,
+          "initial_q": 0.0,
+          "p_max": 0.5,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 3,
+          "id": 2,
+          "initial_p": 0.0,
+          "initial_q": 0.0,
+          "p_max": 1.5,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 5,
+          "id": 3,
+          "initial_p": 0.0,
+          "initial_q": 0.0,
+          "p_max": 1.0,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        }
+      ],
+      "id": "loaded-islands",
+      "loads": [
+        {
+          "bus_id": 1,
+          "id": 1,
+          "p": 0.03,
+          "q": 0.01
+        },
+        {
+          "bus_id": 5,
+          "id": 2,
+          "p": 0.12,
+          "q": 0.03
+        }
+      ],
+      "network": {
+        "banks": [],
+        "branches": [
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 1,
+            "id": 10,
+            "kind": "transformer",
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 2
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 2,
+            "id": 20,
+            "kind": "line",
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 3
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 3,
+            "id": 30,
+            "kind": "line",
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 4
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 4,
+            "id": 40,
+            "kind": "line",
+            "phase_shift": 0.0,
+            "reactance": 0.1,
+            "resistance": 0.01,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 5
+          }
+        ],
+        "buses": [
+          {
+            "id": 1,
+            "reference": true,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 2,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 3,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 4,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          },
+          {
+            "id": 5,
+            "reference": false,
+            "v_max": 1.1,
+            "v_min": 0.9
+          }
+        ],
+        "shunts": []
+      }
+    },
+    "catalog": {
+      "case_id": "loaded-islands",
+      "entries": [
+        {
+          "contingency": {
+            "branch_ids": [
+              10
+            ],
+            "generator_ids": [],
+            "id": "branch_10"
+          },
+          "device_id": 10,
+          "device_kind": "transformer",
+          "disposition": "excluded",
+          "reason": "islanding_unsupported"
+        },
+        {
+          "contingency": {
+            "branch_ids": [
+              20
+            ],
+            "generator_ids": [],
+            "id": "branch_20"
+          },
+          "device_id": 20,
+          "device_kind": "line",
+          "disposition": "excluded",
+          "reason": "islanding_unsupported"
+        },
+        {
+          "contingency": {
+            "branch_ids": [
+              30
+            ],
+            "generator_ids": [],
+            "id": "branch_30"
+          },
+          "device_id": 30,
+          "device_kind": "line",
+          "disposition": "excluded",
+          "reason": "islanding_unsupported"
+        },
+        {
+          "contingency": {
+            "branch_ids": [
+              40
+            ],
+            "generator_ids": [],
+            "id": "branch_40"
+          },
+          "device_id": 40,
+          "device_kind": "line",
+          "disposition": "excluded",
+          "reason": "islanding_unsupported"
+        },
+        {
+          "contingency": {
+            "branch_ids": [],
+            "generator_ids": [
+              1
+            ],
+            "id": "generator_1"
+          },
+          "device_id": 1,
+          "device_kind": "generator",
+          "disposition": "eligible",
+          "reason": "available_generator"
+        },
+        {
+          "contingency": {
+            "branch_ids": [],
+            "generator_ids": [
+              2
+            ],
+            "id": "generator_2"
+          },
+          "device_id": 2,
+          "device_kind": "generator",
+          "disposition": "eligible",
+          "reason": "available_generator"
+        },
+        {
+          "contingency": {
+            "branch_ids": [],
+            "generator_ids": [
+              3
+            ],
+            "id": "generator_3"
+          },
+          "device_id": 3,
+          "device_kind": "generator",
+          "disposition": "eligible",
+          "reason": "available_generator"
+        }
+      ]
+    },
+    "environment": {
+      "Manifest-v1.12.toml": null,
+      "Manifest.toml": "e5173b5ef756477d00cb6fbe555452f4313207f13ec3328c0b8fc20bc5e534c2",
+      "Project.toml": "2d1d8388fa7a2d04027a97e99ce0754d69bf14f2e5cabdff0672b1ad9b30eb00"
+    },
+    "ipopt_version": "1.16.0",
+    "julia_version": "1.12.4",
+    "jump_version": "1.31.2",
+    "policy": {
+      "audit_screened_ids": [],
+      "loading_threshold": 0.8,
+      "lodf_tolerance": 1.0e-8,
+      "optimizer_attributes": {
+        "max_cpu_time": 120.0,
+        "max_iter": 1000
+      },
+      "participation": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "screening_enabled": true,
+      "smooth_epsilon": 0.0001,
+      "voltage_guard": 0.02
+    },
+    "schema_version": 1,
+    "source": {
+      "DroopOPF.jl": "484b67aa0a703654be0f56a4b9fe88d173b48bdfa8c5873666a2bb164aa6a2a1",
+      "benchmarking.jl": "7f2822100affaa776b016227023bb093c3fd9c1a2c3e19beef28aae719a28365",
+      "complementarity.jl": "d1e2f328b310d31bdd7344f3c4802cba7bb56549d10836a7673ba2fc850914c4",
+      "contingencies.jl": "cf5c7ef21631b976b7f1dd3966710d64030f96d3d14cb4a95a9a4a86bc87cacf",
+      "contingency_assessment.jl": "aee4252158c50cbb10927cd5c68248ab61589b2b8aabc60af923e4206ecd76e6",
+      "contingency_campaign.jl": "9cb78a8a2566c4b475da6ff61485643512cab815a49eea83fbcb3e48b165008a",
+      "contingency_catalog.jl": "9295572f7084f84837447e231c42ad89ec194ad5527c61d49d0b9281c67720ec",
+      "contingency_filtering.jl": "96f27b62c0ee3a48d9ccd3768d8e9d2efc4f9a3ec0cef6b18ca8af9e67bcc8c2",
+      "contingency_pipeline.jl": "6ece5367117e41ed48e953dc6aa6e0328aba013a4c4c59d2cb71f9b9a7c5a771",
+      "controls.jl": "4192800f9415b2527e625ee94dcb5a6071b6b4aeab733f090787a0d3cc4845ab",
+      "curves.jl": "459695ef309e4d7117c926a0198dea5429d505d062a53b65747d72c12dbaef97",
+      "diagnostics.jl": "9bc4865ec38ba4dde3b022a13450d3539e0f3cf37a7a682e4c4620109d3e6221",
+      "domain.jl": "d76e1bd4a7d4b652ea91fa0189679ec451ce7b9c00b84d6db1451c909ce26b46",
+      "droop_design_multistart.jl": "7ea7f71287b9ae41de37eb3cbf0edb1194fc658acc468b22d1f3cd0fffe38d4b",
+      "droop_design_plotting.jl": "5d4e2566771496dcf56f36f13c3f3adac501ae5aad08ce63090775cdc4362673",
+      "droop_optimization.jl": "4f15e05e21ac829eea6eda51b30f6cd4d53d8acf9b1db842eea46fdfb7736b1f",
+      "droop_sweep.jl": "434c9acf40ff5dd3408d85ee01bca8394658ed09242d99321499fda1b20a1e90",
+      "islanding.jl": "983e78219b21230e32a5a21c43d590463abf1c1a999bfa95d459536250a6bffd",
+      "joint_design.jl": "ac8eaca1093488f117ad4fd20dd45d5a80e6ba4b39858270b9a2e491f74cfe54",
+      "jump.jl": "542b75cefa7d9dfbaa8fa9141613c23712517b63666ad14e079ceea642407177",
+      "matpower.jl": "e218d3aa871a3d8930148b17a2a1598758f00b6772eeecc8bc822f4435611474",
+      "multistart.jl": "6310e7ef07fb4b0478e63ef134cc4108d1ee3805b0fed59f5416bf17a20e7597",
+      "network.jl": "30fe731086d1921d97bb895e4c7882a94cdc51a84cf1b0eb3088cb9abf08ed1e",
+      "physics.jl": "98919091482c1c2a216409a35d228b32ed6873346ef924191927969dc68df49d",
+      "plotting.jl": "1c38c567744f4b8ad858c01ee0518c386fd9ea5eba884787a51ab9aea6a4c236",
+      "scopf.jl": "872ccab09d719b2bb191ec84ecce8bc6d8016f53f6b1b36e653ae47ea8b0a514",
+      "scopf_evaluation_plotting.jl": "9dddf97812279170907908e017c6c41ccd17eb247603e0bfd80c28a28dda573e",
+      "scopf_io.jl": "5b39a7d6ce294e93ef7217ee62fe7fd65aeea83e0e21e168a9425c6b4f589e35",
+      "scopf_plotting.jl": "9219685d4c6a6e678ca7e706fa488d4fc2acb30d99c250829455c6eaac8fffe9",
+      "scopf_stages.jl": "39f36b66680e40aec362962c3c6ec81fc6a2a608d84035e4c8dc4f7adae02142",
+      "scopf_validation.jl": "75ae68509ca8136aee7c0f1298142b88e1b28728947a15f773941b1d8675f821",
+      "shunt_optimization.jl": "ab9696b08c55d4f843bb9edbe1ecef0e623d21767813ea7bfc18a9f7ebfb10e5",
+      "tap_optimization.jl": "b7367ddcb4d5a1de07eadfff4de6efbc9cf98bb19f86dbf61c6990b3c2a7dc42",
+      "validation.jl": "e6794499cac9793c5e49e2db19871c9216e44622380a4e334d93733bfd0c8d4a"
+    }
+  },
+  "fingerprint": "26a11567c916c0b8f68a95de7be4101a40251e4d466715c25c501c1f9b22395d"
+}

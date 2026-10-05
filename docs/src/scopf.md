@@ -137,22 +137,26 @@ recorded as `cpu_limited_unresolved`:
 sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
 ```
 
-For production enumeration, use `m10_campaign.sh` to execute a resumable range
-in one Julia process. Compilation is reused, every outcome is persisted before
-the next solve, and invalid outcomes do not stop later evaluations:
+For reliability campaigns, `m10_campaign.sh` now uses the integrated pipeline
+in one Julia process. Compilation is reused and each routed outcome is
+checkpointed before the next solve. Indices refer to the **full catalog**,
+including islanding entries, not the old eligible-only list. Use a new output
+directory when moving from the historical campaign format:
 
 ```sh
 sh examples/m10_campaign.sh 118 artifacts/m10/ieee118-campaign 1 all 120 1000
 ```
 
-After enumeration, generate metric-specific coverage and diagnostic rankings:
+The integrated runner writes `campaign.md` and `campaign.json` directly.
+The report command recognizes these files; for historical campaigns it still
+generates the legacy metric-specific coverage and timing report:
 
 ```sh
 julia --project=. examples/m10_campaign_report.jl artifacts/m10/ieee118-campaign
 ```
 
-Only after complete exact enumeration, benchmark the inexpensive base-state
-loading/outage-size heuristic:
+Only for **historical-format**, complete exact enumerations, the old inexpensive
+base-state loading/outage-size heuristic can be benchmarked with:
 
 ```sh
 julia --project=. examples/m10_screening_benchmark.jl artifacts/m10/ieee118-campaign
@@ -170,6 +174,85 @@ batches before comparing ranking or filtering methods to the enumeration
 baseline. The production routing API uses LODF only after this exact baseline
 was established; it is not silently enabled in the historical IEEE campaigns.
 Constraint generation and parallel execution remain outside the current scope.
+
+### Generic resumable campaigns and filtering qualification
+
+`run_contingency_campaign(directory, case, base_state)` supports arbitrary
+networks and the integrated screened, exact, audited and island-aware routes.
+Set `screening_enabled=false` for the exhaustive AC reference. Its returned
+`result` is a `ContingencyPipelineResult`; `resumed_count`, `evaluated_count`
+and `fingerprint` describe reuse. Completion refers to the supplied catalog;
+a subset does not imply complete network N-1 coverage.
+
+The atomic JSON checkpoints bind the complete case/catalog, saved base,
+participation, screening thresholds, audit IDs, numerical settings, code,
+Julia version and dependency files. A changed contract is rejected, not silently
+reused. Corrupt/incomplete checkpoints and evaluation errors are rerun. Saved
+states are revalidated and reranked; saved acceptance flags are not trusted.
+Invalid completed solves can be resumed as unresolved evidence. To retry with
+different settings, choose a new directory. The directory lock prevents
+concurrent writers; after a forcibly killed process, verify no writer is active
+before removing its stale `.campaign-lock` directory. Checkpoints provide
+process-interruption recovery, not a power-loss durability guarantee.
+
+`validate_contingency_filter(case, base_state)` compares filter decisions with
+exhaustive AC routes on identical inputs, separately for lines, transformers
+and generators. It reports screened unresolved outcomes, screened physical
+failures, and counts found at each evaluation budget. Solver errors/rejections
+are unresolved, not proven infeasibility. Recall is undefined if there are no
+unresolved cases. Evaluation order is mandatory routes first, then descending
+predicted loading with stable ID ties; post-evaluation severity ranking remains
+a separate output. LODF factorization is reused across candidate transactions;
+nonfinite predictions and unsupported numerical conditions fall back to AC.
+
+The default filter now additionally uses `reactive_guard=0.1` and
+`ac_risk_guard=true`. The first compares aggregate upward/downward generator Q
+headroom with available Q range. The second escalates predicted apparent-flow
+loading and large impedance-based voltage-drop changes after redistribution.
+Neither is an AC solution or a mathematically certified bound. They only
+escalate: they cannot change an existing exact route into a screen. Generator
+outages remain exact. Both settings are included in campaign fingerprints;
+changed settings require a new campaign directory.
+
+Run the broader small-network qualification and timing experiment sequentially:
+
+```sh
+julia --project=. examples/scopf_filter_qualification.jl artifacts/scopf_filter_qualification/baseline baseline both
+julia --project=. examples/scopf_filter_qualification.jl artifacts/scopf_filter_qualification/enhanced enhanced both
+julia --project=. examples/scopf_filter_qualification.jl artifacts/scopf_filter_qualification summary
+```
+
+The predeclared discovery partition contains twelve 3/5-bus cases; held-out
+contains twelve 4/6-bus cases. Ring/chord topology, demand, reactive reserve,
+generation location and transformer taps vary. Legacy thresholds are frozen
+at 0.8 loading and 0.02 pu voltage margin; its additional guards are disabled.
+Enhanced settings were frozen after discovery and before held-out evaluation.
+Per-family unresolved recall is compared with exhaustive AC assessment.
+Reports retain failures and rejected bases, rather than silently omitting them.
+
+Three paired timing repetitions alternate execution order. The first is excluded
+from warmed results. Phase timing separates filter, preparation/model building,
+optimization/extraction and independent validation/ranking; report serialization
+is timed separately and excludes disk I/O and plotting. First-comparison wall
+and runtime-provided compilation time are retained separately; they exclude
+process startup, package precompilation/loading and base construction. Phase
+times and compile counters are not claimed to be an exact disjoint accounting.
+The evidence index is `artifacts/scopf_filter_qualification/evaluation.md`.
+
+The first frozen comparison covered 168 outages over those 24 inputs. Legacy
+screening missed two unresolved branch outages in the discovery reactive-stress
+case; the enhanced guards escalated both. Both policies had zero observed misses
+on 90 held-out outages. The enhanced policy screened 44 held-out branch outages
+(legacy: 66), so its extra caution has a measurable workload cost. Warm
+screened/exhaustive speedup for the enhanced policy was 1.22× on discovery and
+1.31× on held-out, based on summed per-input medians, not a large-system forecast.
+First-comparison JIT dominated approximately nine seconds of cold execution.
+All held-out branch outages passed the exhaustive reference; held-out branch
+failure recall is therefore undefined, not 100%. The observed unresolved
+held-out cases were generator outages, which remain exact under both policies.
+After the enhancement, the full unit suite passed 2,626/2,626 tests in 3m35.0s;
+the documentation build passed with its API-page size warning only. Coverage
+and phase-timing SVGs were rendered and visually inspected.
 
 ## Response contract
 
@@ -476,11 +559,54 @@ report remains the acceptance authority.
 
 Run `julia --project=. examples/scopf_edge_case_evaluation.jl OUTPUT` to produce
 matched bundles for an accepted base/line/generator study and a deliberately
-invalid negative control with nonzero reactive output on the outaged generator.
+invalid negative controls with nonzero reactive output on the outaged generator,
+missing state, excessive voltage, and altered active generation. These corruptions
+test validation sensitivity; they are not feasible stressed operating points.
+The example also solves changed-input cases with tight thermal ratings and
+insufficient post-generator-outage capacity, retaining rejected results for review.
 Each directory includes `evaluation.md`, which embeds all nine figures and the
 authoritative numerical validation report in one reviewable input/output index.
+The report separates solver acceptance, exact physical validity, and encoded
+physical validity, states assumptions and tolerances, and saves complete
+`evaluation-inputs.json`, `evaluation-outputs.json`, and `evaluation-validation.json`
+records. Loading plots reconstruct solved taps and shunts. Missing or malformed
+states produce NOT EVALUATED cells and labelled gaps rather than passes.
+Available scenarios remain visible; voltage trajectories never bridge a missing
+scenario. Without a base, voltage/loading/dispatch plots still show available
+outages, but base-relative deltas are unavailable. Legacy droop plots are N/A
+for free-Q/explicit-assignment studies. Independent numeric checks remain the
+authority, including for solver-rejected states that can still be inspected.
+PASS is limited to the declared scenarios and checks, not dynamic security or
+global optimality. Optional `context` text labels the provenance of each bundle.
 
-JSON documents use a document-kind tag. Study schema v8 and result schema v4
+The same example now produces a single root `evaluation.md` linking all
+evidence: accepted/corrupted three-bus states; two-bus thermal, voltage,
+reactive-capacity and non-unity-transformer fixtures; exhaustive filtering
+comparisons and budget plots; and a loaded five-bus island campaign. Interior
+bases are chosen with AVR targets (1.009 pu for the tight-voltage fixture,
+1.0 otherwise), while the declared post-outage reactive response is free Q
+within limits. A deliberately disabled-voltage-guard run tests the benchmark's
+ability to identify false screens. Retained island validity is reported beside
+excluded demand and reference choice; it never implies that discarded islands
+were balanced. This is small-network qualification, not operational deployment
+certification. Large public networks remain S1/S2 reliability/robustness inputs
+only, never unit-test fixtures.
+
+Qualification snapshot (2026-10-03): the five guarded two-bus fixtures covered
+20 connected outages, including six unresolved outcomes. Six branch outages
+were screened with zero observed misses. Disabling the voltage guard on the
+tight-voltage fixture produced two false screens (one line and one transformer),
+both detected by the exhaustive comparison. All four loaded island branch
+outages validated on their retained components while explicitly reporting
+excluded demand (0.03 or 0.12 pu). Campaign replay reused all seven island-case
+checkpoints without executing another route. The full unit suite passed
+2,574/2,574 tests in 3m50.9s; the documentation build passed with its API-page
+size warning only. SVGs were rendered and representative accepted, missing,
+rejected, ranking and island figures visually inspected. The generated evidence
+index is `artifacts/scopf_validation/evaluation.md`; regenerate it using the
+example above. These are fixture-level observations, not held-out certification.
+
+JSON documents use a document-kind tag. Study schema v9 and result schema v4
 persist optional reactive-control assignments, selected tap/shunt policies,
 the timing/movement policy, and scenario equipment settings. Older supported documents
 reload with legacy attachment semantics, no optimized equipment, and the

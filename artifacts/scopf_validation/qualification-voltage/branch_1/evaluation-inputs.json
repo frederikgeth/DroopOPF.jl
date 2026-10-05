@@ -1,0 +1,116 @@
+{
+  "data": {
+    "case": {
+      "attachments": [],
+      "base_frequency": 50.0,
+      "base_power": 100.0,
+      "controls": [],
+      "generators": [
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 1,
+          "initial_p": 0.15,
+          "initial_q": 0.075,
+          "p_max": 0.8,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 2,
+          "initial_p": 0.15,
+          "initial_q": 0.075,
+          "p_max": 0.8,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        }
+      ],
+      "id": "parallel-voltage",
+      "loads": [
+        {
+          "bus_id": 2,
+          "id": 1,
+          "p": 0.3,
+          "q": 0.15
+        }
+      ],
+      "network": {
+        "banks": [],
+        "branches": [
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 1,
+            "id": 1,
+            "kind": "line",
+            "phase_shift": 0.0,
+            "reactance": 0.15,
+            "resistance": 0.02,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 2
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 1,
+            "id": 2,
+            "kind": "transformer",
+            "phase_shift": 0.0,
+            "reactance": 0.15,
+            "resistance": 0.02,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 2
+          }
+        ],
+        "buses": [
+          {
+            "id": 1,
+            "reference": true,
+            "v_max": 1.01,
+            "v_min": 0.99
+          },
+          {
+            "id": 2,
+            "reference": false,
+            "v_max": 1.01,
+            "v_min": 0.99
+          }
+        ],
+        "shunts": []
+      }
+    },
+    "contingencies": [
+      {
+        "branch_ids": [
+          1
+        ],
+        "generator_ids": [],
+        "id": "branch_1"
+      }
+    ],
+    "control_policy": {
+      "reactive": "automatic",
+      "shunt_movement_limits": null,
+      "shunts": "preventive",
+      "tap_movement_limits": null,
+      "taps": "preventive"
+    },
+    "mode": "preventive",
+    "participation": {
+      "1": 1.0,
+      "2": 1.0
+    },
+    "reactive_assignments": null,
+    "redispatch_limits": {},
+    "shunt_controls": [],
+    "tap_controls": []
+  },
+  "kind": "DroopOPF.Study",
+  "schema_version": 9
+}

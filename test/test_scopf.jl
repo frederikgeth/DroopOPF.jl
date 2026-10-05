@@ -198,6 +198,13 @@ end
     @test all(isapprox(result.shunt_settings[id][201], result.shunt_settings[:base][201];
         atol=1e-8) for id in (:line_22, :generator_9))
     @test maximum(values(report.equipment_coupling_violation)) < 1e-8
+    plot_ids, plot_cases, plot_states = DroopOPF._scopf_plot_data(study, result)
+    for (id, physical, state) in zip(plot_ids, plot_cases, plot_states)
+        declared = id == :base ? case : scenario_case(case, only(filter(c -> c.id == id, contingencies)))
+        expected = with_shunt_settings(with_tap_settings(declared,
+            result.tap_settings[id]), result.shunt_settings[id])
+        @test branch_flows(physical.network,state) == branch_flows(expected.network,state)
+    end
 
     exact_taps = [TapControl(11; lower=0.95, upper=1.05,
         initial=result.tap_settings[:base][11], nominal=1.0)]
@@ -445,6 +452,19 @@ end
         missing = deepcopy(result)
         missing.states[:line_22] = nothing
         @test_throws ArgumentError write_scopf_droop_plot(joinpath(directory,"bad.svg"),study,missing)
+        missing_paths = write_scopf_validation_plots(joinpath(directory,"missing"), study, missing)
+        @test occursin("NOT EVALUATED", read(missing_paths.validation_matrix, String))
+        @test occursin("NOT EVALUATED", read(missing_paths.branch_loading, String))
+        @test occursin("Branch 11", read(missing_paths.branch_loading, String))
+        @test occursin("Bus 10", read(missing_paths.voltage, String))
+        @test !occursin("<polyline", read(missing_paths.voltage, String))
+        @test occursin("G7 generator_9", read(missing_paths.droop, String))
+        no_base = deepcopy(result)
+        no_base.states[:base] = nothing
+        no_base_paths = write_scopf_validation_plots(joinpath(directory,"no-base"),study,no_base)
+        @test occursin("Bus 10", read(no_base_paths.voltage,String))
+        @test occursin("base state unavailable", read(no_base_paths.response_deltas,String))
+        @test isfile(write_scopf_evaluation_report(joinpath(directory,"missing","evaluation.md"), study, missing))
         corrupted = deepcopy(result)
         corrupted.states[:generator_9].qg[2] = 0.1
         invalid_matrix = write_scopf_validation_matrix_plot(
@@ -458,5 +478,10 @@ end
         evaluation_text = read(evaluation,String)
         @test occursin("Declared scenario inputs",evaluation_text)
         @test occursin("Numerical validation",evaluation_text)
+        @test occursin("Assumptions and interpretation", evaluation_text)
+        @test occursin("Validation tolerances", evaluation_text)
+        @test isfile(joinpath(directory,"evaluation-inputs.json"))
+        @test equilibrium_report(read_study(joinpath(directory,"evaluation-inputs.json")),
+            read_scopf_result(joinpath(directory,"evaluation-outputs.json"))).valid
     end
 end

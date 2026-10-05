@@ -21,6 +21,7 @@ include("scopf_stages.jl")
 include("multistart.jl")
 include("diagnostics.jl")
 include("scopf_io.jl")
+include("contingency_campaign.jl")
 include("benchmarking.jl")
 include("plotting.jl")
 include("scopf_plotting.jl")
@@ -53,6 +54,7 @@ export islanded_scenario_case, evaluate_islanding_contingency
 export ContingencyFilterDecision, filter_contingencies
 export ContingencyPipelineRank, ContingencyPipelineAssessment, ContingencyPipelineResult
 export assess_contingency_pipeline
+export run_contingency_campaign, validate_contingency_filter
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
 export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart

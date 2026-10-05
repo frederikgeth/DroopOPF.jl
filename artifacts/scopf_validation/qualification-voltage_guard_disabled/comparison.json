@@ -1,0 +1,1233 @@
+{
+  "data": {
+    "base_state": {
+      "pg": [
+        0.15056879673564105,
+        0.15056879673564105
+      ],
+      "qg": [
+        0.07926597551730724,
+        0.07926597551730724
+      ],
+      "va": [
+        0.0,
+        -0.02093038046701084
+      ],
+      "vm": [
+        1.0089999992023284,
+        0.9944494588102454
+      ]
+    },
+    "case": {
+      "attachments": [],
+      "base_frequency": 50.0,
+      "base_power": 100.0,
+      "controls": [],
+      "generators": [
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 1,
+          "initial_p": 0.15,
+          "initial_q": 0.075,
+          "p_max": 0.8,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        },
+        {
+          "available": true,
+          "bus_id": 1,
+          "id": 2,
+          "initial_p": 0.15,
+          "initial_q": 0.075,
+          "p_max": 0.8,
+          "p_min": 0.0,
+          "q_max": 1.0,
+          "q_min": -1.0
+        }
+      ],
+      "id": "parallel-voltage",
+      "loads": [
+        {
+          "bus_id": 2,
+          "id": 1,
+          "p": 0.3,
+          "q": 0.15
+        }
+      ],
+      "network": {
+        "banks": [],
+        "branches": [
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 1,
+            "id": 1,
+            "kind": "line",
+            "phase_shift": 0.0,
+            "reactance": 0.15,
+            "resistance": 0.02,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 2
+          },
+          {
+            "available": true,
+            "charging": 0.0,
+            "from_bus": 1,
+            "id": 2,
+            "kind": "transformer",
+            "phase_shift": 0.0,
+            "reactance": 0.15,
+            "resistance": 0.02,
+            "tap_ratio": 1.0,
+            "thermal_limit": 2.0,
+            "to_bus": 2
+          }
+        ],
+        "buses": [
+          {
+            "id": 1,
+            "reference": true,
+            "v_max": 1.01,
+            "v_min": 0.99
+          },
+          {
+            "id": 2,
+            "reference": false,
+            "v_max": 1.01,
+            "v_min": 0.99
+          }
+        ],
+        "shunts": []
+      }
+    },
+    "catalog": {
+      "case_id": "parallel-voltage",
+      "entries": [
+        {
+          "contingency": {
+            "branch_ids": [
+              1
+            ],
+            "generator_ids": [],
+            "id": "branch_1"
+          },
+          "device_id": 1,
+          "device_kind": "line",
+          "disposition": "eligible",
+          "reason": "connected_n1"
+        },
+        {
+          "contingency": {
+            "branch_ids": [
+              2
+            ],
+            "generator_ids": [],
+            "id": "branch_2"
+          },
+          "device_id": 2,
+          "device_kind": "transformer",
+          "disposition": "eligible",
+          "reason": "connected_n1"
+        },
+        {
+          "contingency": {
+            "branch_ids": [],
+            "generator_ids": [
+              1
+            ],
+            "id": "generator_1"
+          },
+          "device_id": 1,
+          "device_kind": "generator",
+          "disposition": "eligible",
+          "reason": "available_generator"
+        },
+        {
+          "contingency": {
+            "branch_ids": [],
+            "generator_ids": [
+              2
+            ],
+            "id": "generator_2"
+          },
+          "device_id": 2,
+          "device_kind": "generator",
+          "disposition": "eligible",
+          "reason": "available_generator"
+        }
+      ]
+    },
+    "decisions": [
+      {
+        "action": "screened",
+        "contingency_id": "branch_1",
+        "device_id": 1,
+        "device_kind": "line",
+        "predicted_loading": 0.15028439836782043,
+        "reason": "below_loading_threshold"
+      },
+      {
+        "action": "screened",
+        "contingency_id": "branch_2",
+        "device_id": 2,
+        "device_kind": "transformer",
+        "predicted_loading": 0.15028439836782043,
+        "reason": "below_loading_threshold"
+      },
+      {
+        "action": "exact",
+        "contingency_id": "generator_1",
+        "device_id": 1,
+        "device_kind": "generator",
+        "predicted_loading": null,
+        "reason": "generator_outage"
+      },
+      {
+        "action": "exact",
+        "contingency_id": "generator_2",
+        "device_id": 2,
+        "device_kind": "generator",
+        "predicted_loading": null,
+        "reason": "generator_outage"
+      }
+    ],
+    "exact": {
+      "assessments": [
+        {
+          "decision": {
+            "action": "exact",
+            "contingency_id": "branch_1",
+            "device_id": 1,
+            "device_kind": "line",
+            "predicted_loading": null,
+            "reason": "voltage_guard"
+          },
+          "entry": {
+            "contingency": {
+              "branch_ids": [
+                1
+              ],
+              "generator_ids": [],
+              "id": "branch_1"
+            },
+            "device_id": 1,
+            "device_kind": "line",
+            "disposition": "eligible",
+            "reason": "connected_n1"
+          },
+          "error_message": null,
+          "exact_assessment": {
+            "contingency": {
+              "branch_ids": [
+                1
+              ],
+              "generator_ids": [],
+              "id": "branch_1"
+            },
+            "rank": {
+              "classification": "invalid",
+              "contingency_id": "branch_1",
+              "device_id": 1,
+              "device_kind": "line",
+              "minimum_operating_margin": -1.0099622915760165e-8,
+              "severity": null,
+              "termination_status": "LOCALLY_INFEASIBLE"
+            },
+            "report": {
+              "case_id": "parallel-voltage",
+              "coupling_violation": {
+                "branch_1": 2.0708261494473135e-17
+              },
+              "encoded_droop_residual": {
+                "base": 0.0,
+                "branch_1": 0.0
+              },
+              "encoded_physical_valid": false,
+              "encoding": "smooth",
+              "equipment_coupling_violation": {
+                "branch_1": 0.0
+              },
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "physical_valid": false,
+              "primal_status": "INFEASIBLE_POINT",
+              "scenario_ids": [
+                "base",
+                "branch_1"
+              ],
+              "scenarios": {
+                "base": {
+                  "branch_thermal_min_margin": 1.8298410818524957,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.649431203264359,
+                  "generator_p_min_margin": 0.15056879673564105,
+                  "generator_q_max_margin": 0.9207340244826927,
+                  "generator_q_min_margin": 1.0792659755173073,
+                  "power_balance_max": 2.0261570199409107e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.0010000007976715963,
+                  "voltage_min_margin": 0.004449458810245388
+                },
+                "branch_1": {
+                  "branch_thermal_min_margin": 1.6816817878020909,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.6490067004985443,
+                  "generator_p_min_margin": 0.15099329950145585,
+                  "generator_q_max_margin": 0.9496746131670913,
+                  "generator_q_min_margin": 1.0503253868329088,
+                  "power_balance_max": 0.06424871886291812,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": false,
+                  "violations": [
+                    "power_balance"
+                  ],
+                  "voltage_max_margin": -1.0099622915760165e-8,
+                  "voltage_min_margin": -9.999614358768838e-9
+                }
+              },
+              "solver": "Ipopt",
+              "termination_status": "LOCALLY_INFEASIBLE",
+              "tolerances": {
+                "coupling_tolerance": 1.0e-6,
+                "droop_tolerance": 1.0e-5,
+                "limit_tolerance": 1.0e-6,
+                "power_tolerance": 1.0e-6,
+                "unavailable_tolerance": 1.0e-8
+              },
+              "valid": false,
+              "violations": {
+                "base": [],
+                "branch_1": [
+                  "power_balance"
+                ]
+              }
+            },
+            "result": {
+              "balancing_power": {
+                "branch_1": 0.0008490055316296289
+              },
+              "control_policy": {
+                "reactive": "automatic",
+                "shunt_movement_limits": null,
+                "shunts": "preventive",
+                "tap_movement_limits": null,
+                "taps": "preventive"
+              },
+              "encoding": "smooth",
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "primal_status": "INFEASIBLE_POINT",
+              "reactive_assignments": null,
+              "shunt_controls": [],
+              "shunt_settings": {
+                "base": {},
+                "branch_1": {}
+              },
+              "smooth_epsilon": 0.0001,
+              "smooth_reactive_epsilon": null,
+              "smooth_reactive_relative_epsilon": 0.0001,
+              "solver": "Ipopt",
+              "states": {
+                "base": {
+                  "pg": [
+                    0.15056879673564105,
+                    0.15056879673564105
+                  ],
+                  "qg": [
+                    0.07926597551730724,
+                    0.07926597551730724
+                  ],
+                  "va": [
+                    0.0,
+                    -0.02093038046701084
+                  ],
+                  "vm": [
+                    1.0089999992023284,
+                    0.9944494588102454
+                  ]
+                },
+                "branch_1": {
+                  "pg": [
+                    0.15099329950145585,
+                    0.15099329950145585
+                  ],
+                  "qg": [
+                    0.05032538683290866,
+                    0.05032538683290866
+                  ],
+                  "va": [
+                    0.0,
+                    -0.04330283515720326
+                  ],
+                  "vm": [
+                    1.010000010099623,
+                    0.9899999900003856
+                  ]
+                }
+              },
+              "tap_controls": [],
+              "tap_settings": {
+                "base": {},
+                "branch_1": {}
+              },
+              "termination_status": "LOCALLY_INFEASIBLE"
+            }
+          },
+          "island_assessment": null,
+          "outcome": "exact_evaluated",
+          "rank": {
+            "classification": "invalid",
+            "contingency_id": "branch_1",
+            "device_id": 1,
+            "device_kind": "line",
+            "discarded_load_p": 0.0,
+            "evaluation_source": "exact_ac",
+            "minimum_operating_margin": -1.0099622915760165e-8,
+            "priority_tier": 5,
+            "severity": 0.0
+          }
+        },
+        {
+          "decision": {
+            "action": "exact",
+            "contingency_id": "branch_2",
+            "device_id": 2,
+            "device_kind": "transformer",
+            "predicted_loading": null,
+            "reason": "voltage_guard"
+          },
+          "entry": {
+            "contingency": {
+              "branch_ids": [
+                2
+              ],
+              "generator_ids": [],
+              "id": "branch_2"
+            },
+            "device_id": 2,
+            "device_kind": "transformer",
+            "disposition": "eligible",
+            "reason": "connected_n1"
+          },
+          "error_message": null,
+          "exact_assessment": {
+            "contingency": {
+              "branch_ids": [
+                2
+              ],
+              "generator_ids": [],
+              "id": "branch_2"
+            },
+            "rank": {
+              "classification": "invalid",
+              "contingency_id": "branch_2",
+              "device_id": 2,
+              "device_kind": "transformer",
+              "minimum_operating_margin": -1.0099622915760165e-8,
+              "severity": null,
+              "termination_status": "LOCALLY_INFEASIBLE"
+            },
+            "report": {
+              "case_id": "parallel-voltage",
+              "coupling_violation": {
+                "branch_2": 2.0708261494473135e-17
+              },
+              "encoded_droop_residual": {
+                "base": 0.0,
+                "branch_2": 0.0
+              },
+              "encoded_physical_valid": false,
+              "encoding": "smooth",
+              "equipment_coupling_violation": {
+                "branch_2": 0.0
+              },
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "physical_valid": false,
+              "primal_status": "INFEASIBLE_POINT",
+              "scenario_ids": [
+                "base",
+                "branch_2"
+              ],
+              "scenarios": {
+                "base": {
+                  "branch_thermal_min_margin": 1.8298410818524957,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.649431203264359,
+                  "generator_p_min_margin": 0.15056879673564105,
+                  "generator_q_max_margin": 0.9207340244826927,
+                  "generator_q_min_margin": 1.0792659755173073,
+                  "power_balance_max": 2.0261570199409107e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.0010000007976715963,
+                  "voltage_min_margin": 0.004449458810245388
+                },
+                "branch_2": {
+                  "branch_thermal_min_margin": 1.6816817878020909,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.6490067004985443,
+                  "generator_p_min_margin": 0.15099329950145585,
+                  "generator_q_max_margin": 0.9496746131670913,
+                  "generator_q_min_margin": 1.0503253868329088,
+                  "power_balance_max": 0.06424871886291812,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": false,
+                  "violations": [
+                    "power_balance"
+                  ],
+                  "voltage_max_margin": -1.0099622915760165e-8,
+                  "voltage_min_margin": -9.999614358768838e-9
+                }
+              },
+              "solver": "Ipopt",
+              "termination_status": "LOCALLY_INFEASIBLE",
+              "tolerances": {
+                "coupling_tolerance": 1.0e-6,
+                "droop_tolerance": 1.0e-5,
+                "limit_tolerance": 1.0e-6,
+                "power_tolerance": 1.0e-6,
+                "unavailable_tolerance": 1.0e-8
+              },
+              "valid": false,
+              "violations": {
+                "base": [],
+                "branch_2": [
+                  "power_balance"
+                ]
+              }
+            },
+            "result": {
+              "balancing_power": {
+                "branch_2": 0.0008490055316296289
+              },
+              "control_policy": {
+                "reactive": "automatic",
+                "shunt_movement_limits": null,
+                "shunts": "preventive",
+                "tap_movement_limits": null,
+                "taps": "preventive"
+              },
+              "encoding": "smooth",
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "primal_status": "INFEASIBLE_POINT",
+              "reactive_assignments": null,
+              "shunt_controls": [],
+              "shunt_settings": {
+                "base": {},
+                "branch_2": {}
+              },
+              "smooth_epsilon": 0.0001,
+              "smooth_reactive_epsilon": null,
+              "smooth_reactive_relative_epsilon": 0.0001,
+              "solver": "Ipopt",
+              "states": {
+                "base": {
+                  "pg": [
+                    0.15056879673564105,
+                    0.15056879673564105
+                  ],
+                  "qg": [
+                    0.07926597551730724,
+                    0.07926597551730724
+                  ],
+                  "va": [
+                    0.0,
+                    -0.02093038046701084
+                  ],
+                  "vm": [
+                    1.0089999992023284,
+                    0.9944494588102454
+                  ]
+                },
+                "branch_2": {
+                  "pg": [
+                    0.15099329950145585,
+                    0.15099329950145585
+                  ],
+                  "qg": [
+                    0.05032538683290866,
+                    0.05032538683290866
+                  ],
+                  "va": [
+                    0.0,
+                    -0.04330283515720326
+                  ],
+                  "vm": [
+                    1.010000010099623,
+                    0.9899999900003856
+                  ]
+                }
+              },
+              "tap_controls": [],
+              "tap_settings": {
+                "base": {},
+                "branch_2": {}
+              },
+              "termination_status": "LOCALLY_INFEASIBLE"
+            }
+          },
+          "island_assessment": null,
+          "outcome": "exact_evaluated",
+          "rank": {
+            "classification": "invalid",
+            "contingency_id": "branch_2",
+            "device_id": 2,
+            "device_kind": "transformer",
+            "discarded_load_p": 0.0,
+            "evaluation_source": "exact_ac",
+            "minimum_operating_margin": -1.0099622915760165e-8,
+            "priority_tier": 5,
+            "severity": 0.0
+          }
+        },
+        {
+          "decision": {
+            "action": "exact",
+            "contingency_id": "generator_1",
+            "device_id": 1,
+            "device_kind": "generator",
+            "predicted_loading": null,
+            "reason": "generator_outage"
+          },
+          "entry": {
+            "contingency": {
+              "branch_ids": [],
+              "generator_ids": [
+                1
+              ],
+              "id": "generator_1"
+            },
+            "device_id": 1,
+            "device_kind": "generator",
+            "disposition": "eligible",
+            "reason": "available_generator"
+          },
+          "error_message": null,
+          "exact_assessment": {
+            "contingency": {
+              "branch_ids": [],
+              "generator_ids": [
+                1
+              ],
+              "id": "generator_1"
+            },
+            "rank": {
+              "classification": "accepted",
+              "contingency_id": "generator_1",
+              "device_id": 1,
+              "device_kind": "generator",
+              "minimum_operating_margin": 0.002636194132614733,
+              "severity": -0.002636194132614733,
+              "termination_status": "LOCALLY_SOLVED"
+            },
+            "report": {
+              "case_id": "parallel-voltage",
+              "coupling_violation": {
+                "generator_1": 2.7755575615628914e-17
+              },
+              "encoded_droop_residual": {
+                "base": 0.0,
+                "generator_1": 0.0
+              },
+              "encoded_physical_valid": true,
+              "encoding": "smooth",
+              "equipment_coupling_violation": {
+                "generator_1": 0.0
+              },
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "physical_valid": true,
+              "primal_status": "FEASIBLE_POINT",
+              "scenario_ids": [
+                "base",
+                "generator_1"
+              ],
+              "scenarios": {
+                "base": {
+                  "branch_thermal_min_margin": 1.8298410818524957,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.649431203264359,
+                  "generator_p_min_margin": 0.15056879673564105,
+                  "generator_q_max_margin": 0.9207340244826927,
+                  "generator_q_min_margin": 1.0792659755173073,
+                  "power_balance_max": 2.0261570199409107e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.0010000007976715963,
+                  "voltage_min_margin": 0.004449458810245388
+                },
+                "generator_1": {
+                  "branch_thermal_min_margin": 1.8298327393902758,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.4988585961822728,
+                  "generator_p_min_margin": 0.30114140381772725,
+                  "generator_q_max_margin": 0.8414394713670437,
+                  "generator_q_min_margin": 1.1585605286329563,
+                  "power_balance_max": 5.717648576819556e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.002636194132614733,
+                  "voltage_min_margin": 0.002788186717576746
+                }
+              },
+              "solver": "Ipopt",
+              "termination_status": "LOCALLY_SOLVED",
+              "tolerances": {
+                "coupling_tolerance": 1.0e-6,
+                "droop_tolerance": 1.0e-5,
+                "limit_tolerance": 1.0e-6,
+                "power_tolerance": 1.0e-6,
+                "unavailable_tolerance": 1.0e-8
+              },
+              "valid": true,
+              "violations": {
+                "base": [],
+                "generator_1": []
+              }
+            },
+            "result": {
+              "balancing_power": {
+                "generator_1": 0.15057260708208617
+              },
+              "control_policy": {
+                "reactive": "automatic",
+                "shunt_movement_limits": null,
+                "shunts": "preventive",
+                "tap_movement_limits": null,
+                "taps": "preventive"
+              },
+              "encoding": "smooth",
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "primal_status": "FEASIBLE_POINT",
+              "reactive_assignments": null,
+              "shunt_controls": [],
+              "shunt_settings": {
+                "base": {},
+                "generator_1": {}
+              },
+              "smooth_epsilon": 0.0001,
+              "smooth_reactive_epsilon": null,
+              "smooth_reactive_relative_epsilon": 0.0001,
+              "solver": "Ipopt",
+              "states": {
+                "base": {
+                  "pg": [
+                    0.15056879673564105,
+                    0.15056879673564105
+                  ],
+                  "qg": [
+                    0.07926597551730724,
+                    0.07926597551730724
+                  ],
+                  "va": [
+                    0.0,
+                    -0.02093038046701084
+                  ],
+                  "vm": [
+                    1.0089999992023284,
+                    0.9944494588102454
+                  ]
+                },
+                "generator_1": {
+                  "pg": [
+                    0.0,
+                    0.30114140381772725
+                  ],
+                  "qg": [
+                    0.0,
+                    0.15856052863295633
+                  ],
+                  "va": [
+                    0.0,
+                    -0.020999466943729936
+                  ],
+                  "vm": [
+                    1.0073638058673853,
+                    0.9927881867175767
+                  ]
+                }
+              },
+              "tap_controls": [],
+              "tap_settings": {
+                "base": {},
+                "generator_1": {}
+              },
+              "termination_status": "LOCALLY_SOLVED"
+            }
+          },
+          "island_assessment": null,
+          "outcome": "exact_evaluated",
+          "rank": {
+            "classification": "accepted",
+            "contingency_id": "generator_1",
+            "device_id": 1,
+            "device_kind": "generator",
+            "discarded_load_p": 0.0,
+            "evaluation_source": "exact_ac",
+            "minimum_operating_margin": 0.002636194132614733,
+            "priority_tier": 2,
+            "severity": -0.002636194132614733
+          }
+        },
+        {
+          "decision": {
+            "action": "exact",
+            "contingency_id": "generator_2",
+            "device_id": 2,
+            "device_kind": "generator",
+            "predicted_loading": null,
+            "reason": "generator_outage"
+          },
+          "entry": {
+            "contingency": {
+              "branch_ids": [],
+              "generator_ids": [
+                2
+              ],
+              "id": "generator_2"
+            },
+            "device_id": 2,
+            "device_kind": "generator",
+            "disposition": "eligible",
+            "reason": "available_generator"
+          },
+          "error_message": null,
+          "exact_assessment": {
+            "contingency": {
+              "branch_ids": [],
+              "generator_ids": [
+                2
+              ],
+              "id": "generator_2"
+            },
+            "rank": {
+              "classification": "accepted",
+              "contingency_id": "generator_2",
+              "device_id": 2,
+              "device_kind": "generator",
+              "minimum_operating_margin": 0.002636194132614733,
+              "severity": -0.002636194132614733,
+              "termination_status": "LOCALLY_SOLVED"
+            },
+            "report": {
+              "case_id": "parallel-voltage",
+              "coupling_violation": {
+                "generator_2": 2.7755575615628914e-17
+              },
+              "encoded_droop_residual": {
+                "base": 0.0,
+                "generator_2": 0.0
+              },
+              "encoded_physical_valid": true,
+              "encoding": "smooth",
+              "equipment_coupling_violation": {
+                "generator_2": 0.0
+              },
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "physical_valid": true,
+              "primal_status": "FEASIBLE_POINT",
+              "scenario_ids": [
+                "base",
+                "generator_2"
+              ],
+              "scenarios": {
+                "base": {
+                  "branch_thermal_min_margin": 1.8298410818524957,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.649431203264359,
+                  "generator_p_min_margin": 0.15056879673564105,
+                  "generator_q_max_margin": 0.9207340244826927,
+                  "generator_q_min_margin": 1.0792659755173073,
+                  "power_balance_max": 2.0261570199409107e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.0010000007976715963,
+                  "voltage_min_margin": 0.004449458810245388
+                },
+                "generator_2": {
+                  "branch_thermal_min_margin": 1.8298327393902758,
+                  "control_active_power_violation_max": 0.0,
+                  "droop_residual_max": 0.0,
+                  "generator_p_max_margin": 0.4988585961822728,
+                  "generator_p_min_margin": 0.30114140381772725,
+                  "generator_q_max_margin": 0.8414394713670437,
+                  "generator_q_min_margin": 1.1585605286329563,
+                  "power_balance_max": 5.717648576819556e-15,
+                  "smooth_epsilon": 0.0001,
+                  "smooth_exact_droop_gap": 0.0,
+                  "smooth_reactive_epsilon": null,
+                  "smooth_reactive_relative_epsilon": 0.0001,
+                  "unavailable_generator_max": 0.0,
+                  "valid": true,
+                  "violations": [],
+                  "voltage_max_margin": 0.002636194132614733,
+                  "voltage_min_margin": 0.002788186717576746
+                }
+              },
+              "solver": "Ipopt",
+              "termination_status": "LOCALLY_SOLVED",
+              "tolerances": {
+                "coupling_tolerance": 1.0e-6,
+                "droop_tolerance": 1.0e-5,
+                "limit_tolerance": 1.0e-6,
+                "power_tolerance": 1.0e-6,
+                "unavailable_tolerance": 1.0e-8
+              },
+              "valid": true,
+              "violations": {
+                "base": [],
+                "generator_2": []
+              }
+            },
+            "result": {
+              "balancing_power": {
+                "generator_2": 0.15057260708208617
+              },
+              "control_policy": {
+                "reactive": "automatic",
+                "shunt_movement_limits": null,
+                "shunts": "preventive",
+                "tap_movement_limits": null,
+                "taps": "preventive"
+              },
+              "encoding": "smooth",
+              "mode": "preventive",
+              "objective": 6.834565471803777e-7,
+              "primal_status": "FEASIBLE_POINT",
+              "reactive_assignments": null,
+              "shunt_controls": [],
+              "shunt_settings": {
+                "base": {},
+                "generator_2": {}
+              },
+              "smooth_epsilon": 0.0001,
+              "smooth_reactive_epsilon": null,
+              "smooth_reactive_relative_epsilon": 0.0001,
+              "solver": "Ipopt",
+              "states": {
+                "base": {
+                  "pg": [
+                    0.15056879673564105,
+                    0.15056879673564105
+                  ],
+                  "qg": [
+                    0.07926597551730724,
+                    0.07926597551730724
+                  ],
+                  "va": [
+                    0.0,
+                    -0.02093038046701084
+                  ],
+                  "vm": [
+                    1.0089999992023284,
+                    0.9944494588102454
+                  ]
+                },
+                "generator_2": {
+                  "pg": [
+                    0.30114140381772725,
+                    0.0
+                  ],
+                  "qg": [
+                    0.15856052863295633,
+                    0.0
+                  ],
+                  "va": [
+                    0.0,
+                    -0.020999466943729936
+                  ],
+                  "vm": [
+                    1.0073638058673853,
+                    0.9927881867175767
+                  ]
+                }
+              },
+              "tap_controls": [],
+              "tap_settings": {
+                "base": {},
+                "generator_2": {}
+              },
+              "termination_status": "LOCALLY_SOLVED"
+            }
+          },
+          "island_assessment": null,
+          "outcome": "exact_evaluated",
+          "rank": {
+            "classification": "accepted",
+            "contingency_id": "generator_2",
+            "device_id": 2,
+            "device_kind": "generator",
+            "discarded_load_p": 0.0,
+            "evaluation_source": "exact_ac",
+            "minimum_operating_margin": 0.002636194132614733,
+            "priority_tier": 2,
+            "severity": -0.002636194132614733
+          }
+        }
+      ],
+      "branch_ranking": [
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_1",
+          "device_id": 1,
+          "device_kind": "line",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        },
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_2",
+          "device_id": 2,
+          "device_kind": "transformer",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        }
+      ],
+      "case_id": "parallel-voltage",
+      "checks": {
+        "all_outcomes_accepted": false,
+        "audited_screened_count": 0,
+        "base_valid": true,
+        "complete": true,
+        "coverage_complete": true,
+        "error_count": 0,
+        "exact_evaluated_count": 4,
+        "full_ac_coverage": true,
+        "island_evaluated_count": 0,
+        "route_consistent": true,
+        "routing_complete": true,
+        "screened_count": 0,
+        "screening_audit_pass": true
+      },
+      "combined_ranking": [
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_1",
+          "device_id": 1,
+          "device_kind": "line",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        },
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_2",
+          "device_id": 2,
+          "device_kind": "transformer",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        },
+        {
+          "classification": "accepted",
+          "contingency_id": "generator_1",
+          "device_id": 1,
+          "device_kind": "generator",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": 0.002636194132614733,
+          "priority_tier": 2,
+          "severity": -0.002636194132614733
+        },
+        {
+          "classification": "accepted",
+          "contingency_id": "generator_2",
+          "device_id": 2,
+          "device_kind": "generator",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": 0.002636194132614733,
+          "priority_tier": 2,
+          "severity": -0.002636194132614733
+        }
+      ],
+      "generator_ranking": [
+        {
+          "classification": "accepted",
+          "contingency_id": "generator_1",
+          "device_id": 1,
+          "device_kind": "generator",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": 0.002636194132614733,
+          "priority_tier": 2,
+          "severity": -0.002636194132614733
+        },
+        {
+          "classification": "accepted",
+          "contingency_id": "generator_2",
+          "device_id": 2,
+          "device_kind": "generator",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": 0.002636194132614733,
+          "priority_tier": 2,
+          "severity": -0.002636194132614733
+        }
+      ],
+      "line_ranking": [
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_1",
+          "device_id": 1,
+          "device_kind": "line",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        }
+      ],
+      "transformer_ranking": [
+        {
+          "classification": "invalid",
+          "contingency_id": "branch_2",
+          "device_id": 2,
+          "device_kind": "transformer",
+          "discarded_load_p": 0.0,
+          "evaluation_source": "exact_ac",
+          "minimum_operating_margin": -1.0099622915760165e-8,
+          "priority_tier": 5,
+          "severity": 0.0
+        }
+      ]
+    },
+    "families": [
+      {
+        "device_kind": "line",
+        "ranking_budgets": [
+          {
+            "budget": 0,
+            "found": 0,
+            "total": 1
+          },
+          {
+            "budget": 1,
+            "found": 1,
+            "total": 1
+          }
+        ],
+        "screened": 1,
+        "screened_physical_failures": 1,
+        "screened_unresolved": 1,
+        "total": 1,
+        "unresolved": 1
+      },
+      {
+        "device_kind": "transformer",
+        "ranking_budgets": [
+          {
+            "budget": 0,
+            "found": 0,
+            "total": 1
+          },
+          {
+            "budget": 1,
+            "found": 1,
+            "total": 1
+          }
+        ],
+        "screened": 1,
+        "screened_physical_failures": 1,
+        "screened_unresolved": 1,
+        "total": 1,
+        "unresolved": 1
+      },
+      {
+        "device_kind": "generator",
+        "ranking_budgets": [
+          {
+            "budget": 0,
+            "found": 0,
+            "total": 0
+          },
+          {
+            "budget": 1,
+            "found": 0,
+            "total": 0
+          },
+          {
+            "budget": 2,
+            "found": 0,
+            "total": 0
+          }
+        ],
+        "screened": 0,
+        "screened_physical_failures": 0,
+        "screened_unresolved": 0,
+        "total": 2,
+        "unresolved": 0
+      }
+    ],
+    "no_observed_misses": false,
+    "settings": {
+      "loading_threshold": 0.8,
+      "solver_options": {
+        "optimizer_attributes": {
+          "max_iter": 300
+        }
+      },
+      "voltage_guard": 0.0
+    }
+  },
+  "kind": "DroopOPF.FilterQualification",
+  "schema_version": 1
+}

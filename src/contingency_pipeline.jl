@@ -85,12 +85,26 @@ _sort_pipeline_ranks(ranks) = sort!(ranks; by=rank ->
 
 function _evaluate_exact_entry(case::Case, base_state::ACState,
     entry::ContingencyCatalogEntry, catalog::ContingencyCatalog,
-    participation::AbstractDict; kwargs...)
+    participation::AbstractDict; _phase_timings=nothing, _model_hook=nothing, kwargs...)
+    started = time_ns()
+    built = Ref(started)
     study = Study(case; contingencies=[entry.contingency], participation)
-    result = evaluate_contingencies(study, base_state; kwargs...)
+    result = evaluate_contingencies(study, base_state; kwargs...,
+        _model_hook=model -> begin
+            built[] = time_ns()
+            isnothing(_model_hook) || _model_hook(model)
+        end)
+    solved = time_ns()
     report = equilibrium_report(study, result)
     ranks = rank_contingencies(catalog, report)
     length(ranks) == 1 || error("one-outage assessment did not produce one rank")
+    if !isnothing(_phase_timings)
+        for (key,value) in ((:prepare_build,(built[]-started)/1e9),
+            (:optimize_extract,(solved-built[])/1e9),
+            (:validate_rank,(time_ns()-solved)/1e9))
+            _phase_timings[key] = get(_phase_timings,key,0.0)+value
+        end
+    end
     ContingencyAssessment(entry.contingency, result, report, only(ranks))
 end
 
@@ -108,7 +122,11 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
     participation::AbstractDict=Dict(g.id => 1.0 for g in case.generators if g.available),
     screening_enabled::Bool=true, audit_screened_ids::AbstractVector{Symbol}=Symbol[],
     continue_on_error::Bool=true, loading_threshold::Real=0.8,
-    voltage_guard::Real=0.02, lodf_tolerance::Real=1e-8, kwargs...)
+    voltage_guard::Real=0.02, lodf_tolerance::Real=1e-8,
+    reactive_guard::Real=0.1, ac_risk_guard::Bool=true,
+    _phase_timings=nothing,
+    _assessment_loader=(entry, decision, audited)->nothing,
+    _assessment_callback=identity, kwargs...)
     validate_equilibrium(case, base_state).valid ||
         throw(ArgumentError("base state must independently validate"))
     catalog.case_id == case.id || throw(ArgumentError("catalog case ID does not match case"))
@@ -118,8 +136,10 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
     known_ids = Set(entry.contingency.id for entry in catalog.entries)
     issubset(audit_ids, known_ids) ||
         throw(ArgumentError("screening audit references an unknown contingency"))
+    filter_started = time_ns()
     decisions = filter_contingencies(case, base_state; catalog, loading_threshold,
-        voltage_guard, lodf_tolerance)
+        voltage_guard, lodf_tolerance, reactive_guard, ac_risk_guard)
+    isnothing(_phase_timings) || (_phase_timings[:filter] = (time_ns()-filter_started)/1e9)
     length(decisions) == length(catalog.entries) || error("filter did not cover the catalog")
     decision_by_id = Dict(decision.contingency_id => decision for decision in decisions)
     length(decision_by_id) == length(decisions) || error("filter returned duplicate decisions")
@@ -138,6 +158,11 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
                 :screening_disabled, decision.predicted_loading)
         end
         audited = decision.action == :screened && entry.contingency.id in audit_ids
+        previous = _assessment_loader(entry, decision, audited)
+        if !isnothing(previous)
+            push!(assessments, previous)
+            continue
+        end
         exact = nothing
         island = nothing
         error_message = nothing
@@ -145,7 +170,7 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         try
             if decision.action == :exact || audited
                 exact = _evaluate_exact_entry(case, base_state, entry, catalog,
-                    participation; kwargs...)
+                    participation; _phase_timings, kwargs...)
                 outcome = audited ? :screened_audited : :exact_evaluated
             elseif decision.action == :island_aware
                 island = evaluate_islanding_contingency(case, entry.contingency,
@@ -157,6 +182,7 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
                 error("unknown filtering action $(decision.action)")
             end
         catch error
+            error isa InterruptException && rethrow()
             continue_on_error || rethrow()
             error_message = sprint(showerror, error)
             outcome = :evaluation_error
@@ -164,6 +190,9 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         rank = _pipeline_rank(entry, decision; exact, island, error_message, audited)
         push!(assessments, ContingencyPipelineAssessment(entry, decision, outcome,
             exact, island, error_message, rank))
+        # Persist outside the solver-error handler: interruption or I/O failure
+        # must stop the campaign, never be reclassified as an evaluated outage.
+        _assessment_callback(last(assessments))
     end
     ids = [assessment.entry.contingency.id for assessment in assessments]
     expected_ids = [entry.contingency.id for entry in catalog.entries]
@@ -230,6 +259,7 @@ function markdown_report(result::ContingencyPipelineResult)
             "$(rank.evaluation_source) |")
     end
     push!(lines, "",
-        "A screened-not-evaluated entry is a workload decision, not an AC-security certificate.")
+        "A screened-not-evaluated entry is a workload decision, not an AC-security certificate.", "",
+        "Connected outages use fixed-base preventive participation. Island-aware outcomes validate only the retained component, with independent OPF redispatch; discarded components are not balanced. Full AC coverage means each route was evaluated, not every island was validated. Discarded load is excluded demand, not a claim that its local service is physically impossible. Dynamic security is outside scope.")
     join(lines, "\n")
 end

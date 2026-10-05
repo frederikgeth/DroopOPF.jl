@@ -6,25 +6,44 @@ function _scopf_scenario_cases(study::Study)
     return ids, cases
 end
 
-function _scopf_plot_data(study::Study, result::SCOPFResult)
+function _scopf_plot_data(study::Study, result::SCOPFResult; partial::Bool=false)
     ids, cases = _scopf_scenario_cases(_validated_study(study))
-    Set(keys(result.states)) == Set(ids) ||
+    partial || Set(keys(result.states)) == Set(ids) ||
         throw(ArgumentError("result scenario set does not match the study"))
-    states = ACState[]
-    for id in ids
-        state = result.states[id]
+    states = Union{Nothing,ACState}[]
+    report = equilibrium_report(study, result)
+    for (i, id) in enumerate(ids)
+        state = get(result.states, id, nothing)
+        failures = get(report.violations, id, Symbol[])
+        if partial && (!haskey(report.scenarios, id) ||
+            any(v -> v in failures, (:tap_settings, :shunt_settings)))
+            push!(states, nothing)
+            continue
+        end
         isnothing(state) && throw(ArgumentError("scenario $id has no state to plot"))
+        haskey(report.scenarios, id) || throw(ArgumentError("scenario $id has no evaluable state"))
+        failures = get(report.violations, id, Symbol[])
+        any(v -> v in failures, (:tap_settings, :shunt_settings)) &&
+            throw(ArgumentError("scenario $id has invalid equipment settings"))
+        cases[i] = with_shunt_settings(with_tap_settings(cases[i],
+            get(result.tap_settings, id, Dict{Int,Float64}())),
+            get(result.shunt_settings, id, Dict{Int,Float64}()))
         push!(states, state)
     end
     return ids, cases, states
 end
 
+function _scopf_missing_label(io, x, y; label="NOT EVALUATED")
+    println(io, "<text x=\"$(_svg_number(x))\" y=\"$(_svg_number(y))\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#6b7280\">$(_svg_escape(label))</text>")
+end
+
 """Return all available-generator droop operating points grouped by scenario."""
-function scopf_operating_points(study::Study, result::SCOPFResult)
-    ids, cases, states = _scopf_plot_data(study, result)
+function scopf_operating_points(study::Study, result::SCOPFResult; partial::Bool=false)
+    ids, cases, states = _scopf_plot_data(study, result; partial)
     return [
         (scenario = id, point = point)
         for (id, case, state) in zip(ids, cases, states)
+        if !isnothing(state)
         for point in droop_operating_points(case, state)
     ]
 end
@@ -49,10 +68,12 @@ function write_scopf_droop_plot(
     study::Study,
     result::SCOPFResult;
     samples::Integer = 300,
+    partial::Bool=false,
     title::AbstractString = "M2 droop operating points by scenario",
 )
     samples >= 2 || throw(ArgumentError("samples must be at least 2"))
-    points = scopf_operating_points(study, result)
+    points = scopf_operating_points(study, result; partial)
+    isnothing(study.reactive_assignments) || throw(ArgumentError("legacy droop plot is not applicable to explicit reactive assignments; see validation matrix"))
     isempty(study.case.controls) && throw(ArgumentError("at least one control is required"))
     curve_voltages = reduce(vcat, (control.curve.breakpoints for control in study.case.controls))
     curve_q = reduce(vcat, (control.curve.values for control in study.case.controls))
@@ -111,7 +132,8 @@ function write_scopf_droop_plot(
         for (index, id) in enumerate(ids)
             y = scenario_top + 25 * (index - 1)
             _svg_marker(io, _scenario_marker(index), left + plot_width + 38, y, "#6b7280"; size = 6, fill = "#9ca3af")
-            println(io, "<text x=\"$(left+plot_width+55)\" y=\"$(_svg_number(y+4))\" font-family=\"sans-serif\" font-size=\"12\">$(_svg_escape(string(id)))</text>")
+            label = any(p -> p.scenario == id, points) ? string(id) : "$id: NOT EVALUATED"
+            println(io, "<text x=\"$(left+plot_width+55)\" y=\"$(_svg_number(y+4))\" font-family=\"sans-serif\" font-size=\"11\">$(_svg_escape(label))</text>")
         end
         for item in points
             scenario_index = findfirst(==(item.scenario), ids)
@@ -136,10 +158,11 @@ end
 
 """Write bus-voltage trajectories and their limits for every scenario."""
 function write_scopf_voltage_plot(path::AbstractString, study::Study, result::SCOPFResult;
+    partial::Bool=false,
     title::AbstractString = "M2 bus voltages by scenario")
-    ids, cases, states = _scopf_plot_data(study, result)
+    ids, cases, states = _scopf_plot_data(study, result; partial)
     buses = study.case.network.buses
-    values = vcat([state.vm for state in states]...)
+    values = reduce(vcat, [state.vm for state in states if !isnothing(state)]; init=Float64[])
     limits = vcat([bus.v_min for bus in buses], [bus.v_max for bus in buses])
     y_min, y_max = extrema(vcat(values, limits))
     pad = max(0.005, 0.08 * (y_max-y_min))
@@ -163,13 +186,19 @@ function write_scopf_voltage_plot(path::AbstractString, study::Study, result::SC
         println(io, "<text x=\"18\" y=\"$(top+plot_height/2)\" transform=\"rotate(-90 18 $(top+plot_height/2))\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"14\">Voltage magnitude (pu)</text>")
         for (index,id) in enumerate(ids)
             x=xscale(index)
+            isnothing(states[index]) && _scopf_missing_label(io, x, top+plot_height/2)
             println(io, "<text x=\"$(_svg_number(x))\" y=\"$(top+plot_height+25)\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\">$(_svg_escape(string(id)))</text>")
         end
         for (bus_index,bus) in enumerate(buses)
             color=_SCOPF_COLORS[mod1(bus_index,length(_SCOPF_COLORS))]
-            points=join(("$(_svg_number(xpos(i,bus_index))),$(_svg_number(yscale(states[i].vm[bus_index])))" for i in eachindex(ids))," ")
-            println(io, "<polyline points=\"$points\" fill=\"none\" stroke=\"$color\" stroke-width=\"2.5\"/>")
+            # Never connect trajectories across a missing scenario.
+            for i in 2:length(ids)
+                any(isnothing, states[i-1:i]) && continue
+                points=join(("$(_svg_number(xpos(k,bus_index))),$(_svg_number(yscale(states[k].vm[bus_index])))" for k in i-1:i)," ")
+                println(io, "<polyline points=\"$points\" fill=\"none\" stroke=\"$color\" stroke-width=\"2.5\"/>")
+            end
             for i in eachindex(ids)
+                isnothing(states[i]) && continue
                 x=xpos(i,bus_index); v=states[i].vm[bus_index]
                 println(io, "<line x1=\"$(_svg_number(x))\" y1=\"$(_svg_number(yscale(cases[i].network.buses[bus_index].v_min)))\" x2=\"$(_svg_number(x))\" y2=\"$(_svg_number(yscale(cases[i].network.buses[bus_index].v_max)))\" stroke=\"$color\" opacity=\"0.22\" stroke-width=\"5\"/>")
                 println(io, "<circle cx=\"$(_svg_number(x))\" cy=\"$(_svg_number(yscale(v)))\" r=\"6\" fill=\"$color\" stroke=\"#111827\"/>")
@@ -185,12 +214,14 @@ end
 
 """Write branch loading percentages, marking unavailable branches as outages."""
 function write_scopf_branch_loading_plot(path::AbstractString, study::Study, result::SCOPFResult;
+    partial::Bool=false,
     title::AbstractString = "M2 branch loading by scenario")
-    ids,cases,states=_scopf_plot_data(study,result)
+    ids,cases,states=_scopf_plot_data(study,result; partial)
     nbranch=length(study.case.network.branches)
     loading=zeros(Float64,length(ids),nbranch)
     available=trues(length(ids),nbranch)
     for i in eachindex(ids)
+        isnothing(states[i]) && continue
         flows=branch_flows(cases[i].network,states[i])
         for j in 1:nbranch
             branch=cases[i].network.branches[j]
@@ -221,6 +252,10 @@ function write_scopf_branch_loading_plot(path::AbstractString, study::Study, res
         for i in eachindex(ids)
             center=left+(i-0.5)group_width
             println(io,"<text x=\"$(_svg_number(center))\" y=\"$(top+plot_height+27)\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\">$(_svg_escape(string(ids[i])))</text>")
+            if isnothing(states[i])
+                _scopf_missing_label(io, center, top+plot_height/2)
+                continue
+            end
             for j in 1:nbranch
                 x=center-0.36group_width+(j-1)bar_width
                 color=_SCOPF_COLORS[mod1(j,length(_SCOPF_COLORS))]
@@ -246,10 +281,11 @@ end
 
 """Write active and reactive generator dispatch for every scenario."""
 function write_scopf_dispatch_plot(path::AbstractString, study::Study, result::SCOPFResult;
+    partial::Bool=false,
     title::AbstractString = "M2 generator dispatch response")
-    ids,cases,states=_scopf_plot_data(study,result)
+    ids,cases,states=_scopf_plot_data(study,result; partial)
     ngen=length(study.case.generators)
-    all_values=vcat([vcat(state.pg,state.qg) for state in states]..., [0.0])
+    all_values=vcat([vcat(state.pg,state.qg) for state in states if !isnothing(state)]..., [0.0])
     y_min,y_max=extrema(all_values); pad=max(0.05,0.12(y_max-y_min)); y_min-=pad; y_max+=pad
     width,height=1240,670
     left,top,plot_width,plot_height=90,58,940,480
@@ -268,6 +304,10 @@ function write_scopf_dispatch_plot(path::AbstractString, study::Study, result::S
         for i in eachindex(ids)
             center=left+(i-0.5)group_width
             println(io,"<text x=\"$(_svg_number(center))\" y=\"$(top+plot_height+43)\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\">$(_svg_escape(string(ids[i])))</text>")
+            if isnothing(states[i])
+                _scopf_missing_label(io, center, top+plot_height/2)
+                continue
+            end
             for j in 1:ngen
                 x=center-0.39group_width+(j-1)unit_width
                 gen=cases[i].generators[j]
@@ -292,17 +332,18 @@ end
 
 """Write residual-to-tolerance ratios for AC balance, exact droop, and coupling."""
 function write_scopf_residual_plot(path::AbstractString, study::Study, result::SCOPFResult;
+    partial::Bool=false,
     title::AbstractString = "M2 independent validation residuals")
     report=equilibrium_report(study,result)
     ids=report.scenario_ids
-    all(id -> haskey(report.scenarios,id),ids) || throw(ArgumentError("every scenario needs a validation report"))
+    partial || all(id -> haskey(report.scenarios,id),ids) || throw(ArgumentError("every scenario needs a validation report"))
     metrics=[
-        ("AC balance", [report.scenarios[id].power_balance_max/report.tolerances.power_tolerance for id in ids], "#2563eb"),
-        ("Exact droop", [report.scenarios[id].droop_residual_max/report.tolerances.droop_tolerance for id in ids], "#d97706"),
-        ("Response", [get(report.coupling_violation,id,0.0)/report.tolerances.coupling_tolerance for id in ids], "#059669"),
+        ("AC balance", [haskey(report.scenarios,id) ? report.scenarios[id].power_balance_max/report.tolerances.power_tolerance : NaN for id in ids], "#2563eb"),
+        ("Exact droop", [haskey(report.scenarios,id) ? report.scenarios[id].droop_residual_max/report.tolerances.droop_tolerance : NaN for id in ids], "#d97706"),
+        ("Response", [get(report.coupling_violation,id,NaN)/report.tolerances.coupling_tolerance for id in ids], "#059669"),
     ]
     ratios=vcat([metric[2] for metric in metrics]...)
-    lower=-6.0; upper=max(1.0,ceil(maximum(log10(max(value,1e-6)) for value in ratios)))
+    lower=-6.0; upper=max(1.0,ceil(maximum((log10(max(value,1e-6)) for value in ratios if isfinite(value)); init=1.0)))
     width,height=1120,650
     left,top,plot_width,plot_height=95,58,820,470
     groups=length(ids); group_width=plot_width/groups; bar_width=0.72group_width/length(metrics)
@@ -321,7 +362,16 @@ function write_scopf_residual_plot(path::AbstractString, study::Study, result::S
         for i in eachindex(ids)
             center=left+(i-0.5)group_width
             println(io,"<text x=\"$(_svg_number(center))\" y=\"$(top+plot_height+27)\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\">$(_svg_escape(string(ids[i])))</text>")
+            if !haskey(report.scenarios,ids[i])
+                _scopf_missing_label(io, center, top+plot_height/2)
+                continue
+            end
             for (j,(_,values,color)) in enumerate(metrics)
+                if !isfinite(values[i])
+                    _scopf_missing_label(io, center-0.36group_width+(j-0.5)bar_width,
+                        top+plot_height-18j; label=ids[i] == :base && j == 3 ? "N/A" : "NOT EVALUATED")
+                    continue
+                end
                 logratio=clamp(log10(max(values[i],1e-6)),lower,upper)
                 x=center-0.36group_width+(j-1)bar_width; y=yscale(logratio)
                 bar_height=max(2.0,yscale(lower)-y)
@@ -352,14 +402,32 @@ function write_scopf_validation_plots(directory::AbstractString, study::Study, r
         response_deltas = joinpath(directory,"scopf_response_deltas.svg"),
         validation_matrix = joinpath(directory,"scopf_validation_matrix.svg"),
     )
-    write_scopf_droop_plot(paths.droop,study,result)
-    write_scopf_voltage_plot(paths.voltage,study,result)
-    write_scopf_branch_loading_plot(paths.branch_loading,study,result)
-    write_scopf_dispatch_plot(paths.dispatch,study,result)
-    write_scopf_residual_plot(paths.residuals,study,result)
+    for (writer, path) in ((write_scopf_droop_plot, paths.droop),
+        (write_scopf_voltage_plot, paths.voltage),
+        (write_scopf_branch_loading_plot, paths.branch_loading),
+        (write_scopf_dispatch_plot, paths.dispatch),
+        (write_scopf_residual_plot, paths.residuals),
+        (write_scopf_response_delta_plot, paths.response_deltas))
+        if writer == write_scopf_droop_plot &&
+            (isempty(study.case.controls) || !isnothing(study.reactive_assignments))
+            _scopf_svg_table(path, "Legacy droop plot not applicable",
+                "This study uses free Q or explicit reactive assignments; use the independent validation matrix.",
+                ["Status", "Reason"], [Any[("N/A", "#e5e7eb"), "No legacy droop operating curves to plot"]];
+                cell_widths=[180,1000])
+            continue
+        end
+        try
+            writer(path, study, result; partial=true)
+        catch error
+            error isa ArgumentError || rethrow()
+            _scopf_svg_table(path, "SCOPF plot unavailable", sprint(showerror, error),
+                ["Status", "Reason"],
+                [Any[("NOT EVALUATED", "#e5e7eb"), sprint(showerror, error)]];
+                cell_widths=[180, 1000])
+        end
+    end
     write_scopf_input_plot(paths.inputs,study)
     write_scopf_margin_plot(paths.margins,study,result)
-    write_scopf_response_delta_plot(paths.response_deltas,study,result)
     write_scopf_validation_matrix_plot(paths.validation_matrix,study,result)
     return paths
 end

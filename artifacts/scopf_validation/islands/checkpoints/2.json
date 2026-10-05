@@ -1,0 +1,207 @@
+{
+  "assessment": {
+    "decision": {
+      "action": "island_aware",
+      "contingency_id": "branch_20",
+      "device_id": 20,
+      "device_kind": "line",
+      "predicted_loading": null,
+      "reason": "islanding_unsupported"
+    },
+    "entry": {
+      "contingency": {
+        "branch_ids": [
+          20
+        ],
+        "generator_ids": [],
+        "id": "branch_20"
+      },
+      "device_id": 20,
+      "device_kind": "line",
+      "disposition": "excluded",
+      "reason": "islanding_unsupported"
+    },
+    "error_message": null,
+    "exact_assessment": null,
+    "island_assessment": {
+      "case": {
+        "attachments": [],
+        "base_frequency": 50.0,
+        "base_power": 100.0,
+        "controls": [],
+        "generators": [
+          {
+            "available": true,
+            "bus_id": 3,
+            "id": 2,
+            "initial_p": 0.05000177393985594,
+            "initial_q": 0.00895125535063353,
+            "p_max": 1.5,
+            "p_min": 0.0,
+            "q_max": 1.0,
+            "q_min": -1.0
+          },
+          {
+            "available": true,
+            "bus_id": 5,
+            "id": 3,
+            "initial_p": 0.05011834299823872,
+            "initial_q": 0.02257324331329114,
+            "p_max": 1.0,
+            "p_min": 0.0,
+            "q_max": 1.0,
+            "q_min": -1.0
+          }
+        ],
+        "id": "loaded-islands/branch_20/retained",
+        "loads": [
+          {
+            "bus_id": 5,
+            "id": 2,
+            "p": 0.12,
+            "q": 0.03
+          }
+        ],
+        "network": {
+          "banks": [],
+          "branches": [
+            {
+              "available": true,
+              "charging": 0.0,
+              "from_bus": 3,
+              "id": 30,
+              "kind": "line",
+              "phase_shift": 0.0,
+              "reactance": 0.1,
+              "resistance": 0.01,
+              "tap_ratio": 1.0,
+              "thermal_limit": 2.0,
+              "to_bus": 4
+            },
+            {
+              "available": true,
+              "charging": 0.0,
+              "from_bus": 4,
+              "id": 40,
+              "kind": "line",
+              "phase_shift": 0.0,
+              "reactance": 0.1,
+              "resistance": 0.01,
+              "tap_ratio": 1.0,
+              "thermal_limit": 2.0,
+              "to_bus": 5
+            }
+          ],
+          "buses": [
+            {
+              "id": 3,
+              "reference": true,
+              "v_max": 1.1,
+              "v_min": 0.9
+            },
+            {
+              "id": 4,
+              "reference": false,
+              "v_max": 1.1,
+              "v_min": 0.9
+            },
+            {
+              "id": 5,
+              "reference": false,
+              "v_max": 1.1,
+              "v_min": 0.9
+            }
+          ],
+          "shunts": []
+        }
+      },
+      "report": {
+        "case_id": "loaded-islands/branch_20/retained",
+        "objective": 0.00019881054742508907,
+        "primal_status": "FEASIBLE_POINT",
+        "termination_status": "LOCALLY_SOLVED",
+        "valid": true,
+        "validation": {
+          "branch_thermal_min_margin": 1.9395944099941662,
+          "control_active_power_violation_max": 0.0,
+          "droop_residual_max": 0.0,
+          "generator_p_max_margin": 0.9399016153831451,
+          "generator_p_min_margin": 0.059961999351507284,
+          "generator_q_max_margin": 0.9767033086655722,
+          "generator_q_min_margin": 1.0073071483491955,
+          "power_balance_max": 4.1421783156248004e-9,
+          "smooth_epsilon": 0.0001,
+          "smooth_exact_droop_gap": 0.0,
+          "smooth_reactive_epsilon": null,
+          "smooth_reactive_relative_epsilon": 0.0001,
+          "unavailable_generator_max": 0.0,
+          "valid": true,
+          "violations": [],
+          "voltage_max_margin": 0.0006618111642389124,
+          "voltage_min_margin": 0.1969708699028926
+        }
+      },
+      "result": {
+        "objective": 0.00019881054742508907,
+        "primal_status": "FEASIBLE_POINT",
+        "smooth_epsilon": 0.0001,
+        "smooth_reactive_epsilon": null,
+        "smooth_reactive_relative_epsilon": 0.0001,
+        "state": {
+          "pg": [
+            0.059961999351507284,
+            0.06009838461685495
+          ],
+          "qg": [
+            0.007307148349195588,
+            0.023296691334427765
+          ],
+          "va": [
+            0.0,
+            -0.004906404262299644,
+            -0.00982339688105294
+          ],
+          "vm": [
+            1.0993381888357612,
+            1.0981412830423614,
+            1.0969708699028926
+          ]
+        },
+        "termination_status": "LOCALLY_SOLVED"
+      },
+      "selection": {
+        "contingency_id": "branch_20",
+        "discarded_bus_ids": [
+          1,
+          2
+        ],
+        "discarded_generation_p_max": 0.5,
+        "discarded_load_p": 0.03,
+        "original_reference_bus_id": 1,
+        "reference_reassigned": true,
+        "retained_bus_ids": [
+          3,
+          4,
+          5
+        ],
+        "retained_generation_p_max": 2.5,
+        "retained_load_p": 0.12,
+        "selected_reference_bus_id": 3
+      }
+    },
+    "outcome": "island_evaluated",
+    "rank": {
+      "classification": "island_load_loss",
+      "contingency_id": "branch_20",
+      "device_id": 20,
+      "device_kind": "line",
+      "discarded_load_p": 0.03,
+      "evaluation_source": "island_aware_ac",
+      "minimum_operating_margin": 0.0006618111642389124,
+      "priority_tier": 4,
+      "severity": -0.0006618111642389124
+    }
+  },
+  "checksum": "1132f6275859cfdd6c020f8a0854b314e017bb98bacffaae5c9adb77150f2fa8",
+  "fingerprint": "26a11567c916c0b8f68a95de7be4101a40251e4d466715c25c501c1f9b22395d"
+}

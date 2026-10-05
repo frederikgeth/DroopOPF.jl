@@ -37,6 +37,10 @@ function m10_campaign_report(output::AbstractString; top::Integer=15)
     top > 0 || throw(ArgumentError("top must be positive"))
     output = abspath(output)
     campaign = JSON.parsefile(joinpath(output, "campaign.json"))
+    if haskey(campaign, "fingerprint") && haskey(campaign, "data")
+        println("Integrated pipeline report: $(joinpath(output, "campaign.md"))")
+        return campaign # legacy timing tables do not apply to the new schema
+    end
     catalog = JSON.parsefile(joinpath(output, "catalog.json"))["data"]
     rows = Dict{String,Any}[]
     violations = Dict{String,Int}()
