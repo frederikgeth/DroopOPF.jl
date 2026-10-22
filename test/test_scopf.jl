@@ -279,10 +279,17 @@ end
         contingencies=[Contingency(:line_11; branch_ids=[11])],
         participation=Dict(7=>1.0, 9=>1.0))
     outaged_seed = solve_scopf(outaged_seed_study; smooth_epsilon=1e-5)
-    outaged_result = solve_scopf(outaged; smooth_epsilon=1e-5,
-        initial_states=outaged_seed.states)
+    outaged_result = outaged_seed
+    for epsilon in (1e-4, 1e-5, 1e-6)
+        outaged_result = solve_scopf(outaged; smooth_epsilon=epsilon,
+            initial_states=outaged_result.states,
+            optimizer_attributes=Dict("tol"=>1e-9, "acceptable_tol"=>1e-8,
+                "bound_relax_factor"=>0.0, "max_iter"=>3000))
+    end
     @test !haskey(outaged_result.tap_settings[:line_11], 11)
-    @test equilibrium_report(outaged, outaged_result).valid
+    outaged_report = equilibrium_report(outaged, outaged_result)
+    outaged_report.valid || @info "Outaged equipment replay" status=outaged_result.termination_status report=markdown_report(outaged_report)
+    @test outaged_report.valid
 
     @test_throws ArgumentError SCOPFControlPolicy(taps=:automatic)
     @test_throws ArgumentError SCOPFControlPolicy(shunts=:automatic)
