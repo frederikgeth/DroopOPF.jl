@@ -1,7 +1,7 @@
 # Experimental numerical initializer for the exact S2 compatibility benchmark.
 # Import never solves. A converged Newton point is a start, never acceptance.
 using SparseArrays, LinearAlgebra
-function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60)
+function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60,pv_preparation=false)
     D=P2S2.DroopOPF
     normal=D._feasibility_scaled_case(study.case,factor)
     c=D.scenario_case(normal,event)
@@ -19,8 +19,23 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60)
     attachments=Dict(a.generator_id=>a for a in c.attachments)
     freeq=Dict{Int,Vector{Int}}()
     for i in active
-        haskey(attachments,c.generators[i].id) && continue
+        !pv_preparation && haskey(attachments,c.generators[i].id) && continue
         push!(get!(freeq,idx[c.generators[i].bus_id],Int[]),i)
+    end
+    pvtargets=Dict{Int,Float64}()
+    for (j,gens) in freeq
+        targets=Float64[]
+        for i in gens
+            g=c.generators[i]
+            if haskey(attachments,g.id)
+                ctrl=c.controls[attachments[g.id].control_id];q=preventive.state.qg[i]
+                edge=q>=ctrl.q_at_deadband ? ctrl.schedule.v_db_low : ctrl.schedule.v_db_high
+                push!(targets,edge-ctrl.slope*(q-ctrl.q_at_deadband))
+            else
+                push!(targets,1.)
+            end
+        end
+        pvtargets[j]=sum(targets)/length(targets)
     end
     lost=sum(preventive.state.pg[i] for (i,g) in enumerate(c.generators) if !g.available)
     z=vcat(flat ? zeros(n-1) : preventive.state.va[angles],flat ? ones(n) : preventive.state.vm,lost)
@@ -30,7 +45,7 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60)
         for i in active
             g=c.generators[i];j=idx[g.bus_id]
             pg[i]=preventive.state.pg[i]+weights[i]*z[end]
-            if haskey(attachments,g.id)
+            if !pv_preparation && haskey(attachments,g.id)
                 ctrl=c.controls[attachments[g.id].control_id]
                 law(v)=clamp(D.evaluate(D.droop_curve(ctrl),v),max(g.q_min,ctrl.capability.q_min),min(g.q_max,ctrl.capability.q_max))
                 qg[i]=law(vm[j]);dq[j]+=(law(vm[j]+1e-7)-law(vm[j]-1e-7))/2e-7
@@ -45,7 +60,7 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60)
         for (j,gens) in freeq
             correction=-r[n+j]/length(gens)
             for i in gens;qg[i]+=correction;end
-            r[n+j]=vm[j]-preventive.state.vm[j]
+            r[n+j]=vm[j]-(pv_preparation ? pvtargets[j] : preventive.state.vm[j])
         end
         if !jacobian;return (;r,state=D.ACState(vm,va,pg,qg));end
         diagV=spdiagm(0=>V);diagI=spdiagm(0=>I);diagU=spdiagm(0=>cis.(va))
@@ -92,23 +107,23 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60)
     e=evaluate(z);physical_balance=maximum(abs,D.power_balance(c,e.state).vector)
     (;entry=(;preventive...,state=e.state,delta=z[end]),diagnostic=(;reason,converged=maximum(abs,e.r)<=1e-8,
         history,stages,lambda,continuation="Artificial balance-offset homotopy used only for initialization; zero at final target",residual=maximum(abs,e.r),independent_balance=physical_balance,seconds=time()-started,
-        flat_voltage=flat,post_outage_oracle_used=false,held_equipment="preventive settings",reactive_non_droop="PV at preventive voltage only during numerical initialization; full Q limits restored in native NLP",
+        flat_voltage=flat,pv_preparation,post_outage_oracle_used=false,held_equipment="preventive settings",reactive_preparation=pv_preparation ? "PV targets inferred from preventive Q and inverse droop; no preventive voltage/angle values copied; full Q/droop model restored in native solve" : "Mixed fixed-Q/droop Newton preparation",
         acceptance="Initializer only: native optimization and full independent audit still required"))
 end
-function p2_sparse_cold_trial(x,seed,events,folder;rep=1)
+function p2_sparse_cold_trial(x,seed,events,folder;rep=1,pv_preparation=false,seconds=60.)
     # Deliberately discard every stored post-outage state before preparation.
     preventive=seed.states[(1.,:base)]
     states=Dict{Tuple{Float64,Symbol},Any}((1.,:base)=>preventive);diagnostics=Any[];started=time()
     for e in events
-        p=p2_sparse_start(seed.study,preventive,e;flat=true)
+        p=p2_sparse_start(seed.study,preventive,e;flat=true,pv_preparation)
         states[(1.,e.id)]=p.entry;push!(diagnostics,(;event=e.id,p.diagnostic...))
     end
     fresh=(;study=seed.study,states)
     P2S2.fd_save(joinpath(folder,"preparation.json"),(;rep,diagnostics,seconds=time()-started,post_outage_oracle_used=false))
-    a=P2S2.pq_attempt(x,joinpath(folder,"primary"),(1.,),events;seed=fresh,fixed_controller=true,fixed_base=true,zero_shedding=false,seconds=60.)
+    a=P2S2.pq_attempt(x,joinpath(folder,"primary"),(1.,),events;seed=fresh,fixed_controller=true,fixed_base=true,zero_shedding=false,seconds)
     paths=[a.summary.folder]
     if !a.summary.accepted
-        a=P2S2.pq_attempt(x,joinpath(folder,"retry"),(1.,),events;seed=fresh,fixed_controller=true,fixed_base=true,zero_shedding=false,seconds=120.,retry=true)
+        a=P2S2.pq_attempt(x,joinpath(folder,"retry"),(1.,),events;seed=fresh,fixed_controller=true,fixed_base=true,zero_shedding=false,seconds=2*seconds,retry=true)
         push!(paths,a.summary.folder)
     end
     row=(;rep,accepted=a.summary.accepted,events=[e.id for e in events],wall_seconds=time()-started,paths,post_outage_oracle_used=false)
