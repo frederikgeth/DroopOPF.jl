@@ -20,12 +20,17 @@ most 10% of available Q range. `ac_risk_guard=true` also checks apparent-flow
 redistribution and an impedance-based incremental voltage-drop indicator.
 These are escalation heuristics, not AC power-flow solutions or bounds.
 Set `reactive_guard=0, ac_risk_guard=false` to replay the legacy policy.
+Opt-in `droop_response_guard=true` adds individual Q-reserve and bounded
+AC/droop-response risk checks for fixed-equipment legacy droops. Unsupported
+or uncertain predictions escalate to exact AC; the default remains unchanged.
+`participation` must match the subsequent fixed-base exact evaluation.
 """
 function filter_contingencies(case::Case, base_state::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
     loading_threshold::Real=0.8, voltage_guard::Real=0.02,
     lodf_tolerance::Real=1e-8, reactive_guard::Real=0.1,
-    ac_risk_guard::Bool=true)
+    ac_risk_guard::Bool=true, droop_response_guard::Bool=false,
+    participation::AbstractDict=default_participation(case))
     0 <= reactive_guard <= 0.5 || throw(ArgumentError("reactive_guard must lie in [0, 0.5]"))
     0 < loading_threshold <= 1 || throw(ArgumentError("loading_threshold must lie in (0, 1]"))
     voltage_guard >= 0 && isfinite(voltage_guard) ||
@@ -138,8 +143,16 @@ function filter_contingencies(case::Case, base_state::ACState;
             push!(decisions, ContingencyFilterDecision(entry.contingency.id,
                 entry.device_kind, entry.device_id, :exact, :voltage_redistribution_guard, prediction.active))
         else
-            push!(decisions, ContingencyFilterDecision(entry.contingency.id,
-                entry.device_kind, entry.device_id, :screened, :below_loading_threshold, prediction.active))
+            response = droop_response_guard && !isempty(case.controls) ?
+                _droop_screening_diagnostics(case,base_state,entry.contingency;
+                    participation,voltage_guard,loading_threshold,reactive_guard) : nothing
+            if !isnothing(response) && !response.safe
+                push!(decisions,ContingencyFilterDecision(entry.contingency.id,
+                    entry.device_kind,entry.device_id,:exact,response.reason,prediction.active))
+            else
+                push!(decisions, ContingencyFilterDecision(entry.contingency.id,
+                    entry.device_kind, entry.device_id, :screened, :below_loading_threshold, prediction.active))
+            end
         end
     end
     return decisions

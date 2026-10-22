@@ -58,7 +58,7 @@ using JSON
         study = Study(c; contingencies=[outage], participation=Dict(1=>1.))
         write_study(path,study)
         doc = JSON.parsefile(path)
-        @test doc["schema_version"] == 9
+        @test doc["schema_version"] == 10
         restored = read_study(path)
         @test restored.case.network.branches == c.network.branches
         @test scenario_case(restored.case,restored.contingencies[1]).network.branches == overlay.network.branches

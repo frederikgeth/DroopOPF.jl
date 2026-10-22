@@ -16,6 +16,7 @@ include("scopf_validation.jl")
 include("contingency_assessment.jl")
 include("islanding.jl")
 include("contingency_filtering.jl")
+include("droop_screening.jl")
 include("contingency_pipeline.jl")
 include("scopf_stages.jl")
 include("multistart.jl")
@@ -33,6 +34,19 @@ include("droop_design_plotting.jl")
 include("tap_optimization.jl")
 include("shunt_optimization.jl")
 include("joint_design.jl")
+include("feasibility.jl")
+include("global_feasibility.jl")
+include("feasibility_lp.jl")
+include("droop_security.jl")
+export FeasibilityProblem, FeasibilityWitness, FeasibilityResult, DroopQualification
+export feasibility_fingerprint, validate_feasibility_witness, check_feasibility
+export verify_feasibility_result, write_feasibility_result, read_feasibility_result
+export qualify_droop_replacement, require_qualified_replacement, write_droop_qualification
+export build_global_feasibility_model, seed_global_feasibility!, solve_global_feasibility
+export certify_feasibility_lp
+export verified_feasibility_voltage_bounds
+export SCOPFDroopDesignResult, DroopSecurityIteration, DroopSecurityResult
+export optimize_droop_security, write_droop_security
 export DroopControl, JointDesignResult, optimize_joint_design, with_joint_settings
 export validate_joint_design, exact_droop_audit, joint_design_metrics, write_joint_design, read_joint_design
 export ShuntControl, ShuntOPFResult, optimize_shunts, with_shunt_settings
@@ -44,6 +58,7 @@ export write_study, read_study, write_scopf_result, read_scopf_result, write_sco
 export write_scopf_stage_assessment
 export write_scopf_multistart, write_scopf_diagnostics
 export write_contingency_catalog, write_contingency_ranking, write_contingency_pipeline
+export default_participation
 export Contingency, Study, SCOPFControlPolicy, scenario_case, SCOPFResult, solve_scopf
 export ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank
 export ContingencyAssessment, ContingencyScreeningScore

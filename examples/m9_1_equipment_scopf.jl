@@ -51,7 +51,7 @@ preventive_study = Study(case;
     reactive_assignments=reactive_control_assignments(case),
     tap_controls,
     shunt_controls,
-    control_policy=SCOPFControlPolicy(),
+    control_policy=SCOPFControlPolicy(taps=:preventive, shunts=:preventive),
 )
 preventive = solve_scopf(preventive_study;
     smooth_epsilon=1e-5, initial_states=seed.states)

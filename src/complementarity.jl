@@ -16,8 +16,8 @@ end
 
 function _complementarity_residual(variables)
     maximum(abs, vcat(
-        value.(variables.voltage_lower) .* value.(variables.voltage_lower_complement),
-        value.(variables.voltage_upper) .* value.(variables.voltage_upper_complement),
+        [value(x) * value(variables.voltage_lower_complement[k]) for (k,x) in variables.voltage_lower],
+        [value(x) * value(variables.voltage_upper_complement[k]) for (k,x) in variables.voltage_upper],
         value.(variables.q_lower_slack) .* value.(variables.q_lower_multiplier),
         value.(variables.q_upper_slack) .* value.(variables.q_upper_multiplier),
         [value(s) * value(m) for (s, m) in variables.avr_pairs]); init=0.0)
@@ -28,6 +28,8 @@ end
 The iteration count is the cumulative inner MadNLP count exposed by CCOpt. The
 package does not currently expose a separate outer-homotopy iteration count.
 These are final relaxed-NLP metrics, not an original-MPCC stationarity proof.
+When CCOpt delegates a model without complementarity constraints to MadNLP,
+the pair count is zero and relaxation and CCOpt-only timing fields are `nothing`.
 """
 function ccopt_diagnostics(model::Model)
     backend = unsafe_backend(model)
@@ -35,25 +37,27 @@ function ccopt_diagnostics(model::Model)
         throw(ArgumentError("model is not backed by CCOpt"))
     isnothing(backend.stats) && throw(ArgumentError("CCOpt model has not been solved"))
     stats,solver=backend.stats,backend.solver
-    sigma=solver.rnlp.σ
+    relaxed=solver isa CCOpt.RelaxationSolver
+    sigma=relaxed ? solver.rnlp.σ : Float64[]
     Dict{String,Any}(
         "backend"=>"CCOpt",
+        "algorithm"=>relaxed ? "complementarity relaxation" : "MadNLP ordinary NLP fallback",
         "status"=>string(stats.status),
         "inner_iterations"=>stats.iter,
         "outer_iterations"=>nothing,
         "outer_iterations_available"=>false,
         "primal_feasibility"=>stats.primal_feas,
         "dual_feasibility"=>stats.dual_feas,
-        "complementarity_feasibility"=>stats.inf_pr_cc,
+        "complementarity_feasibility"=>relaxed ? stats.inf_pr_cc : 0.0,
         "relaxation_min"=>isempty(sigma) ? nothing : minimum(sigma),
         "relaxation_max"=>isempty(sigma) ? nothing : maximum(sigma),
         "complementarity_pairs"=>length(sigma),
-        "solve_time_seconds"=>stats.counters.solve_time,
+        "solve_time_seconds"=>relaxed ? stats.counters.solve_time : nothing,
         "solver_time_seconds"=>stats.counters.solver_time,
         "total_time_seconds"=>stats.counters.total_time,
         "variables"=>num_variables(model),
         "constraints"=>num_constraints(model;count_variable_in_set_constraints=true),
-        "stationarity_scope"=>"final relaxed NLP; not an original-MPCC stationarity certificate",
+        "stationarity_scope"=>relaxed ? "final relaxed NLP; not an original-MPCC stationarity certificate" : "ordinary NLP; no complementarity constraints",
     )
 end
 
@@ -80,12 +84,14 @@ function ccopt_encoding_audit(model::Model)
         lower_direct=max(vref-low-v,0.);upper_direct=max(v-vref-high,0.)
         raw_direct=entry.q_at_deadband+(lower_direct-upper_direct)/slope
         physical=clamp(raw_direct,entry.q_min,entry.q_max)
-        lower_aux=value(variables.voltage_lower[k]);upper_aux=value(variables.voltage_upper[k])
+        lower_aux=haskey(variables.voltage_lower,k) ? value(variables.voltage_lower[k]) : lower_direct
+        upper_aux=haskey(variables.voltage_upper,k) ? value(variables.voltage_upper[k]) : upper_direct
         raw_aux=value(variables.raw_q[k])
         projection_aux=clamp(raw_aux,entry.q_min,entry.q_max)
         push!(rows,Dict{String,Any}(
             "generator_id"=>entry.generator_id,"control_id"=>entry.control_id,
             "regulated_bus_id"=>entry.bus_id,"voltage_pu"=>v,
+            "voltage_hinges_eliminated"=>!haskey(variables.voltage_lower,k),
             "lower_hinge_error_pu"=>abs(lower_aux-lower_direct),
             "upper_hinge_error_pu"=>abs(upper_aux-upper_direct),
             "raw_droop_error_pu"=>abs(raw_aux-raw_direct),
@@ -190,9 +196,9 @@ end
 
 Each voltage hinge is represented as ``z >= 0 ⟂ z - a >= 0``. Reactive
 clipping is the KKT system of projection of the raw droop value onto the
-reactive capability interval. The four complementarity pairs per attachment
-therefore encode deadband, proportional, and saturated operation without a
-smooth approximation.
+reactive capability interval. Positive-width deadbands use four pairs per
+attachment. Constant zero-width deadbands use the affine raw response directly
+and only the two reactive projection pairs, avoiding redundant voltage hinges.
 """
 function _build_complementarity_opf_model(
     case::Case;
@@ -332,10 +338,10 @@ function _build_complementarity_opf_model(
 
     ncontrol = length(active_attachments)
     audit_metadata=Any[]
-    voltage_lower = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower")
-    voltage_lower_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower_complement")
-    voltage_upper = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper")
-    voltage_upper_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper_complement")
+    voltage_lower = Dict{Int,VariableRef}()
+    voltage_lower_complement = Dict{Int,VariableRef}()
+    voltage_upper = Dict{Int,VariableRef}()
+    voltage_upper_complement = Dict{Int,VariableRef}()
     raw_q = @variable(model, [1:ncontrol], base_name = scenario_prefix * "raw_q")
     q_lower_slack = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_slack")
     q_lower_multiplier = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_multiplier")
@@ -383,46 +389,56 @@ function _build_complementarity_opf_model(
         q_start = clamp(raw_q_start, q_min, q_max)
         set_start_value(vm[location_index], voltage_start)
         set_start_value(qg[generator_index], q_start)
-        set_start_value(voltage_lower[k], voltage_lower_start)
-        set_start_value(voltage_lower_complement[k],
-            max(voltage_start - initial.v_ref + initial.deadband_low, 0.0))
-        set_start_value(voltage_upper[k], voltage_upper_start)
-        set_start_value(voltage_upper_complement[k],
-            max(initial.v_ref + initial.deadband_high - voltage_start, 0.0))
         set_start_value(raw_q[k], raw_q_start)
         set_start_value(q_lower_slack[k], q_start - q_min)
         set_start_value(q_upper_slack[k], q_max - q_start)
         set_start_value(q_lower_multiplier[k], max(q_start - raw_q_start, 0.0))
         set_start_value(q_upper_multiplier[k], max(raw_q_start - q_start, 0.0))
 
-        # max(v_db_low - V, 0)
-        @constraint(
-            model,
-            voltage_lower_complement[k] - voltage_lower[k] +
-            v_db_low - vm[location_index] == 0,
-        )
-        @constraint(
-            model,
-            [voltage_lower[k], voltage_lower_complement[k]] in
-            _COMPLEMENTARITY_MOI.Complements(2),
-        )
-        # max(V - v_db_high, 0)
-        @constraint(
-            model,
-            voltage_upper_complement[k] - voltage_upper[k] +
-            vm[location_index] - v_db_high == 0,
-        )
-        @constraint(
-            model,
-            [voltage_upper[k], voltage_upper_complement[k]] in
-            _COMPLEMENTARITY_MOI.Complements(2),
-        )
+        if _fixed_zero_deadband(deadband_low, deadband_high)
+            # max(x,0)-max(-x,0)=x: retain only the Q projection pairs.
+            @NLconstraint(model, raw_q[k] == control.q_at_deadband +
+                (v_ref - vm[location_index]) / slope)
+        else
+            voltage_lower[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_lower_$k")
+            voltage_lower_complement[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_lower_complement_$k")
+            voltage_upper[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_upper_$k")
+            voltage_upper_complement[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_upper_complement_$k")
+            set_start_value(voltage_lower[k], voltage_lower_start)
+            set_start_value(voltage_lower_complement[k],
+                max(voltage_start - initial.v_ref + initial.deadband_low, 0.0))
+            set_start_value(voltage_upper[k], voltage_upper_start)
+            set_start_value(voltage_upper_complement[k],
+                max(initial.v_ref + initial.deadband_high - voltage_start, 0.0))
+            # max(v_db_low - V, 0)
+            @constraint(
+                model,
+                voltage_lower_complement[k] - voltage_lower[k] +
+                v_db_low - vm[location_index] == 0,
+            )
+            @constraint(
+                model,
+                [voltage_lower[k], voltage_lower_complement[k]] in
+                _COMPLEMENTARITY_MOI.Complements(2),
+            )
+            # max(V - v_db_high, 0)
+            @constraint(
+                model,
+                voltage_upper_complement[k] - voltage_upper[k] +
+                vm[location_index] - v_db_high == 0,
+            )
+            @constraint(
+                model,
+                [voltage_upper[k], voltage_upper_complement[k]] in
+                _COMPLEMENTARITY_MOI.Complements(2),
+            )
 
-        @NLconstraint(
-            model,
-            raw_q[k] == control.q_at_deadband +
-                        (voltage_lower[k] - voltage_upper[k]) / slope,
-        )
+            @NLconstraint(
+                model,
+                raw_q[k] == control.q_at_deadband +
+                            (voltage_lower[k] - voltage_upper[k]) / slope,
+            )
+        end
         # Projection of raw_q onto [q_min, q_max].
         @constraint(model, q_lower_slack[k] == qg[generator_index] - q_min)
         @constraint(model, q_upper_slack[k] == q_max - qg[generator_index])

@@ -99,10 +99,19 @@ function islanded_scenario_case(case::Case, contingency::Contingency,
     shunts = [shunt for shunt in network.shunts if shunt.bus_id in retained]
     banks = [bank for bank in network.banks if bank.bus_id in retained]
     loads = [load for load in case.loads if load.bus_id in retained]
+    # A validated numerical base can overshoot a bound within replay tolerance.
+    # Reconstructed Generator data have strict domains: project only these tiny
+    # start/reference overshoots, without modifying the saved physical base.
+    function initial_value(value, lower, upper)
+        lower-1e-6 <= value <= upper+1e-6 ||
+            throw(ArgumentError("island base dispatch exceeds generator bounds beyond tolerance"))
+        clamp(value,lower,upper)
+    end
     reduced_generators = [Generator(item.generator.id, item.generator.bus_id;
         available=true, p_min=item.generator.p_min, p_max=item.generator.p_max,
         q_min=item.generator.q_min, q_max=item.generator.q_max,
-        initial_p=base_state.pg[item.index], initial_q=base_state.qg[item.index])
+        initial_p=initial_value(base_state.pg[item.index],item.generator.p_min,item.generator.p_max),
+        initial_q=initial_value(base_state.qg[item.index],item.generator.q_min,item.generator.q_max))
         for item in generators]
     generator_ids = Set(generator.id for generator in reduced_generators)
     attachments = [attachment for attachment in case.attachments

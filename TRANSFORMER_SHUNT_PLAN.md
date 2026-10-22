@@ -3,7 +3,7 @@
 Originally drafted on 2026-09-19 from the `transformers` branch. This document
 retains the historical decisions and validation slices; `ROADMAP.md` owns current
 status. M5–M8 are released, M9 is implemented and released in v0.9.0 with bounded
-S2 public qualification, and M10 remains planned.
+S2 public qualification. M10 contingency assessment is implemented; its original comparative-evidence closeout is complete for the declared scope (see [audit](docs/src/m10_audit.md)).
 This is a selective extension of current main, not a copy of the earlier
 brainstorming worktree's M5-M13 numbering.
 
@@ -261,15 +261,6 @@ this milestone adds decision sharing and response-policy coupling.
 | M9.2 **implemented** | Explicit corrective-action budgets relative to base | Base-to-contingency ratio/B movement versus per-device/per-scenario delta limits; allowed-action checks; preventive/corrective margin comparison |
 | M9.3 **implemented** | Before-equipment-response and AVR/equipment-settled contingency assessments | Paired voltage/thermal/Q margins, frozen versus settled equipment, target errors and saturation status |
 
-S2 is the public IEEE-118/300 qualification campaign for M9.1. It is separate
-from S1, which remains open for deeper work on the unchanged frozen base-case
-reliability contract. M9.1/M9.2 require applicable M7 controls; M9.3 additionally requires M8. Before
-permitted tap response, freeze positions at their pre-event values. After AVR
-settling, enforce the declared AVR policy and limits. These are two steady-state
-assessments, not a simulated transient trajectory. Match active dispatch recourse
-and operating-limit assumptions to each response stage and report them explicitly.
-Both stages are required when claiming security at both response stages.
-
 Installed droop parameters and fixed AVR targets stay shared across design cases.
 Outages do not automatically authorize equipment movement. Preserve availability,
 unsupported-island diagnostics, schema round trips and failed-scenario coverage.
@@ -279,11 +270,13 @@ policy across all cases rather than round each case independently.
 
 ## M10: comparative evidence and regression gate
 
+The contingency catalog, assessment, ranking, screening and resumable campaign implementation now exists. M10.1 now has a sourced equipment-physics comparison; M10.2 now has a bounded synthetic comparison package with a certified negative comparator; M10.3 now records a current 3,042/3,042 regression pass, reproducibility and scoped performance review; see the [M10 audit](docs/src/m10_audit.md) for qualification limits.
+
 | Slice | Small change | Validation and required visual |
 |---|---|---|
-| M10.1 | External/reference equipment physics | Trusted versus computed terminal quantities and error plots; sourced case with nontrivial taps/shunts |
-| M10.2 | Matched droop/equipment/control-mode studies | Configuration comparison, interaction effects and held-out margins; separate relaxed results and any physical recovery |
-| M10.3 | Reproducibility and performance review | M1-M4 regression results, multi-start spread, coverage, schema checks and build/solve/validation timing plots |
+| M10.1 **complete for declared equation-reference scope** | External/reference equipment physics | [Sourced comparison](docs/src/m10_1_reference.md): 414 checks, terminal quantities, shunt powers, Ybus, error plots and negative controls; no external solver execution |
+| M10.2 **complete for declared synthetic base-case comparison scope** | Matched droop/equipment/control-mode studies | [Matched comparisons](docs/src/m10_2_matched.md): 54 feasible groups, one certified infeasible fixed-Q comparator; original all-feasible gate failed; no discrete recovery |
+| M10.3 **complete for declared scope** | Reproducibility and performance review | [Closeout](docs/src/m10_3_closeout.md): 3,042/3,042 assertions; evidence replay, source/environment hashes, schema/policy coverage and serial build/solve/extract/validation timing |
 
 Consolidate evidence already produced by each slice; do not postpone testing to
 M10. Report losses, voltage margins, reactive effort/reserve, exact droop error,
@@ -367,7 +360,7 @@ local; M9 adds security-constrained equipment decisions.
 
 M8 is released and M9.1 is synthetically qualified. Work now follows the
 ROADMAP's S2 public qualification, M9.2 corrective-action budgets, and M9.3/M10
-response-stage and comparative evidence. S1 remains a separate active
+response-stage and comparative evidence. S1 is a separately closed declared-study
 investigation. M10 applies to supported simple models first. Initial synthetic evidence is in
 [the connected scaling experiment](artifacts/scaling_initial/report.md).
 Report failure coverage, validated AC/policy feasibility and meaningful timing/size
@@ -375,244 +368,8 @@ curves. Medium public networks and diverse starts remain required before claimin
 robustness beyond the structural fixture. Continuous settings are not executable
 switch schedules without legal-position recovery and fresh validation.
 
-## S1 — Reliable optimization convergence and scaling
+## S1 — closed declared study
 
-Status: dedicated active milestone after M7 and before M9.1. Initial synthetic
-experiments are retained evidence, not acceptance of this milestone. AVR (M8 and
-M9.3) and complex-bank optimization remain deferred. ROADMAP owns sequencing.
+The approved closeout is the ARPA-E 14/500-bus study described in [S1 closeout](docs/src/s1_closeout.md). This supersedes the earlier public-network sequence and research acceptance matrices. S1.1–S1.4 retain the mathematical contract, independent physical validation, control isolation and numerical-equivalence coverage. S1.5–S1.6 are qualified on the declared OPF anchors, solver budgets, sampled loads and bounded recovery paths, with serial warmed profiling.
 
-| Slice | Deliverable | Acceptance and reporting |
-|---|---|---|
-| S1.1 — Mathematical contract | Write the implemented base-case joint NLP explicitly, then map equations to builders and validators | Variable/bound table; transformer terminal powers with tap and phase; fixed and simple-bank G/B terms; AC balances; exact and smooth droop; objective; fixed/free selection. State units, signs, smoothing and relaxation assumptions. Review discrepancies before changing a model. |
-| S1.2 — Convergence diagnostics | Retain iteration logs, primal/dual residuals, complementarity, bound activity, iteration counts and termination reasons | Reproduce 12- and 96-bus stalls; distinguish AC/policy feasibility, exact-droop validity and solver stationarity. Plot residual histories and retain failed runs. |
-| S1.3 — Isolate control families | Fixed, droop-only, tap-only, bank-only, pairwise and joint cases; vary the number of free controls independently | Matched starts/objectives, timing and success tables. Identify the family or interaction responsible for deterioration without selecting only successful cases. |
-| S1.4 — Numerical conditioning | Check derivatives, variable/objective scaling and smoothing near droop breakpoints | Derivative comparisons and conditioning diagnostics; map any equivalent scaling back to original units. Physical validation tolerances and baseline objective are unchanged. Any proposed non-equivalent model or objective change is surfaced to the user first. |
-| S1.5 — Initialization and solver robustness | Feasible fixed-control starts, staged release, smoothing continuation and matched Ipopt/MadNLP comparisons | Multiple declared state/design starts; complete success/failure coverage; objective and parameter spread; primal/dual stationarity and timing. More iterations alone do not establish reliability. |
-| S1.6 — Larger-network acceptance | Pin a public 118-bus case, then a 300-bus case; document controller overlays; retain synthetic count sweeps | Independently validate imported fixed-equipment baselines before adding controls. Grow droop/tap/simple-bank counts, loading stress and start variation. Report build/solve/extraction/validation time, model size, allocations and correctly scoped memory, with plots. |
-
-S1.1/S1.2 and preparation of the 118-bus baseline can proceed together. Public
-case sources, versions, licenses and local transformations must be pinned when
-acquired. Controller settings and bank capability data are explicit study overlays,
-not implied measurements from a network file. A failed baseline or unsupported
-feature must be reported rather than silently converted into an easier case.
-
-The mathematical contract is now [docs/src/joint_formulation.md](docs/src/joint_formulation.md),
-using explicit power-flow equations and equipment quantities. Include the unchanged dispatch objective and explain the
-relationship between mathematical feasibility, exact-curve replay and solver KKT
-conditions. Any discovered mismatch is a finding, not permission to change the
-physical model silently.
-
-Before changing equipment equations, assumptions, capability envelopes or
-control laws, tell the user what would change, why, and which comparison would
-be affected. This applies to proposed fixes as well as new model features.
-Numerical experiments may vary starts, solver configuration and documented
-smoothing/scaling while retaining exact-physical checks. Do not silently add a
-nominal-design penalty or regularization, relax operating limits, or weaken
-acceptance tolerances to turn a failure into a pass.
-
-Milestone exit: publish a reproducible formulation/diagnostic report and a declared
-benchmark matrix with per-case starts, numerical and physical tolerances, iteration
-and runtime budgets, and hardware/software provenance. For the declared supported
-matrix, require acceptable solver convergence AND independent AC, exact-droop,
-operating-limit and policy validity. Compare multiple starts and both solvers;
-classify objective/parameter disagreement rather than promise uniqueness. Record
-coverage and out-of-scope/failed cases explicitly. Any excluded cases or unmet
-convergence criteria keep that part of the gate open. Set practical performance
-budgets from measured evidence before the final acceptance run; no universal
-runtime, global optimality or large-network feasibility guarantee is implied.
-
-The S1 exit review also owns test-suite rationalization. Classify retained tests
-as fast core regression or extended numerical/research infrastructure, retire
-tests only together with abandoned experimental capabilities, and preserve
-cross-milestone CI coverage. The current assertion count is not itself a reason
-to remove coverage; measured runtime, fragility, duplication and maintenance
-value determine any consolidation.
-
-Outputs include numerical tables, convergence histories, control-count and
-network-size timing/resource plots, settings/bound diagnostics, and machine-readable
-attempts. Continuous feasibility remains distinct from legal switch implementability.
-S1 covers base-case optimization; contingency-count scaling follows M9.1/M9.2.
-
-### S1 implementation checkpoint (2026-09-20)
-
-| Slice | Current evidence | Remaining |
-|---|---|---|
-| S1.1 | Explicit mathematical contract and builder/validator map | Keep synchronized with approved changes |
-| S1.2 | Both solver trace adapters, residual-scale labels, bound snapshots, phase timing and failure retention | Same-formulation Ipopt seeds and restart diagnostics now demonstrated; broader transfer remains open |
-| S1.3 | Eight-family matrix at 12/96 buses; 15 independent count sweeps at fixed 96-bus size | Broaden placement and stress coverage after reliability |
-| S1.4 | Exact Hessians, breakpoint derivative checks, error-bounded smoothing, public Jacobian scale/weak-column scans | Controller normalization and staged initialization benchmarked; residual normalization and reliable initialization remain open |
-| S1.5 | Both solvers and three starts; staged release, smoothing/load continuation, small bound pushes and cross-solver polishing tested | Bounded one-reset policy and shared-budget staged workflows tested on both backends; public reliability remains incomplete |
-| S1.6 | Pinned 118-/300-bus imports and fixed baselines; public controls at nominal/+5% load; phase/allocation/process-memory reporting and figures | Reliability and solution-quality gate fails; isolated warmed performance acceptance remains |
-
-[Extension evidence](artifacts/s1_extension/report.md): synthetic 35/35 pass;
-initial public pilot 13/30 pass. Public overlays contain 37/35 droops, 11/129
-candidate tap controls and 12/32 simple banks on 118/300 buses. Actual adjustment
-ranges are not supplied by source TAP flags; assumed ranges and bank data are
-recorded explicitly. Aggregate shunts and generator capability remain unchanged.
-
-Recovery successes do not erase failures. Smaller smoothing is not automatically
-better numerically. Exact-droop validation is distinct from solver termination.
-Weakly determined settings and objective/parameter spreads are reported without
-adding penalties. S1 remains active before M9.
-
-
-### S1 matched scaling and failure localization
-
-The next checkpoint retains all 12 matched Ipopt scaling attempts on IEEE 118/300 at nominal and +5% demand; 7/12 validate. Default gradient scaling, disabled scaling and maximum-gradient-1 scaling share the same primal starts, bounds, smoothing, objective and budgets. These are solver-internal scaling probes, not implementation of explicit variable normalization. No setting is promoted as a universal default.
-
-Physical-failure diagnostics now identify equipment ID, quantity/terminal, violation, tolerance and exceedance in physical per-unit values. A separate audit of all 30 original public attempts agrees with the existing validator's failure categories; historical solver evidence is preserved. Tables and plots are in [the scaling checkpoint](docs/src/s1_scaling.md). Primal/dual warm starts, variable normalization, declared restart/selection policy and reliability across starts remain open before M9. Equipment equations and acceptance tolerances are unchanged.
-
-Validation for this checkpoint: **1238/1238 regression tests pass**, including localized failure/category agreement, and the documentation build passes. S1 remains open; these checks do not convert rejected optimization attempts into validated designs.
-
-
-### S1 primal/dual restart checkpoint (2026-09-21)
-
-The same-formulation Ipopt restart matrix validates **9/16 attempts**, including four source runs. Saved multipliers preserve all three validated sources (3, 3 and 55 restart iterations), but fail to recover the stalled stressed IEEE 300 source. Zero-dual warm initialization recovers that case in 1000+40 iterations; ordinary primal restart needs 1000+491. An uninterrupted equal-budget 2000-iteration/120-CPU-second solve still fails physical validation. This supports further testing of status-dependent restarts, not a universal warm-start default.
-
-Seeds retain primal values and nonlinear/bound multipliers with model-layout/context checks, finite-value rejection and explicit provenance. Failed sources are numerical seeds only. Candidate selection uses the lowest objective among fully validated outcomes and keeps unresolved groups explicit. All failures, tables, iteration and stationarity plots are in [the restart checkpoint](docs/src/s1_warmstarts.md). **1270/1270 regression tests pass.** Equipment equations, objective and physical tolerances remain unchanged.
-
-S1 remains open: explicit variable normalization, broader start/placement/stress variation, and validation of an automatic restart policy are still required before M9. Primal/dual preservation is demonstrated for identical Ipopt formulations only; cross-scenario, cross-solver and changed-smoothing transfer remain unimplemented.
-
-
-### S1 bounded restart policy checkpoint (2026-09-21)
-
-The experimental runner now accepts the first independently validated result, permits at most one multiplier-reset recovery after selected numerical failures, and shares a 2000-iteration/120-second cooperative wall budget across attempts. It stops converged-but-invalid results for diagnosis and rejects incompatible/nonfinite seeds. It never silently switches solvers, changes smoothing or relaxes physical requirements. Context hashes include physical data, control policies, smoothing and backend/version.
-
-Across IEEE 118/300, nominal/+5% demand and three declared starts, **Ipopt improves from 7/12 to 8/12 validated cases** (17 attempts); **MadNLP changes from 4/12 to 4/12** (19 attempts). The backend adapters differ: Ipopt resets constraint/bound starts through its warm initializer; MadNLP resets constraint multipliers while using native bound initialization. No iteration budgets were exceeded; observed cooperative wall overruns: Ipopt 0, MadNLP 0.
-
-The [policy report](docs/src/s1_restart_policy.md) retains every attempt, physical failure category, seed and decision, with acceptance/matrix figures. **1306/1306 regression tests pass**, including native MadNLP initialization, deadline interruption, seed rejection and cumulative-budget tests. The policy is implemented and tested experimentally, but the public reliability gate remains unmet. S1 stays open before M9; equivalent variable normalization and broader reliability/solution-quality studies remain next. Equipment equations, objective and validation thresholds are unchanged.
-
-
-### S1 controller normalization checkpoint (2026-09-21)
-
-Opt-in affine normalization of free droop parameters, tap ratios and bank susceptances is implemented and verified: `control_normalization=:bounds` maps each finite free interval to [0,1], while `:none` remains the default. Physical settings, equations, objective, limits and validation tolerances are unchanged. Fixed intervals bypass normalization. Tests verify pointwise equations/objectives, Jacobian/Hessian chain rules, capacitor/reactor handling and physical result serialization.
-
-The frozen 24-case policy benchmark is retained with SHA-256 evidence. Normalization validates **7/12 Ipopt cases versus 8/12 previously**, and **1/12 MadNLP cases versus 4/12**. It gains some starts and loses others, so it is not promoted as a reliability improvement. All 42 normalized attempts, failures, coordinate maps and paired objectives are retained.
-
-A separate six-attempt smoothing study targets converged outcomes that fail only exact-droop validation and have recomputed smooth-droop residual at most 1e-6 pu. Reducing epsilon from 1e-6 to 1e-7, with one extra declared solve, validates **2/6**; four still fail numerically. These extra attempts do not alter the frozen acceptance counts. The [normalization report](docs/src/s1_normalization.md) separates optimization residuals from approximation gaps. **1419/1419 regression tests pass.**
-
-S1 remains open. Next: staged initialization/load continuation under an explicitly shared budget, then broader load/placement tests outside the tuning matrix once a workflow improves reliability. Physical-coordinate default and existing bounded restart policy remain unchanged; no automatic smoothing adaptation has been promoted. Residual normalization is still unimplemented.
-
-
-### S1 staged initialization checkpoint (2026-09-21)
-
-Two independent experimental workflows now compose existing solves: fixed settings → free taps/banks → full joint design, and nominal → +2.5% → +5% demand. Each workflow shares a 2000-iteration/120-second cooperative wall budget across preparation and final solves. Only independently validated preparation stages inside the strict initialization domain provide physical primal seeds. Restricted-stage feasible points are retained separately and never count as final joint-design convergence.
-
-The frozen IEEE 118/300 comparison contains **36 workflows and 127 solve attempts**, including every failed stage. Control release validates **7/12 Ipopt cases versus 8/12 direct**, and **3/12 MadNLP cases versus 4/12 direct**. Load continuation validates **3/6 Ipopt stressed cases versus 4/6 direct**, and **2/6 MadNLP cases versus 3/6 direct**. Across both strategies, 16/72 preparation stages supply accepted seeds. Observed cumulative iteration/wall overruns: 0/0. Timing includes compilation and concurrent work; it is not an isolated performance comparison.
-
-The [staged report](docs/src/s1_staged.md) provides paired acceptance/objective tables, stage outcome plots, seed lineage and physical failure details. **1456/1456 regression tests pass.** Neither workflow is promoted to a default: gains on individual starts coexist with regressions. Equipment models, physical coordinates, objective and physical validation tolerances remain unchanged.
-
-**S1 remains open before M9.** Next, use the retained failed cases to isolate residual scaling and stationarity/active-bound behavior before expanding the benchmark. Any equivalent numerical treatment needs equation/derivative checks and a paired comparison; broader load/placement holdouts follow a demonstrated reliability improvement. No additional equipment model is introduced.
-
-
-### S1 stationarity and active-bound checkpoint (2026-09-21)
-
-A read-only diagnostic reconstructs original-coordinate objective, nonlinear-constraint and bound contributions to the Lagrangian gradient, plus complementarity, dual-sign errors and Jacobian row/column magnitudes. Ten declared IEEE 118/300 runs across Ipopt and MadNLP reproduce the frozen direct first-attempt status, acceptance and objective exactly. No optimizer formulation or physical acceptance rule changes.
-
-Stalled Ipopt cases retain free-coordinate stationarity residuals of roughly 0.06–0.4, compared with 1e-12–1e-10 in the selected accepted cases. The geometry audit also identifies saturated-droop rows numerically parallel to active Q bounds on both backends. Some accepted MadNLP points carry opposing droop/bound multipliers around 1e14–1e15; raw stationarity is cancellation-sensitive while native multiplier-scaled termination measures remain small. This is a solution-quality issue to investigate, not a retroactive change to physical validation or proof that every stall has the same cause.
-
-The [diagnostic report](docs/src/s1_kkt.md) includes physical KKT decompositions, equation-scale plots, individual failure locations and saturated-controller geometry. Hypothetical row equilibration is evaluated only; it is not applied to solves. Scaling parallel rows cannot restore independence, and scaled stopping tolerances require explicit conversion to physical residuals. **1502/1502 tests pass.**
-
-**S1 remains open. Next:** build a small reproducer for saturated droops at active reactive-power bounds, compare multiplier behavior and stopping rules, then evaluate an explicitly equivalent numerical remedy. Equipment-model changes still require telling the user beforehand. Broad holdout/scalability validation follows a demonstrated improvement; M9 remains blocked by the reliability gate.
-
-### S1 saturated-droop reproducer and implied-bound checkpoint (2026-09-21)
-
-The minimal reproducer confirms that a saturated smooth droop equality becomes parallel to an active generator-Q bound. An opt-in equivalent formulation therefore omits only attached droop-generator Q bounds already implied by the bounded response; all physical equations, objectives, control limits, result fields and independent validation remain. The explicit formulation remains the default, and endpoint roundoff is measured rather than assumed away.
-
-The frozen policy matrix does not support promotion: implied bounds validate **7/12 versus 8/12 Ipopt** and **3/12 versus 4/12 MadNLP** cases. Gains on nominal IEEE 118 starts coexist with losses under stress and at 300 buses. The [report](docs/src/s1_implied_q.md) includes the rank reproducer, paired objectives and all failed attempts. **1529/1529 tests pass.** S1 remains open; reduced-space or alternative smooth-saturation formulations require derivation and small-case equivalence tests before another public benchmark. M9 remains gated.
-
-### S1 reduced-space droop-Q checkpoint (2026-09-21)
-
-The opt-in reduced formulation removes each attached controlled-generator Q
-variable and droop equality, substitutes the same smoothed response into reactive
-balance and objective terms, and reconstructs Q for the unchanged result and
-validation layers. It removes 37 variables on IEEE 118 and 35 on IEEE 300.
-
-The frozen comparison is solver dependent: **Ipopt falls from 8/12 to 4/12**
-accepted cases, while **MadNLP rises from 4/12 to 8/12** but loses one prior
-stressed IEEE 300 success. The [full ledger](docs/src/s1_reduced_q.md) separates
-native termination from physical failures and retains all attempts. Explicit Q
-remains the default, reduced Q remains diagnostic, and **1551/1551 regression
-tests pass**. M9 stays gated while S1
-tests another equivalent treatment against the same no-loss criterion.
-
-### S1 CCOpt pilot checkpoint (2026-09-21)
-
-CCOpt now has base-case joint tap/shunt/droop parity, dedicated tap and shunt
-APIs, serialized complementarity residuals, and a pilot diagnostic adapter.
-Two synthetic joint starts and two IEEE 118 fixed-equipment starts validate.
-Two standard-accuracy IEEE 118 joint attempts converge numerically but fail the
-unchanged exact-droop gate (`3.86e-5` versus `1e-5`); both retained tighter
-follow-ups validate at `3.86e-7`. The pilot remains outside frozen S1 acceptance
-counts. Separate outer-homotopy counts and original-MPCC stationarity are not
-available through the current CCOpt MOI interface and remain explicit gaps.
-
-The pilot now also covers IEEE 300: both fixed-equipment starts, both standard
-one-free-tap/bank/droop starts and both tighter matched attempts validate. A
-machine-checked feasibility audit confirms validated witnesses for the imported
-118/300 baselines and every nominal/+5% controlled group. Therefore failures in
-those frozen groups diagnose solver/start/acceptance sensitivity, not case
-infeasibility. The +5% study is a fixed stress point, not a loadability boundary.
-
-A checkpointed matched-family follow-up is now retained at **78/96** attempts.
-Both nominal public slices validate 24/24. Stressed IEEE 118 isolates failures
-to every family containing the selected tap (0/12), while fixed, droop, shunt
-and shunt--droop validate 12/12. Six completed stressed IEEE 300 fixed/droop
-attempts reach the cumulative inner-iteration limit; the other stressed IEEE
-300 families remain unrun. This partial matrix is labelled as such and does not
-change frozen S1 acceptance counts.
-
-### S1 smooth control-family checkpoint (2026-09-23)
-
-The complete 192-cell smooth family-isolation matrix now covers fixed,
-droop-only, tap-only, shunt-only, all three pairs and the full joint model for
-both frozen solvers, both public networks, both loads and all three starts.
-Every cell uses the frozen epsilon, independent validation and one-reset
-budget. Combined acceptance is fixed 13/24, droop 14/24, tap 13/24, shunt
-16/24, tap--shunt 10/24, tap--droop 15/24, shunt--droop 15/24 and joint
-12/24. The joint slice reproduces every original frozen decision exactly
-(Ipopt 8/12, MadNLP 4/12). Droop alone is therefore not the dominant failure
-source. Effects are backend- and context-dependent; the largest aggregate
-penalty is the tap--shunt interaction, while tap freedom is necessary for
-several stressed IEEE-300 recoveries. This diagnostic does not replace the
-joint frozen acceptance decision.
-
-### S1 raw-source stress qualification checkpoint (2026-09-23)
-
-The public overlay is not the untouched PGLib OPF: PGLib supplies fixed
-transformer ratios, fixed shunts, network and generator data, while the
-volt--var curves and switched banks are explicitly synthetic. A raw +5% audit
-therefore ran with no overlay. IEEE-118 validates from the raw nominal solution
-with both solvers. IEEE-300 validates through a 1% warm-start continuation to
-1.04, but both solvers fail at 1.05; the 1.04 witnesses have essentially zero
-P/Q, voltage and thermal margins. The raw 1.05 point is consequently an
-unqualified near-limit stress point, not a suitable default robustness point or
-evidence that the droop model alone creates infeasibility. Future public
-control matrices should use a raw-qualified stress below that path endpoint,
-and retain 1.05 only as an explicitly labelled limit challenge.
-
-### S1 epsilon-continuation checkpoint (2026-09-23)
-
-A fixed six-stage sensitivity schedule (`1e-2` through `1e-7`) was run on all
-24 frozen Ipopt/MadNLP cells. Each stage starts from the latest solver- and
-policy-valid stage; failed stages are retained but not propagated. Raw
-exact-droop mismatch is recorded at every epsilon, including accepted stages.
-The unchanged strict `1e-5` physical criterion validates at least one stage in
-**18/24** cells versus **12/24** frozen direct cells. Ipopt remains **8/12**
-(one gain and one loss); MadNLP reaches **10/12** (seven gains and one loss).
-The best aggregate region is `1e-5` to `1e-6`; the large `1e-2` and `1e-3`
-stages produce no strict-valid cells, while `1e-7` is less numerically reliable.
-
-The continuation union is not an equal-budget replacement: it permits six
-solve allowances per cell and fails to reproduce two frozen-accepted stressed
-IEEE-300 anchor cells. A separate deterministic cross-seed experiment transfers
-one strict-valid state only within the same solver, network and load level at
-epsilon `1e-6`; it recovers **1/6** unresolved continuation cells. Two converged
-IEEE-118 Ipopt transfers miss strict droop acceptance at `1.427e-5` pu and keep
-their raw mismatch in the report.
-
-The retained ledgers are in `artifacts/s1_epsilon_sensitivity` and
-`artifacts/s1_epsilon_cross_seed`. **1605/1605 regression tests pass. S1 remains
-open:** continuation is a promising opt-in MadNLP recovery strategy, but it
-does not satisfy the no-loss or shared-budget reliability gate and is not
-promoted as the default.
+The study uses Pmin=0 and symmetric Q limits. Original data and original-limit sensitivity outcomes remain explicit. Local solver failure is unresolved unless supported by an applicable infeasibility certificate; a witnessed same-model recovery establishes numerical feasibility within the declared tolerances. Continuous equipment optimization and sampled steady states define the scope. Test suites are classified in `test/README.md`; the default CI gate retains core and extended coverage.

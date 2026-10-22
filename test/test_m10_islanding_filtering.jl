@@ -193,3 +193,18 @@ end
     @test all(d.action == :exact && d.reason == :generator_outage
         for d in thermal_guard if d.device_kind == :generator)
 end
+
+@testset "Island reconstruction tolerates numerical bound overshoots only" begin
+    case = m10_radial_case()
+    base = ACState(ones(5),zeros(5),zeros(3),zeros(3))
+    # Generator 2 remains in the retained component after branch 10 is removed.
+    base.pg[2] = -1e-8
+    base.qg[2] = case.generators[2].q_max+1e-8
+    reduced = islanded_scenario_case(case,Contingency(:roundoff;branch_ids=[10]),base)
+    g = only(filter(g->g.id==2,reduced.case.generators))
+    @test g.initial_p == g.p_min
+    @test g.initial_q == g.q_max
+    @test base.pg[2] == -1e-8 # the saved base is never modified
+    base.pg[2] = -1e-3
+    @test_throws ArgumentError islanded_scenario_case(case,Contingency(:roundoff;branch_ids=[10]),base)
+end

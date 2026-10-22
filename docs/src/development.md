@@ -5,7 +5,7 @@
 Run the package tests from the repository root:
 
 ```sh
-julia --project=. -e 'using Pkg; Pkg.test()'
+JULIA_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
 Build the documentation locally:
@@ -15,7 +15,8 @@ julia --project=docs -e 'using Pkg; Pkg.develop(path = "."); Pkg.instantiate()'
 julia --project=docs docs/make.jl
 ```
 
-The generated site is in `docs/build/`.
+The generated site is in `docs/build/`. Two Julia threads exercise the bounded
+contingency worker tests; serial-only runs skip that concurrency branch.
 
 ## Continuous integration and deployment
 

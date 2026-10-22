@@ -37,7 +37,11 @@ function _joint_droop_policy(case,c)
     names=keys(c.bounds)
     ranges=NamedTuple{names}(Tuple(_droop_parameter_bounds(getfield(c.bounds,k),getfield(reference,k),string(k);positive=k in (:slope,:v_ref)) for k in names))
     ranges.v_ref[1]-ranges.deadband_low[2]>0 || throw(ArgumentError("bounds permit a nonpositive lower deadband edge"))
-    ranges.deadband_low[1]+ranges.deadband_high[1]>0 || throw(ArgumentError("bounds permit zero total deadband"))
+    # A fixed zero-width deadband is a supported physical curve. Keep rejecting
+    # variable widths that can collapse to zero during design optimization.
+    fixed_zero = ranges.deadband_low==(0.,0.) && ranges.deadband_high==(0.,0.)
+    fixed_zero || ranges.deadband_low[1]+ranges.deadband_high[1]>0 ||
+        throw(ArgumentError("variable bounds permit zero total deadband"))
     initial=isnothing(c.initial) ? reference : c.initial
     all(getfield(ranges,k)[1]<=getfield(initial,k)<=getfield(ranges,k)[2] for k in names) || throw(ArgumentError("droop initial settings must lie in bounds"))
     (ranges=ranges,initial=initial)
@@ -50,10 +54,13 @@ droop saturation and nested control capability. `droop_q_formulation=:reduced`
 substitutes that response into balance and objective expressions, eliminating
 the controlled-generator Q variable and droop equality. These options preserve
 the physical equations, objective and returned settings; their defaults preserve
-the original formulation.
+the original formulation. `smooth_reactive_epsilon` optionally fixes the absolute
+reactive smoothing width across controllers; `nothing` retains capability-scaled
+relative smoothing. It has no effect on the exact complementarity encoding.
 """
 function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_controls=ShuntControl[],
-    droop_controls=DroopControl[],initial_state=nothing,smooth_epsilon=1e-5,control_normalization=:none,
+    droop_controls=DroopControl[],initial_state=nothing,smooth_epsilon=1e-5,
+    smooth_reactive_epsilon::Union{Nothing,Real}=nothing,control_normalization=:none,
     droop_q_bounds=:explicit,droop_q_formulation=:explicit,
     encoding=:smooth, optimizer_factory=Ipopt.Optimizer,silent=true,
     optimizer_attributes=Dict(),reactive_assignments=nothing,_measurement_hook=nothing)
@@ -87,7 +94,7 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
     end
     _,v = if encoding == :smooth
         _build_acopf_model(case;voltage_epsilon=smooth_epsilon,reactive_relative_epsilon=smooth_epsilon,
-            reactive_epsilon=nothing,silent,optimizer_factory,initial_state,shared_model=model,
+            reactive_epsilon=smooth_reactive_epsilon,silent,optimizer_factory,initial_state,shared_model=model,
             tap_controls,shunt_controls,droop_parameter_variables=parameters,normalize_controls,
             droop_q_bounds,droop_q_formulation,reactive_assignments)
     else
@@ -104,7 +111,7 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
     present=has_values(model)
     state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
     epsilon = encoding == :smooth ? Float64(smooth_epsilon) : nothing
-    opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,nothing)
+    opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,encoding == :smooth && !isnothing(smooth_reactive_epsilon) ? Float64(smooth_reactive_epsilon) : nothing)
     taps=present ? Dict(b.id=>Float64(haskey(v.taps,b.id) ? value(v.taps[b.id]) : b.tap_ratio) for b in case.network.branches) : Dict{Int,Float64}()
     shunts=present ? Dict{Int,Float64}(id=>value(x) for (id,x) in v.shunts) : Dict{Int,Float64}()
     droops=Dict{Int,DroopSettings{Float64}}()

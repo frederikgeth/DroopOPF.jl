@@ -1,4 +1,4 @@
-include("s1_incremental_controls.jl")
+include("s1_experiments.jl")
 
 using JuMP
 using Ipopt
@@ -194,70 +194,3 @@ function s1_phase1_restoration(case, initial_state;
     )
 end
 
-function s1_controller5_phase1(out)
-    source = joinpath(@__DIR__, "..", "test", "data", "pglib", "v23.07",
-        "pglib_opf_case300_ieee.m")
-    original = load_matpower_case(source; base_frequency=60.0)
-    anchor = read_joint_design(joinpath(@__DIR__, "..", "artifacts", "s1_public_controls",
-        "public300-baseline-design.json"))
-    incremental = joinpath(@__DIR__, "..", "artifacts", "s1_incremental_controls")
-    selected = joinpath(@__DIR__, "..", "artifacts", "s1_incremental_control5")
-    cumulative5, _, _ = s1_incremental_case(original, anchor, source;
-        droop_count=5, shunt_count=0)
-    selected5, _ = s1_selected_droop_case(original, anchor, source, (5,))
-    cases = Dict("cumulative_first_five" => s1_load(cumulative5, 1.02),
-        "controller_5_only" => s1_load(selected5, 1.02))
-    rows = Dict{String,Any}[]
-    for (model_name, case) in sort(collect(cases); by=first), source_solver in (:ipopt, :madnlp)
-        folder = model_name == "cumulative_first_five" ? incremental : selected
-        stage = model_name == "cumulative_first_five" ? "droop5-fixed" : "selected5-fixed"
-        prefix = "public300-load1.02-$(source_solver)-$(stage)-anchor"
-        summary = JSON.parsefile(joinpath(folder, "summary.json"))
-        summary_rows = summary isa AbstractVector ? summary : summary["rows"]
-        failed = only(filter(row -> row["name"] == prefix, summary_rows))
-        final_attempt = last(failed["attempts"])
-        failed_design = read_joint_design(joinpath(folder, final_attempt["name"] * "-design.json"))
-        result = s1_phase1_restoration(case, failed_design.opf.state)
-        result["model"] = model_name
-        result["source_solver"] = string(source_solver)
-        result["source_status"] = final_attempt["status"]
-        result["source_cell"] = prefix
-        result["source_iterate"] = relpath(joinpath(folder,
-            final_attempt["name"] * "-design.json"), pwd())
-        push!(rows, result)
-    end
-    witness_path = joinpath(incremental,
-        "public300-load1.02-ipopt-droop6-fixed-anchor-attempt1-design.json")
-    witness = read_joint_design(witness_path)
-    for (model_name, case) in sort(collect(cases); by=first)
-        result = s1_phase1_restoration(case, witness.opf.state)
-        result["model"] = model_name
-        result["source_solver"] = "known_ipopt_six_witness"
-        result["source_status"] = string(witness.opf.termination_status)
-        result["source_cell"] = "public300-load1.02-ipopt-droop6-fixed-anchor"
-        result["source_iterate"] = relpath(witness_path, pwd())
-        push!(rows, result)
-    end
-    payload = Dict("schema" => "s1-phase1-controller5-v1", "rows" => rows,
-        "scope" => "IEEE-300 load 1.02 fixed-droop failed paths",
-        "acceptance_warning" => "No Phase-I result is an accepted OPF result or infeasibility certificate.")
-    mkpath(out)
-    write(joinpath(out, "summary.json"), JSON.json(payload; pretty=true) * "\n")
-    open(joinpath(out, "report.md"), "w") do io
-        println(io, "# IEEE-300 controller-5 Phase-I restoration\n")
-        println(io, "This is a diagnostic elastic model, not an OPF acceptance path. It separately minimizes active/reactive balance, voltage, generator P/Q, thermal, and smooth-droop slacks. Every returned state is also checked by the unchanged independent validator.\n")
-        println(io, "| Model | Start source | Original status | Phase-I status | Classification | Total slack objective | Maximum slack | Voltage-slack sum | Strictly valid |\n|---|---|---|---|---|---:|---:|---:|---:|")
-        for row in rows
-            println(io, "| ", row["model"], " | ", row["source_solver"], " | ",
-                row["source_status"], " | ", row["status"], " | ", row["classification"],
-                " | ", row["objective"], " | ", row["max_slack"], " | ",
-                row["families"]["voltage_limits"]["sum"], " | ",
-                row["independent_validation"]["valid"], " |")
-        end
-        println(io, "\nBoth failed-solver basins converge to the same positive-slack local point for each reduced model. Nearly all material slack is assigned to two voltage-limit violations; balance, generator-limit, thermal, and droop slacks remain near numerical noise. Starting the identical Phase-I model from the known cumulative-six feasible witness reaches a zero-maximum-slack, independently valid point. Therefore the positive result is a local basin diagnosis, not a minimum-violation or infeasibility certificate.")
-    end
-    payload
-end
-
-abspath(PROGRAM_FILE) == (@__FILE__) && s1_controller5_phase1(abspath(
-    isempty(ARGS) ? joinpath(@__DIR__, "..", "artifacts", "s1_phase1_controller5") : ARGS[1]))

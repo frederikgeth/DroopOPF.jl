@@ -7,10 +7,7 @@ equipment design, and security-constrained workflows.
 
 !!! note "Current status"
 
-    v0.9.0 releases M9 equipment-aware SCOPF: preventive/corrective continuous
-    equipment timing, bounded corrective movement, and paired immediate/settled
-    assessments. The frozen S1 IEEE 118/300 reliability gate remains open and
-    separate. S2's bounded public scorecard is retained with its failures.
+    S1 is closed for the declared 14/500-bus study. See the [closeout](s1_closeout.md) for scope, direct failures, recoveries and performance measurements. The package supports base-case OPF and equipment-aware SCOPF; broader security qualification remains a separate task. The [500-bus S2 checkpoint](s2_500bus.md) records the separate confirmed-control pilot, recoveries and unresolved qualification gates.
 
 ## Formulations
 

@@ -1,3 +1,7 @@
+# Independent models may be built concurrently. Serialize native optimizer calls
+# so threaded campaigns do not depend on a particular MUMPS build's mutex.
+const _CONTINGENCY_SOLVE_LOCK = ReentrantLock()
+
 """Unified operational rank for screened, exact, and island-aware outcomes."""
 struct ContingencyPipelineRank
     contingency_id::Symbol
@@ -115,18 +119,27 @@ Run a coverage-checked M10 assessment pipeline. Every catalog entry receives
 exactly one route. `audit_screened_ids` names screened entries that must also
 receive exact evaluation. Set `screening_enabled=false` for an exact connected-
 outage baseline. Evaluation errors are retained unless
-`continue_on_error=false`.
+`continue_on_error=false`. `workers=1` preserves serial execution. Larger values
+use bounded threaded batches with independent models, serial native solves,
+and deterministic coordinator callbacks/checkpoints. Start Julia with enough
+threads. Phase timings sum worker durations and are not parallel wall time.
+User model hooks, if supplied, must be thread-safe.
 """
 function assess_contingency_pipeline(case::Case, base_state::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
-    participation::AbstractDict=Dict(g.id => 1.0 for g in case.generators if g.available),
+    participation::AbstractDict=default_participation(case),
     screening_enabled::Bool=true, audit_screened_ids::AbstractVector{Symbol}=Symbol[],
     continue_on_error::Bool=true, loading_threshold::Real=0.8,
     voltage_guard::Real=0.02, lodf_tolerance::Real=1e-8,
-    reactive_guard::Real=0.1, ac_risk_guard::Bool=true,
+    reactive_guard::Real=0.1, ac_risk_guard::Bool=true, droop_response_guard::Bool=false,
+    workers::Integer=1,
     _phase_timings=nothing,
     _assessment_loader=(entry, decision, audited)->nothing,
     _assessment_callback=identity, kwargs...)
+    1 <= workers <= Threads.nthreads() || throw(ArgumentError("workers must be between 1 and Threads.nthreads()"))
+    workers > 1 && (get(kwargs,:optimizer_factory,Ipopt.Optimizer) !== Ipopt.Optimizer || get(kwargs,:encoding,:smooth) != :smooth) &&
+        throw(ArgumentError("threaded assessment currently supports smooth Ipopt evaluation"))
+    haskey(kwargs,:_optimizer_lock) && throw(ArgumentError("the pipeline owns the optimizer lock"))
     validate_equilibrium(case, base_state).valid ||
         throw(ArgumentError("base state must independently validate"))
     catalog.case_id == case.id || throw(ArgumentError("catalog case ID does not match case"))
@@ -138,7 +151,7 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         throw(ArgumentError("screening audit references an unknown contingency"))
     filter_started = time_ns()
     decisions = filter_contingencies(case, base_state; catalog, loading_threshold,
-        voltage_guard, lodf_tolerance, reactive_guard, ac_risk_guard)
+        voltage_guard, lodf_tolerance, reactive_guard, ac_risk_guard, droop_response_guard, participation)
     isnothing(_phase_timings) || (_phase_timings[:filter] = (time_ns()-filter_started)/1e9)
     length(decisions) == length(catalog.entries) || error("filter did not cover the catalog")
     decision_by_id = Dict(decision.contingency_id => decision for decision in decisions)
@@ -147,22 +160,8 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         if decision.action == :screened)
     issubset(audit_ids, screened_ids) ||
         throw(ArgumentError("screening audit IDs must refer to screened contingencies"))
-    assessments = ContingencyPipelineAssessment[]
-    for entry in catalog.entries
-        decision = decision_by_id[entry.contingency.id]
-        decision.device_kind == entry.device_kind && decision.device_id == entry.device_id ||
-            error("filter decision does not match catalog entry")
-        if !screening_enabled && decision.action == :screened
-            decision = ContingencyFilterDecision(decision.contingency_id,
-                decision.device_kind, decision.device_id, :exact,
-                :screening_disabled, decision.predicted_loading)
-        end
-        audited = decision.action == :screened && entry.contingency.id in audit_ids
-        previous = _assessment_loader(entry, decision, audited)
-        if !isnothing(previous)
-            push!(assessments, previous)
-            continue
-        end
+    function evaluate_entry(entry, decision, audited)
+        phases = isnothing(_phase_timings) ? nothing : Dict{Symbol,Float64}()
         exact = nothing
         island = nothing
         error_message = nothing
@@ -170,11 +169,16 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
         try
             if decision.action == :exact || audited
                 exact = _evaluate_exact_entry(case, base_state, entry, catalog,
-                    participation; _phase_timings, kwargs...)
+                    participation; _phase_timings=phases, _optimizer_lock=workers > 1 ? _CONTINGENCY_SOLVE_LOCK : nothing, kwargs...)
                 outcome = audited ? :screened_audited : :exact_evaluated
             elseif decision.action == :island_aware
-                island = evaluate_islanding_contingency(case, entry.contingency,
-                    base_state; kwargs...)
+                island = if workers == 1
+                    evaluate_islanding_contingency(case, entry.contingency, base_state; kwargs...)
+                else
+                    lock(_CONTINGENCY_SOLVE_LOCK) do
+                        evaluate_islanding_contingency(case, entry.contingency, base_state; kwargs...)
+                    end
+                end
                 outcome = :island_evaluated
             elseif decision.action == :screened
                 outcome = :screened
@@ -188,11 +192,54 @@ function assess_contingency_pipeline(case::Case, base_state::ACState;
             outcome = :evaluation_error
         end
         rank = _pipeline_rank(entry, decision; exact, island, error_message, audited)
-        push!(assessments, ContingencyPipelineAssessment(entry, decision, outcome,
-            exact, island, error_message, rank))
-        # Persist outside the solver-error handler: interruption or I/O failure
-        # must stop the campaign, never be reclassified as an evaluated outage.
-        _assessment_callback(last(assessments))
+        assessment = ContingencyPipelineAssessment(entry, decision, outcome,
+            exact, island, error_message, rank)
+        (;assessment, phases)
+    end
+    assessments = ContingencyPipelineAssessment[]
+    # Load and commit on the coordinator. At most `workers` models/results are
+    # live in a batch, and every task is joined before invoking user callbacks.
+    for batch_start in 1:workers:length(catalog.entries)
+        batch = catalog.entries[batch_start:min(batch_start+workers-1,length(catalog.entries))]
+        jobs = map(batch) do entry
+            decision = decision_by_id[entry.contingency.id]
+            decision.device_kind == entry.device_kind && decision.device_id == entry.device_id ||
+                error("filter decision does not match catalog entry")
+            if !screening_enabled && decision.action == :screened
+                decision = ContingencyFilterDecision(decision.contingency_id,
+                    decision.device_kind, decision.device_id, :exact,
+                    :screening_disabled, decision.predicted_loading)
+            end
+            audited = decision.action == :screened && entry.contingency.id in audit_ids
+            previous = _assessment_loader(entry,decision,audited)
+            (;entry,decision,audited,previous)
+        end
+        execute = function(job)
+            !isnothing(job.previous) && return (;value=(;assessment=job.previous,phases=nothing),failure=nothing)
+            try
+                (;value=evaluate_entry(job.entry,job.decision,job.audited),failure=nothing)
+            catch error
+                (;value=nothing,failure=error)
+            end
+        end
+        results = if workers == 1
+            [execute(only(jobs))]
+        else
+            tasks = [Threads.@spawn execute(job) for job in jobs]
+            fetch.(tasks)
+        end
+        for (job,result) in zip(jobs,results)
+            isnothing(result.failure) || throw(result.failure)
+            value=result.value
+            push!(assessments,value.assessment)
+            if !isnothing(value.phases)
+                for (key,seconds) in value.phases
+                    _phase_timings[key]=get(_phase_timings,key,0.)+seconds
+                end
+            end
+            # Durable writes and interruption remain outside solver-error handling.
+            isnothing(job.previous) && _assessment_callback(value.assessment)
+        end
     end
     ids = [assessment.entry.contingency.id for assessment in assessments]
     expected_ids = [entry.contingency.id for entry in catalog.entries]

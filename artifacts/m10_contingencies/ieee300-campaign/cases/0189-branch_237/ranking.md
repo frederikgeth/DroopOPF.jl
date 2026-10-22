@@ -1,7 +1,0 @@
-# Evaluated contingency ranking
-
-Invalid and physical-only outcomes are retained at the top of the ranking; this table does not certify unlisted contingencies.
-
-| Rank | ID | Device | Device ID | Classification | Severity | Minimum operating margin | Solver status |
-|---:|---|---|---:|---|---:|---:|---|
-| 1 | branch_237 | branch | 237 | invalid | Inf | -8.210729383240079e-5 | LOCALLY_INFEASIBLE |

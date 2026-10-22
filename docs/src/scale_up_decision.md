@@ -5,7 +5,10 @@
     This page records the v0.4.0 decision. Its statements that M9 remained
     downstream were accurate at that checkpoint. M9 was subsequently
     implemented and released in v0.9.0; current status is maintained in
-    [Milestones and S1 status](milestones.md).
+    [Milestones and S1 status](milestones.md). Later sparse-balance profiling and
+    the bounded threaded implementation are recorded in the
+    [P2 completion ledger](p2_completion.md). This historical decision is not a
+    prohibition on those subsequently measured improvements.
 
 ## Decision
 
@@ -88,25 +91,4 @@ load/initial-condition robustness or contingency scaling. M9.1/M9.2 remain the
 next security capabilities; M8 and M9.3 are deferred. See the repository roadmap
 for the S1 and S2 acceptance gates.
 
-## S1 convergence correction
-
-The historical synthetic stalls have been traced to missing exact Hessians when
-droop parameters were free. Equivalent scalar composition restores second
-derivatives. All eight control combinations now converge and validate at 12 and
-96 buses; full joint runs take 16 iterations. The fixed-equipment public 118-bus
-baseline also validates. See [S1 evidence](s1_evidence.md) and the
-[implemented equations](joint_formulation.md).
-
-This addresses the reproduced numerical failure, not the full scaling gate.
-Control-count sweeps, multiple starts, medium-case solver comparisons, public
-control overlays and 300-bus acceptance remain before M9.
-
-
 ## Extended public-case checkpoint
-
-The [extended S1 evidence](s1_extension.md) covers independent device counts,
-both solvers, multiple starts and public 118-/300-bus networks. Synthetic
-robustness passes 35/35 attempts; the initial public pilot passes 13/30.
-Public joint solutions exist at both sizes/loading levels, but reliability and
-comparable solution quality are not established. S1 remains open before M9
-while equivalent scaling, primal/dual warm starts and restart policies are tested.

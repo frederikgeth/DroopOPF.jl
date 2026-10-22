@@ -62,13 +62,13 @@ function scenario_case(case::Case{T}, contingency::Contingency) where {T}
 end
 
 """
-    SCOPFControlPolicy(; taps=:preventive, shunts=:preventive, reactive=:automatic,
+    SCOPFControlPolicy(; taps=:corrective, shunts=:corrective, reactive=:automatic,
         tap_movement_limits=nothing, shunt_movement_limits=nothing)
 
-Declare cross-scenario timing. Preventive equipment has one shared setting;
-corrective equipment may select a bounded setting per scenario. Reactive
-assignments and voltage targets remain shared, while Q and voltage respond
-automatically to each scenario's equations and availability.
+Declare cross-scenario timing. Taps and shunts default to corrective settings
+selected independently within their control bounds. Preventive equipment has
+one shared setting. Reactive assignments and voltage targets remain shared,
+while Q and voltage respond to each scenario's equations and availability.
 """
 struct SCOPFControlPolicy
     taps::Symbol
@@ -76,8 +76,8 @@ struct SCOPFControlPolicy
     reactive::Symbol
     tap_movement_limits::Union{Nothing,Dict{Int,Float64}}
     shunt_movement_limits::Union{Nothing,Dict{Int,Float64}}
-    function SCOPFControlPolicy(; taps::Symbol=:preventive,
-        shunts::Symbol=:preventive, reactive::Symbol=:automatic,
+    function SCOPFControlPolicy(; taps::Symbol=:corrective,
+        shunts::Symbol=:corrective, reactive::Symbol=:automatic,
         tap_movement_limits::Union{Nothing,AbstractDict}=nothing,
         shunt_movement_limits::Union{Nothing,AbstractDict}=nothing)
         taps in (:preventive, :corrective) ||
@@ -109,13 +109,81 @@ Base.:(==)(a::SCOPFControlPolicy, b::SCOPFControlPolicy) =
     a.tap_movement_limits == b.tap_movement_limits &&
     a.shunt_movement_limits == b.shunt_movement_limits
 
+# Active bounds must agree with the bounds applied by the AC model builder.
+function _active_response_bounds(case::Case, i, assignments=nothing)
+    g = case.generators[i]
+    lo, hi = Float64(g.p_min), Float64(g.p_max)
+    controls = isnothing(assignments) ?
+        [case.controls[a.control_id] for a in case.attachments if a.generator_id == g.id] :
+        [a.mode for a in assignments if a.generator_id == g.id && a.mode isa VoltVarDroop]
+    for control in controls
+        lo = max(lo, control.capability.p_min)
+        hi = min(hi, control.capability.p_max)
+    end
+    return lo, hi
+end
+
 """
-    Study(case; contingencies=[], mode=:preventive, participation=Dict(), redispatch_limits=Dict(),
+    default_participation(case; reactive_assignments=nothing)
+
+Capability-range weights for available generators with nonzero effective active
+range. These are a declared fallback, not measured governor/AGC response data.
+Supply explicit nonnegative weights when actual response data are available.
+"""
+function default_participation(case::Case; reactive_assignments=nothing)
+    weights = Dict{Int,Float64}()
+    for (i,g) in enumerate(case.generators)
+        g.available || continue
+        lo, hi = _active_response_bounds(case, i, reactive_assignments)
+        isfinite(lo) && isfinite(hi) || throw(ArgumentError("default participation needs finite active bounds; supply explicit weights"))
+        hi > lo && (weights[g.id] = hi - lo)
+    end
+    weights
+end
+
+function _response_bounds(study, case, i, base_p)
+    lo, hi = _active_response_bounds(case, i, study.reactive_assignments)
+    id = case.generators[i].id
+    if haskey(study.redispatch_limits, id)
+        r = study.redispatch_limits[id]
+        lo, hi = max(lo, base_p-r), min(hi, base_p+r)
+    end
+    lo, hi
+end
+
+# Invert aggregate bounded response for initialization only. The NLP still
+# determines its own signal and balances the full nonlinear AC losses.
+function _response_signal_start(study, case, base_pg, target)
+    alpha = _participation(study, case)
+    abs(target) <= 1e-12 && return 0.0
+    lower, upper = 0.0, 0.0
+    entries = Tuple{Int,Float64,Float64,Float64}[]
+    for (i,g) in enumerate(case.generators)
+        g.available && alpha[i] > 0 || continue
+        lo, hi = _response_bounds(study, case, i, base_pg[i])
+        push!(entries, (i,alpha[i],lo,hi))
+        lower = min(lower, (lo-base_pg[i])/alpha[i])
+        upper = max(upper, (hi-base_pg[i])/alpha[i])
+    end
+    for _ in 1:80
+        signal = (lower+upper)/2
+        supplied = sum(clamp(base_pg[i]+weight*signal,lo,hi)-base_pg[i]
+            for (i,weight,lo,hi) in entries; init=0.0)
+        supplied < target ? (lower=signal) : (upper=signal)
+    end
+    (lower+upper)/2
+end
+
+"""
+    Study(case; contingencies=[], mode=:preventive, participation=nothing, redispatch_limits=Dict(),
           tap_controls=[], shunt_controls=[], control_policy=SCOPFControlPolicy())
 
-Fixed-curve SCOPF study. Preventive response is `P[c,g] = P[base,g] + α[c,g] Δ[c]`:
-nonnegative participation weights are normalized over surviving generators.
-`Δ` balances the outage and changed AC losses; it is power in p.u., not frequency.
+Fixed-curve SCOPF study. Preventive automatic response follows weighted requests
+clipped to each participant's effective active bounds and optional movement limits.
+A common response signal lets unsaturated generators take over unmet response.
+Default weights use nonzero effective active capability ranges; explicit weights
+override them. Zero-weight generators hold their base output. The signal is power
+in p.u., not frequency, and differs from total delivered response after saturation.
 Corrective response permits `abs(P[c,g] - P[base,g]) <= redispatch_limits[g]`.
 Missing limits mean zero redispatch. Limits also optionally cap preventive response.
 All powers use the case per-unit base. Generator capability limits apply in every
@@ -132,7 +200,7 @@ struct Study{T<:Real}
     shunt_controls::Vector{ShuntControl}
     control_policy::SCOPFControlPolicy
     function Study(case::Case{T}; contingencies = Contingency[], mode::Symbol = :preventive,
-                   participation::AbstractDict = Dict{Int,Float64}(),
+                   participation::Union{Nothing,AbstractDict} = nothing,
                    redispatch_limits::AbstractDict = Dict{Int,Float64}(),
                    reactive_assignments = nothing,
                    tap_controls::AbstractVector{<:TapControl}=TapControl[],
@@ -142,7 +210,9 @@ struct Study{T<:Real}
         cs = Contingency[contingencies...]
         length(unique(c.id for c in cs)) == length(cs) ||
             throw(ArgumentError("contingency IDs must be unique"))
-        weights = Dict{Int,Float64}(participation)
+        weights = isnothing(participation) ? (mode == :preventive ?
+            default_participation(case; reactive_assignments) : Dict{Int,Float64}()) :
+            Dict{Int,Float64}(participation)
         limits = Dict{Int,Float64}(redispatch_limits)
         available = Set(g.id for g in case.generators if g.available)
         for values in (weights, limits)
@@ -171,7 +241,9 @@ struct Study{T<:Real}
         for c in cs
             overlay = scenario_case(case, c)
             if mode == :preventive
-                total = sum(get(weights, g.id, 0.0) for g in overlay.generators if g.available; init=0.0)
+                total = sum(get(weights, g.id, 0.0) for (i,g) in enumerate(overlay.generators)
+                    if g.available && _active_response_bounds(case, i, assignments)[2] >
+                        _active_response_bounds(case, i, assignments)[1]; init=0.0)
                 isfinite(total) && total > 0 ||
                     throw(ArgumentError("scenario $(c.id) needs a surviving active-power participant"))
             end
@@ -182,14 +254,27 @@ struct Study{T<:Real}
 end
 
 function _participation(study::Study, case::Case)
-    weights = [g.available ? get(study.participation, g.id, 0.0) : 0.0 for g in case.generators]
-    return weights ./ sum(weights)
+    weights = [g.available && _active_response_bounds(case, i, study.reactive_assignments)[2] >
+        _active_response_bounds(case, i, study.reactive_assignments)[1] ?
+        get(study.participation, g.id, 0.0) : 0.0 for (i,g) in enumerate(case.generators)]
+    total = sum(weights)
+    total > 0 || throw(ArgumentError("no surviving active-power response capability"))
+    return weights ./ total
 end
 
 # Recheck mutable vectors/dictionaries when a study is used.
 function _validated_study(study::Study)
     return Study(study.case; contingencies=study.contingencies, mode=study.mode,
         participation=study.participation, redispatch_limits=study.redispatch_limits,
+        reactive_assignments=study.reactive_assignments,
+        tap_controls=study.tap_controls, shunt_controls=study.shunt_controls,
+        control_policy=study.control_policy)
+end
+
+# Reconstruct a study without silently losing its response/equipment contract.
+function _copy_study(study::Study; case=study.case, contingencies=study.contingencies)
+    Study(case; contingencies, mode=study.mode, participation=study.participation,
+        redispatch_limits=study.redispatch_limits,
         reactive_assignments=study.reactive_assignments,
         tap_controls=study.tap_controls, shunt_controls=study.shunt_controls,
         control_policy=study.control_policy)

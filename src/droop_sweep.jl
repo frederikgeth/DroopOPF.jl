@@ -39,13 +39,7 @@ function _study_with_control_slope(study::Study, control_id::Integer, slope::Rea
         controls = controls,
         attachments = study.case.attachments,
     )
-    return Study(
-        case;
-        contingencies = study.contingencies,
-        mode = study.mode,
-        participation = study.participation,
-        redispatch_limits = study.redispatch_limits,
-    )
+    return _copy_study(study; case)
 end
 
 function _sweep_point(study::Study, slope::Real, result::SCOPFResult)

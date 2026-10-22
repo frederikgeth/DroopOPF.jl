@@ -22,7 +22,7 @@ using JSON
     @test_throws ArgumentError scenario_case(case, Contingency(:unknown; branch_ids=[1]))
     @test_throws ArgumentError scenario_case(case, Contingency(:island; branch_ids=[22,33]))
     @test_throws ArgumentError Study(case; contingencies=[line,line])
-    @test_throws ArgumentError Study(case; contingencies=[line])
+    @test Study(case; contingencies=[line]).participation == default_participation(case)
     @test_throws ArgumentError Study(case; contingencies=[gen], participation=Dict(9=>1.0))
     @test_throws ArgumentError Study(case; participation=Dict(1=>1.0))
     @test_throws ArgumentError Study(case; participation=Dict(7=>NaN))
@@ -170,7 +170,7 @@ end
     contingencies = [Contingency(:line_22; branch_ids=[22]),
         Contingency(:generator_9; generator_ids=[9])]
     assignments = reactive_control_assignments(case)
-    policy = SCOPFControlPolicy()
+    policy = SCOPFControlPolicy(taps=:preventive, shunts=:preventive)
     study = Study(case; contingencies, participation=Dict(7=>2.0, 9=>1.0),
         reactive_assignments=assignments, tap_controls=taps,
         shunt_controls=shunts, control_policy=policy)
@@ -213,7 +213,8 @@ end
     exact_study = Study(case; contingencies,
         participation=Dict(7=>2.0, 9=>1.0),
         reactive_assignments=assignments, tap_controls=exact_taps,
-        shunt_controls=exact_shunts)
+        shunt_controls=exact_shunts,
+        control_policy=SCOPFControlPolicy(taps=:preventive, shunts=:preventive))
     exact = solve_scopf(exact_study; encoding=:complementarity,
         initial_states=result.states)
     @test exact.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
@@ -272,7 +273,8 @@ end
 
     outaged = Study(case; contingencies=[Contingency(:line_11; branch_ids=[11])],
         participation=Dict(7=>1.0, 9=>1.0), tap_controls=taps,
-        shunt_controls=shunts)
+        shunt_controls=shunts,
+        control_policy=SCOPFControlPolicy(taps=:preventive, shunts=:preventive))
     outaged_seed_study = Study(source;
         contingencies=[Contingency(:line_11; branch_ids=[11])],
         participation=Dict(7=>1.0, 9=>1.0))
@@ -286,12 +288,20 @@ end
     @test_throws ArgumentError SCOPFControlPolicy(shunts=:automatic)
     @test_throws ArgumentError SCOPFControlPolicy(reactive=:corrective)
     @test_throws ArgumentError SCOPFControlPolicy(
-        tap_movement_limits=Dict(11=>0.01))
+        taps=:preventive, tap_movement_limits=Dict(11=>0.01))
     @test_throws ArgumentError SCOPFControlPolicy(taps=:corrective,
         tap_movement_limits=Dict(11=>-0.01))
     @test_throws ArgumentError Study(case; tap_controls=taps,
         control_policy=SCOPFControlPolicy(taps=:corrective,
             tap_movement_limits=Dict(999=>0.01)))
+    default_policy = SCOPFControlPolicy()
+    @test default_policy.taps == :corrective
+    @test default_policy.shunts == :corrective
+    @test isnothing(default_policy.tap_movement_limits)
+    @test isnothing(default_policy.shunt_movement_limits)
+    default_timing_study = Study(case; tap_controls=taps,
+        shunt_controls=shunts)
+    @test default_timing_study.control_policy == default_policy
     @test_throws ArgumentError evaluate_contingencies(study, result.states[:base])
     policy_only = Study(source; control_policy=SCOPFControlPolicy(
         taps=:corrective, shunts=:corrective))
@@ -339,7 +349,8 @@ end
         migrated_study = read_study(legacy_study_path)
         @test isempty(migrated_study.tap_controls)
         @test isempty(migrated_study.shunt_controls)
-        @test migrated_study.control_policy == SCOPFControlPolicy()
+        @test migrated_study.control_policy == SCOPFControlPolicy(
+            taps=:preventive, shunts=:preventive)
 
         legacy_result = JSON.parsefile(joinpath(dir, "m9-result.json"))
         legacy_result["schema_version"] = 2
@@ -352,7 +363,8 @@ end
         migrated_result = read_scopf_result(legacy_result_path)
         @test isempty(migrated_result.tap_settings)
         @test isempty(migrated_result.shunt_settings)
-        @test migrated_result.control_policy == SCOPFControlPolicy()
+        @test migrated_result.control_policy == SCOPFControlPolicy(
+            taps=:preventive, shunts=:preventive)
     end
 end
 

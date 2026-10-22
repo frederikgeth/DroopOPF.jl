@@ -33,4 +33,7 @@ jobs:
       - name: Instantiate project
         run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
       - name: Run package tests
+        env:
+          JULIA_NUM_THREADS: 2
+          OPENBLAS_NUM_THREADS: 1
         run: julia --project=. -e 'using Pkg; Pkg.test()'

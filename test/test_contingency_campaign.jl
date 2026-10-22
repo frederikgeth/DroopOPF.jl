@@ -70,6 +70,7 @@ end
         @test DroopOPF._json_data(replay.result.combined_ranking) ==
             DroopOPF._json_data(resumed.result.combined_ranking)
         @test_throws ArgumentError run_contingency_campaign(dir,case,base; loading_threshold=0.7)
+        @test_throws ArgumentError run_contingency_campaign(dir,case,base; sparse_balance=true)
         @test_throws ArgumentError run_contingency_campaign(dir,case,base; participation=Dict(1=>2.0,2=>1.0))
         @test_throws ArgumentError run_contingency_campaign(dir,case,base; optimizer_attributes=Dict("max_iter"=>5))
         @test_throws ArgumentError run_contingency_campaign(dir,case,base;

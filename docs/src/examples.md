@@ -145,13 +145,10 @@ point, and optionally activates k1 → k2 → k3 inside a continuous joint tap
 design:
 
 ```sh
-julia --project=. examples/avr_ieee_qualification.jl 118 ipopt 3 1.0,1.01 joint_staged
-julia --project=. examples/avr_ieee_qualification.jl 300 madnlp 3 1.0,1.01 joint_staged
-julia --project=. examples/avr_ieee_qualification.jl 300 ccopt 3 1.01 joint_cross_seed
 ```
 
 Every command writes a separately labelled JSON record under
 `artifacts/avr_ieee_qualification`. Cross-seeded CCOpt is a basin diagnostic;
-it does not replace the direct exact result. See the [current S1 decision
-report](s1_summary.md#qualified-avr-lane) for the full scorecard and scope
+it does not replace the direct exact result. See the [retained AVR qualification
+report](https://github.com/frederikgeth/DroopOPF.jl/blob/main/artifacts/avr_ieee_qualification/README.md) for the full scorecard and scope
 boundaries.

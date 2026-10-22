@@ -15,7 +15,7 @@ the catalog and are never silently treated as safe.
 """
 function evaluate_contingency_catalog(case::Case, base_state::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
-    participation::AbstractDict=Dict(g.id => 1.0 for g in case.generators if g.available),
+    participation::AbstractDict=default_participation(case),
     kwargs...)
     catalog.case_id == case.id || throw(ArgumentError("catalog case ID does not match case"))
     validate_equilibrium(case, base_state).valid ||

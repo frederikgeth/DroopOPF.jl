@@ -1,173 +1,65 @@
 # S1 current decision report
 
-**Decision: the frozen S1 reliability gate remains open.** The equipment and
-reactive-control equations have substantial independent support, and many
-failed cells have validated same-case witnesses, but the declared direct-start
-policy is not reliable across solvers, starts, networks, and load levels. M8's
-qualified AVR lane is release evidence for a different, physically selected
-controller policy; it does not overwrite or rescore the frozen synthetic-droop
-matrix.
+**S1 is closed for the declared 14- and 500-bus sampled-demand study (2026-10-15).** The accepted scope uses Pmin=0, symmetric reactive limits, zero deadband, continuous equipment controls, and OPF-derived initializations. Direct failures and bounded recoveries remain visible. See the [S1 closeout](s1_closeout.md), [500-bus qualification](s1_500_results.md), and [free-droop comparison](s1_free_droop_results.md). Original-limit compatibility and broader operating envelopes remain explicitly qualified limitations.
 
-This page is the authoritative synthesis as of v0.8.0. The other S1 pages are
-the chronological audit trail and retain the counts known at each checkpoint.
+## Final 14-bus decision
 
-![S1 evidence lanes and acceptance outcomes](assets/s1_summary/decision.svg)
+The selected reference is the 100%-demand joint loss-minimizing OPF with all three online transformer ratios within ±5% of source settings and available shunt bank 3 continuously adjustable. Calibrate five shifted-zero-Q curves with uniform 8% full-Q-span droop and no deadband, then freeze the curves, taps and shunt at that reference. Keep study Pmin=0 and symmetric Q bounds; original data remain separate.
 
-## Scope separation
+The frozen design has verified points at **all five sampled demands (90/95/100/105/110%)** and **42/45 accepted solver attempts** over three OPF-anchor starts and three solvers. Ipopt and MadNLP each accept 15/15; CCOpt accepts 12/15, with three retained iteration limits at 90%. The separate free-equipment comparator accepts 45/45. No flat starts contribute to either score.
 
-| Lane | Question answered | May change the frozen score? |
-|---|---|---:|
-| Frozen synthetic-droop matrix | Does the declared direct-start policy reliably solve the unchanged adversarial workload? | Yes; this is the gate |
-| Same-case witness diagnostic | Does a failed target admit a validated solution under the same equations, bounds, and load? | No; it classifies the failure |
-| Relaxed `1e-2` re-score | Is rejection caused only by the exact-droop `1e-5` gate? | No; diagnostic only |
-| Qualified AVR lane | Do explicitly selected physical control semantics work on the public cases? | No; separate M8 evidence |
+Wider ±10%-of-source or 0.9–1.1 references improve losses with equipment free but lose frozen-design witnesses at 90/95% and worsen frozen 110% losses. They are retained sensitivity results, not the selected closeout design. The final design has not been requalified under original generator limits; prior original-limit tests concern earlier designs. Thermal and voltage limits can remain binding.
 
-The distinction is essential. A witness can refute an infeasibility inference
-without making the prescribed start reliable. Likewise, a physically qualified
-AVR model can pass without rehabilitating an anchor-derived synthetic droop
-assignment.
+## Completed evidence
 
-## Acceptance contract
+Counts below describe each stage's own scope; reused cells are identified in the linked reports and must not be summed as unique solves.
 
-A cell passes only when all applicable checks pass. Solver status alone is not
-acceptance, and a complementarity product is not a substitute for exact
-physical replay.
-
-| Gate | Frozen requirement |
-|---|---|
-| Solver | Accepted termination and a usable primal point |
-| AC physics | Independently reconstructed active/reactive balance within the declared tolerance |
-| Network and equipment | Voltage, generator, thermal, tap, and shunt policy limits |
-| Reactive control | Exact droop/AVR regime replay; frozen droop mismatch at most `1e-5` pu |
-| Budget | Declared per-attempt and restart allowance; diagnostic overruns remain separate |
-| Provenance | Stable case, load, controller policy, start, backend, smoothing, and context hash |
-
-The user-requested `1e-2` mismatch view is retained as a re-score. It changes
-only the exact-droop threshold; it does not waive solver, balance, policy, or
-equipment checks.
-
-## Frozen direct-start scorecard
-
-All three rows cover the same 12 public cells: IEEE 118/300, nominal/+5%
-demand, and anchor/flat-low/flat-high starts. Ipopt and MadNLP use the frozen
-smooth explicit-droop model and one-reset policy. CCOpt uses exact
-complementarity and its native direct budget, so it is a third solver family,
-not a like-for-like smooth-backend ranking.
-
-| Backend | Formulation and budget | Strict `1e-5` | Relaxed `1e-2` | Main rejection mechanism |
-|---|---|---:|---:|---|
-| Ipopt | Smooth; one reset, 2000 iterations / 120 s total | 8/12 | 8/12 | Iteration/basin failures; two witness reruns narrowly miss strict droop replay |
-| MadNLP | Smooth; one reset, 2000 iterations / 120 s total | 4/12 | 5/12 | `SLOW_PROGRESS`, iteration, and basin sensitivity |
-| CCOpt | Exact; one direct solve, 1000 inner iterations / 60 s | 2/12 | 2/12 | Rejected cells also fail termination or AC balance |
-
-The strict direct score is therefore **14/36 across separately declared solver
-lanes**, not a pooled success probability. Starts and cells are deliberately
-adversarial and are not samples from an operational distribution.
-
-## Same-case witness diagnostic
-
-The 12 unresolved smooth cells were rerun from a validated witness for the same
-network and load. The seed contains the full physical decision—AC state, tap,
-shunt, and droop settings—while equations, bounds, objective, smoothing,
-validation, and restart budget remain unchanged.
-
-| Outcome class | Cells | Interpretation |
-|---|---:|---|
-| Strictly recovered | 7/12 | Direct failure was basin/start sensitive |
-| Recovered only under `1e-2` droop re-score | 2/12 | `LOCALLY_SOLVED`, raw mismatch about `1.122e-5`; strict gate remains failed |
-| Not recovered because of `SLOW_PROGRESS` | 3/12 | Balance and droop residuals are near machine precision, but the declared termination gate remains failed |
-
-Thus the witness diagnostic reaches 7/12 strictly and 9/12 under the relaxed
-droop-only view. It establishes feasible-but-not-reliably-reached targets and
-separates physical residual quality from termination robustness.
-
-## Qualified AVR lane
-
-M8 replaces synthetic controller semantics only in a separately labelled lane.
-Candidates are selected by normalized bidirectional raw-Q headroom, at most one
-generator per bus, with raw voltage at least `1e-5` inside its limits. AVR
-setpoints come from the independently validated FreeQ operating point. Joint
-design uses a fixed first-transformer ±1% tap policy and staged k1 → k2 → k3
-activation.
-
-| Backend | Networks / loads | Staged physical validation | Termination detail |
-|---|---|---:|---|
-| Ipopt | IEEE 118/300 at 1.00 and 1.01 | 12/12 | 12/12 `LOCALLY_SOLVED` |
-| MadNLP | IEEE 118/300 at 1.00 and 1.01 | 12/12 | 12/12 `LOCALLY_SOLVED` |
-| CCOpt direct | IEEE 118/300 at 1.00 and 1.01 | 11/12 | 7/12 `LOCALLY_SOLVED`; four valid `ALMOST_LOCALLY_SOLVED`; one invalid stressed-k3 result |
-
-The sole direct exact failure is IEEE-300 at load 1.01, k3. Seeding a fresh
-exact solve from the full smooth k3 witness recovers a physically valid
-`ALMOST_LOCALLY_SOLVED` point. Its maximum complementarity residual is
-`2.484e-8`, and its tap differs from the smooth seed by about `5.18e-9`. This
-classifies the direct `LOCALLY_INFEASIBLE` result as basin-sensitive solver
-behavior, not evidence that the exact equations are infeasible. The cross-seed
-is diagnostic and does not change the 11/12 direct score.
-
-## Causal findings
-
-| Hypothesis | Evidence | Current judgment |
+| Stage | Evidence / outcome | Report |
 |---|---|---|
-| Transformer equation error | Independent PowerModels-style terminal-flow oracle checks across tap ratios and phase shifts | Not supported |
-| Shunt equation is the dominant cause | Shunt-only and one-droop/one-shunt isolation cells pass; raw and shunt-only public slices are materially stronger | Not supported |
-| Public source cases are generally infeasible | Valid raw and controlled witnesses exist over the tested envelopes | Not supported for the qualified envelopes |
-| Every frozen failure is a residual-threshold artifact | Relaxing only droop mismatch leaves most rejected cells unchanged | Rejected |
-| Solver basin/start sensitivity is material | Same-case witnesses recover 7 strict cells; controller-count and exact cross-seed results are non-monotone | Supported |
-| Termination and physical validity are interchangeable | Near-machine-precision residual points can retain `SLOW_PROGRESS`; valid CCOpt points can be `ALMOST_LOCALLY_SOLVED` | Rejected |
-| Frozen synthetic controls are representative hardware | Controllers are anchor-derived overlays rather than measured plant assignments | Rejected; retain as adversarial evidence |
+| Source import and limits | Original OPF/SCOPF preserved; Pmin-zero/symmetric-Q study variants retained separately | [Historical experiment record](assets/s1_anchor_only/s1_history.md) |
+| Droop and initialization diagnosis | Source/cost/loss anchors; corrected curves; no-deadband/deadband; feasibility and global escalation diagnostics | [Historical experiment record](assets/s1_anchor_only/s1_history.md) |
+| Joint sensitivity | 1,080 cells; 702 physical witnesses / 688 accepted | [Sensitivity](assets/s1_anchor_only/joint_sensitivity_report.md) |
+| Matched smoothing | 720 new + 360 reused cells; 701 physical / 689 accepted | [Matched comparison](assets/s1_anchor_only/matched_sensitivity_report.md) |
+| 95/105% confirmation | 72/72 accepted | [Confirmation](assets/s1_anchor_only/confirmation_report.md) |
+| Equipment-only families | 90 new + 30 reused; 120/120 accepted under dispatch deviation | [Equipment](assets/s1_anchor_only/equipment_report.md) |
+| Slope design and frozen tests | 105/120 accepted design; 105/120 accepted frozen | [Droop design](assets/s1_anchor_only/droop_design_report.md) |
+| Fixed-controller objective comparison | Dispatch 30/30, loss 26/30, cost 23/30 | [Objectives](assets/s1_anchor_only/objective_comparison_report.md) |
+| Performance control families | 447/480 design cells including reused baseline; 347/420 frozen accepted | [Performance](assets/s1_anchor_only/performance_controls_report.md) |
+| Original limits on earlier candidates | 30 source OPFs + 450 solves; 75/75 model/demand contracts feasible, 410/450 accepted | [Original limits](assets/s1_anchor_only/original_limits_report.md) |
+| Joint loss references and tap bounds | 258 primary + 90 new-anchor solves; all 348 saved states replayed without discrepancies | [Final closeout](s1_14bus_closeout.md) |
+| Selected frozen design | Serialized-case replay of 45 attempts; 42 accepted; five demand witnesses packaged | [Final closeout](s1_14bus_closeout.md) |
 
-The strongest conclusion is not that one solver is “best.” It is that the
-current nonconvex formulations expose multiple failure classes: basin-sensitive
-paths, termination-status robustness, narrow exact-replay misses, and genuinely
-poor nonconverged iterates. Those classes require different remedies.
+## Objectives and acceptance
 
-## Evidence provenance
+A **reference-loss** OPF constructs a calibration point by minimizing total active losses, sum(Pg)−sum(Pd). A **reference-cost** OPF minimizes the source generator cost model. Either OPF can also supply an initialization without changing the calibrated controller. The downstream S1 objective is a separate choice: loss, generation cost, or historical squared dispatch deviation. The final design uses joint loss calibration and loss-objective evaluation.
 
-| Evidence | Human-readable record | Machine-readable record |
-|---|---|---|
-| Frozen three-solver direct score | `artifacts/s1_three_solver_scorecard/report.md` | `artifacts/s1_three_solver_scorecard/summary.json` |
-| Same-case witness reruns | `artifacts/s1_frozen_witness_seed_matrix/report.md` | `artifacts/s1_frozen_witness_seed_matrix/summary.json` |
-| `1e-2` witness re-score | `artifacts/s1_witness_seed_tolerance_1e-2/report.md` | `artifacts/s1_witness_seed_tolerance_1e-2/summary.json` |
-| Incremental control isolation | `artifacts/s1_incremental_controls/report.md` | Regenerate the large raw ledger with `examples/s1_incremental_controls.jl` |
-| Controller-5 diagnostic | `artifacts/s1_incremental_control5/report.md` | Regenerate the large raw ledger with `examples/s1_controller5_witness_audit.jl` |
-| Qualified AVR envelope | `artifacts/avr_ieee_qualification/README.md` | Per-cell JSON files in the same directory |
+A physically feasible point passes independent AC balance, voltage, generator P/Q, thermal, angle, equipment-policy and exact-droop checks. Solver acceptance additionally requires successful termination. The gate remains **feasible / certified infeasible / unresolved**; local infeasibility or iteration limits do not prove global infeasibility. Qualification is for sampled steady-state demand points, not continuous-range robustness, dynamic stability or N-1 security.
 
-[Download the compact v0.8.0 scorecard](assets/s1_summary/current-scorecard.json).
+## Historical studies
 
-The compact reports and scorecards are the intended review surface. Large raw
-iteration traces and multi-megabyte per-attempt ledgers are reproducible working
-evidence and are intentionally excluded from the release tree; failed outcomes
-remain represented in the committed reports.
+<!-- S1_ZERO_DEADBAND_FOLLOWUP -->
+## Zero-deadband numerical follow-up
 
-## Limitations and decision
+The specialized constant-zero-deadband formulation removes the redundant voltage
+hinges while retaining Q saturation. A separate S1 replay accepted **11/12 primary
+attempts** (all six original light-load starts and five of six closeout-profile
+failures); **12/12 combinations** passed after one historical-policy bounded
+retry. The remaining primary failure is retained as `SLOW_PROGRESS` with an AC
+power-balance violation. These follow-up counts do not replace the historical
+campaign or profile scores above. The formulation passed **3,042/3,042 regression
+checks**. See the [diagnosis, recovery and limitations](s1_zero_deadband.md).
+<!-- /S1_ZERO_DEADBAND_FOLLOWUP -->
 
-- The public overlays are synthetic and do not establish utility-grade plant
-  assignments, discrete implementability, or probabilistic reliability.
-- AC OPF remains nonconvex. A validated witness establishes local feasibility,
-  not global optimality or uniqueness.
-- The 1.00/1.01 AVR envelope and nominal/+5% frozen envelope answer different
-  questions and must not be merged.
-- Runtime measurements include compilation and machine-specific effects unless
-  a report explicitly states otherwise.
-- M8 qualification is base-case work. It does not authorize independent
-  scenario-specific tap, shunt, or voltage targets in SCOPF.
+<!-- S1_CONTROL_FIGURES -->
+## S1 14-bus free-control solution figures
 
-The project may proceed to M9 because the physical control semantics and
-failure classes are now explicit, but M9 must preserve this evidence split.
-Taps and shunts are preventive by default; corrective movement requires an
-explicit response-time policy. Droop and AVR may respond automatically only
-through declared scenario coupling. S1 remains open until an unchanged remedy
-improves the complete frozen matrix without weakening its acceptance contract.
+The focused visual follow-up uses 15 saved, matched joint-anchor designs:
+90/95/100/105/110% demand and Ipopt/MadNLP/CCOpt, with slopes, references,
+all three taps and bank 3 free. All 15 points pass independent replay with zero
+discrepancies; no new optimization was run. CCOpt freely designed the curves
+in S1, unlike the fixed-curve S2 verification. Demand points are independent
+redesigns, not a single frozen-controller qualification. Historical scores and
+the closed S1 numerical scope are unchanged.
 
-## Reproduction
-
-```sh
-julia --project=. examples/s1_three_solver_scorecard.jl
-julia --project=. examples/s1_frozen_witness_seed_matrix.jl
-julia --project=. examples/s1_witness_seed_tolerance_rescore.jl
-julia --project=. examples/avr_ieee_qualification.jl 118 ipopt 3 1.0,1.01 joint_staged
-julia --project=. examples/avr_ieee_qualification.jl 300 ccopt 3 1.01 joint_cross_seed
-```
-
-Historical experimental pages remain useful for method detail, but their
-checkpoint counts should not be quoted as the current aggregate status.
+[All 12 operating/control comparison figures](s1_14bus_control_figures.md).
+<!-- /S1_CONTROL_FIGURES -->

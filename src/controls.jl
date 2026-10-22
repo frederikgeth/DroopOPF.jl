@@ -187,12 +187,15 @@ struct VoltVarDroop{T<:Real} <: ReactiveControlMode
         # slope is ΔV / ΔQ in pu voltage per unit reactive output.
         v_at_qmax = schedule.v_db_low - slope * (q_max - q_at_deadband)
         v_at_qmin = schedule.v_db_high + slope * (q_at_deadband - q_min)
-        v_at_qmax < schedule.v_db_low < schedule.v_db_high < v_at_qmin ||
+        v_at_qmax < schedule.v_db_low <= schedule.v_db_high < v_at_qmin ||
             throw(ArgumentError("droop and deadband must produce ordered curve breakpoints"))
 
+        no_deadband = schedule.v_db_low == schedule.v_db_high
         curve = PiecewiseLinearCurve(
-            [v_at_qmax, schedule.v_db_low, schedule.v_db_high, v_at_qmin],
-            [q_max, q_at_deadband, q_at_deadband, q_min];
+            no_deadband ? [v_at_qmax, schedule.v_db_low, v_at_qmin] :
+                [v_at_qmax, schedule.v_db_low, schedule.v_db_high, v_at_qmin],
+            no_deadband ? [q_max, q_at_deadband, q_min] :
+                [q_max, q_at_deadband, q_at_deadband, q_min];
             extrapolation = :clamp,
         )
         new{T}(schedule, slope, q_at_deadband, capability, curve)

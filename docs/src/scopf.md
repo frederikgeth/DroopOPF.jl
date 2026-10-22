@@ -27,14 +27,6 @@ pipeline = assess_contingency_pipeline(case, base_state; catalog,
 write_contingency_pipeline("pipeline.json", pipeline)
 ```
 
-The default unit suite exercises catalog ordering, full eligible enumeration,
-fixed-base validation, accepted/unresolved classification, ranking, JSON
-persistence, structural island detection, retained-component balancing,
-production-filter routing, screening scores, and sparse model
-construction on synthetic networks of eight buses or fewer. IEEE-118 and
-IEEE-300 are excluded from unit tests and reserved for S1/S2 and explicit M10
-reliability campaigns.
-
 Use normal Julia compilation for performance runs. The supervisor no longer
 uses `--compile=min`, which slows numerical model construction. Power-balance
 expressions for the imported FreeQ baseline contain only nonzero admittance
@@ -44,25 +36,6 @@ preserve sensitive CCOpt warm-start trajectories. Each completed baseline
 writes `timing.json` separating construction (including first-call compilation)
 from optimization and extraction. Compare warm runs in the same Julia process
 when measuring sustained throughput; a fresh process pays compilation again.
-
-On the development machine, the first IEEE-118 branch-outage evaluation with
-the saved base reduced equality-Jacobian entries from 55,606 to 2,028.
-The original Ipopt solve took 5.95 seconds; the sparse warmed evaluation took
-0.33 seconds (0.36 seconds including validation and persistence). The complete
-first runner call took 24.36 seconds, including compilation but excluding package
-startup and a new base solve. Both formulations returned the same 44-iteration
-local-infeasibility outcome, with constraint residual approximately 6.67e-4.
-These are single-case measurements, not a convergence or campaign-time guarantee.
-
-For complete enumeration, run `examples/m10_campaign.sh 118 OUTPUT`. The campaign
-loads the case and validated base state once, evaluates every eligible outage in
-one Julia process, and persists each outcome before continuing. Re-running the
-same command resumes explicitly completed outcomes. Optional positional arguments
-select the first and last eligible catalog indices, per-outage solver seconds,
-and iteration limit. `campaign.json` and `campaign.md` distinguish completion,
-accepted results, physical-only results, invalid results, and execution errors.
-The aggregate ranking contains completed exact evaluations only; it is produced
-after evaluation and is not a pre-solve filter.
 
 `contingency_catalog(case)` deterministically enumerates every available line,
 transformer, and generator outage. Each candidate records its device ID and a
@@ -112,55 +85,17 @@ while line and transformer rankings are separate families.
 The diagnostic baseline runner evaluates a numbered batch against one
 independently validated, fixed base OPF state:
 
-```sh
-julia --project=. examples/m10_contingency_baseline.jl 118 artifacts/m10/ieee118-batch001 1 1
-```
-
-It writes both the complete catalog and the exact outcomes for that batch.
-The first batch creates a source-hashed `ieee118-base-state.json` beside the
-batch directories; later batches reuse that state only after independently
-revalidating it. Thus every batch assesses the identical, solver-accepted base
-without repeatedly optimizing a new base dispatch.
-The runner writes `run-policy.md` before solving. Its default 120-second
-Ipopt CPU-time and wall-clock limits, plus its 1,000-iteration limit, apply
-independently to the base and each contingency batch. They begin after model
-construction, so production runs need an external process supervisor for an
-end-to-end budget. A bounded solver failure is retained as an unresolved
-outcome; it is never converted into a safety or screening assertion.
-
 Use the supplied POSIX supervisor for a bounded batch. It records its own
 completion or timeout in `supervisor.md` and retains `run.log` even if the
 child never reaches Ipopt. An operating-system CPU-limit signal is explicitly
 recorded as `cpu_limited_unresolved`:
 
-```sh
-sh examples/m10_supervised_batch.sh 118 artifacts/m10/ieee118-batch001 1 1 180
-```
-
-For reliability campaigns, `m10_campaign.sh` now uses the integrated pipeline
-in one Julia process. Compilation is reused and each routed outcome is
-checkpointed before the next solve. Indices refer to the **full catalog**,
-including islanding entries, not the old eligible-only list. Use a new output
-directory when moving from the historical campaign format:
-
-```sh
-sh examples/m10_campaign.sh 118 artifacts/m10/ieee118-campaign 1 all 120 1000
-```
-
 The integrated runner writes `campaign.md` and `campaign.json` directly.
 The report command recognizes these files; for historical campaigns it still
 generates the legacy metric-specific coverage and timing report:
 
-```sh
-julia --project=. examples/m10_campaign_report.jl artifacts/m10/ieee118-campaign
-```
-
 Only for **historical-format**, complete exact enumerations, the old inexpensive
 base-state loading/outage-size heuristic can be benchmarked with:
-
-```sh
-julia --project=. examples/m10_screening_benchmark.jl artifacts/m10/ieee118-campaign
-```
 
 The benchmark reports unresolved-case recall at fixed evaluation budgets and
 the smallest retrospective budget that captures every unresolved exact
@@ -173,7 +108,21 @@ security assessment, not a security-constrained redispatch solve. Complete all
 batches before comparing ranking or filtering methods to the enumeration
 baseline. The production routing API uses LODF only after this exact baseline
 was established; it is not silently enabled in the historical IEEE campaigns.
-Constraint generation and parallel execution remain outside the current scope.
+The shared-droop scenario-addition driver is documented in
+[Droop security design](droop_security.md); parallel execution remains future work.
+
+### Opt-in droop-response guard
+
+`droop_response_guard=true` adds individual generator/controller Q headroom,
+bounded AC/droop-response prediction and controller-regime transition guards.
+It only changes screened branches to exact evaluation; it never changes exact
+or island-aware routes into screens. Unsupported or uncertain predictions fall
+back to exact AC. Pass the same participation weights used by subsequent exact
+assessment. The flag is supported by filtering, the integrated pipeline,
+qualification and resumable campaigns, and is included in campaign fingerprints.
+The default is false. See [P2-02 qualification](p2_02_droop_guard.md) for the
+frozen protocol and current evidence; saved-case improvement is not held-out
+qualification or a security certificate.
 
 ### Generic resumable campaigns and filtering qualification
 
@@ -261,22 +210,49 @@ voltage magnitudes are per-unit and angles are radians. Positive P/Q means netwo
 injection. The reference bus fixes only its angle; it does not supply unbounded
 balancing power. All available generators retain their capability bounds.
 
-Preventive mode uses a base schedule and a prescribed automatic balancing policy:
+Preventive mode uses a base schedule and limit-aware automatic active response:
 
 ```math
-P_{g,c} = P_{g,0} + \alpha_{g,c}\Delta_c,\qquad
-\alpha_{g,c}=\frac{w_g}{\sum_{h\text{ available in }c}w_h}.
+P_{g,c}=\operatorname{clip}(P_{g,0}+\alpha_{g,c}\lambda_c,\ L_{g,c},\ U_{g,c}).
 ```
 
-Participation weights are supplied explicitly, must be nonnegative, and are
-normalized over surviving generators. Unlisted generators have zero weight.
-Every contingency needs a surviving participant. The scalar `Δ` represents
-active power needed for lost generation and changes in AC losses. It is **not a
-frequency deviation** or a dynamic governor model. Participants must remain
-within their bounds; there is no automatic redistribution when one saturates.
-Optional `redispatch_limits` also bound each participant's change from base.
+Effective bounds intersect generator and attached droop active capability with
+any declared base-to-outage `redispatch_limits`. A zero-weight unit holds its
+base output. Unavailable generators supply zero and are excluded. Zero-range
+units are excluded from normalized response weights. As the common signal grows,
+a participant at a bound stays there and unsaturated participants continue
+responding. If total reserve is inadequate, the model does not invent balancing
+power or relax operating bounds.
 
-Corrective mode replaces this participation equation with:
+`Study` and assessment APIs default to `default_participation(case)`: nonzero
+effective active-capability-range weights. Supply actual governor/AGC weights
+when known; the default is an explicit approximation. An explicit empty dictionary
+selects no participants and is rejected when an outage requires response.
+The surviving weights are normalized. Weights do not encode response speed.
+
+The retained `balancing_power` result field contains the common request signal
+`lambda`, in pu. After saturation it is **not** the total delivered adjustment;
+calculate that from surviving generators' actual base-to-outage changes.
+The smooth reactive encoding uses an exact piecewise active projection
+(`min`/`max`) with kinks at saturation. The complementarity encoding uses
+projection KKT conditions with nonnegative bound slacks and multipliers.
+Both represent the same exact bounded active-response law. Coupled preventive
+CCOpt models default both the solver and proportional-update relaxation floors
+to `1e-14`; supplied optimizer attributes can override these numerical defaults.
+This tightens the internal relaxation without changing physical acceptance
+tolerances. Projection slacks enforce equipment bounds without duplicate active
+variable-bound rows. A sole movable participant uses an equivalent canonical
+request-equals-delivery signal. It is not a smooth governor dynamic model;
+local convergence and saturation-boundary behavior require validation.
+
+Current study/result JSON carries `active_response="limit_aware_v1"` (study v10,
+result v5). Historical coupled preventive files without this marker are rejected,
+rather than silently reinterpreted. Replay them with their original source.
+Campaign fingerprints include the response contract; use a fresh output directory
+for the new policy. Historical filtering thresholds and performance outcomes
+require requalification before use as evidence for this policy.
+
+Corrective mode replaces this automatic-response equation with:
 
 ```math
 -r_g \le P_{g,c}-P_{g,0}\le r_g.
@@ -311,8 +287,8 @@ Timing is explicit:
 
 ```julia
 policy = SCOPFControlPolicy(
-    taps = :preventive,       # default
-    shunts = :preventive,     # default
+    taps = :corrective,       # default: scenario-specific within bounds
+    shunts = :corrective,     # default: scenario-specific within bounds
     reactive = :automatic,    # the only supported reactive timing
     # Optional M9.2 maps: listed devices receive ± movement budgets;
     # selected but unlisted corrective devices are frozen.
@@ -330,9 +306,10 @@ study = Study(case;
 )
 ```
 
-Preventive equipment has one setting shared by the base case and every
-scenario in which the device remains available. Corrective equipment has an
-independent bounded setting in each scenario. These options may be selected
+Corrective equipment has an independent bounded setting in each scenario and
+is the default for selected tap and shunt controls. Preventive equipment has
+one setting shared by the base case and every scenario in which the device
+remains available; request it explicitly. These options may be selected
 separately for taps and shunts. A controlled transformer that is itself
 outaged has no contingency setting or coupling equation. This is availability,
 not corrective movement.
@@ -396,7 +373,7 @@ study = Study(case;
         Contingency(:line_22; branch_ids = [22]),
         Contingency(:generator_9; generator_ids = [9]),
     ],
-    participation = Dict(7 => 1.0, 9 => 1.0),
+    participation = default_participation(case),
 )
 result = solve(study)
 report = equilibrium_report(study, result)
@@ -606,12 +583,16 @@ rejected, ranking and island figures visually inspected. The generated evidence
 index is `artifacts/scopf_validation/evaluation.md`; regenerate it using the
 example above. These are fixture-level observations, not held-out certification.
 
-JSON documents use a document-kind tag. Study schema v9 and result schema v4
+JSON documents use a document-kind tag. Study schema v10 and result schema v5
 persist optional reactive-control assignments, selected tap/shunt policies,
-the timing/movement policy, and scenario equipment settings. Older supported documents
-reload with legacy attachment semantics, no optimized equipment, and the
-default preventive policy. Study files contain all case data, contingencies,
-and response policy. Result files contain scenario states, balancing powers,
+the timing/movement policy, and scenario equipment settings, with an explicit
+limit-aware active-response marker. Historical coupled preventive documents
+without the marker require their original source for replay. Supported uncoupled
+and corrective documents retain the existing equipment/attachment migrations.
+Selected equipment policies default to corrective timing; unselected taps and
+shunts remain supplied fixed data.
+Study files contain all case data, contingencies,
+and response policy. Result files contain scenario states, active-response request signals,
 equipment settings, solver/status, encoding, and smoothing widths.
 Nonfinite diagnostics are written as JSON `null`; missing states remain `null`.
 Report files are diagnostic exports; reports are regenerated from study/results,

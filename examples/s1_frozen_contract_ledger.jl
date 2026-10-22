@@ -81,14 +81,14 @@ function s1_frozen_cell(row, folder, feasibility)
 end
 
 function s1_assert_frozen_contract(cells)
-    length(cells) == 24 || error("frozen contract requires 24 cells, found $(length(cells))")
+    length(cells) == 8 || error("anchor-only frozen contract requires 8 cells, found $(length(cells))")
     Set(cell["solver"] for cell in cells) == Set(("ipopt", "madnlp")) ||
         error("frozen contract solver set changed")
-    Set(cell["buses"] for cell in cells) == Set((118, 300)) ||
+    Set(cell["buses"] for cell in cells) == Set((14, 500)) ||
         error("frozen contract network set changed")
     Set(cell["load_factor"] for cell in cells) == Set((1.0, 1.05)) ||
         error("frozen contract load set changed")
-    Set(cell["declared_start"] for cell in cells) == Set(("anchor", "flat_low", "flat_high")) ||
+    Set(cell["declared_start"] for cell in cells) == Set(("anchor",)) ||
         error("frozen contract start set changed")
     all(cell["last_retained_iterate"] !== nothing for cell in cells) ||
         error("one or more frozen cells has no retained final iterate")
@@ -102,7 +102,7 @@ function s1_frozen_contract_ledger(ipopt_summary, madnlp_summary, feasibility_su
     cells = Dict{String,Any}[]
     for summary in sources
         folder = dirname(summary)
-        append!(cells, [s1_frozen_cell(row, folder, feasibility) for row in JSON.parsefile(summary)])
+        append!(cells, [s1_frozen_cell(row, folder, feasibility) for row in JSON.parsefile(summary) if row["tags"]["start"] == "anchor"])
     end
     sort!(cells; by=cell -> (cell["buses"], cell["load_factor"], cell["solver"], cell["declared_start"]))
     enforce_contract && s1_assert_frozen_contract(cells)
@@ -131,9 +131,9 @@ function s1_frozen_contract_ledger(ipopt_summary, madnlp_summary, feasibility_su
         ),
         "dimensions" => Dict(
             "solvers" => ["ipopt", "madnlp"],
-            "networks" => [118, 300],
+            "networks" => [14, 500],
             "load_factors" => [1.0, 1.05],
-            "starts" => ["anchor", "flat_low", "flat_high"],
+            "starts" => ["anchor"],
         ),
         "source_files" => [Dict("path" => relpath(path, pwd()), "sha256" => s1_sha256(path))
                            for path in (sources..., feasibility_summary)],

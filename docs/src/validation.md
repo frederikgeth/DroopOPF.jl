@@ -8,6 +8,11 @@ Solver termination is not, by itself, proof that a generator operating point
 is physically valid. `validate_equilibrium` recomputes the AC power balance,
 generator limits, branch margins, and exact droop residuals independently.
 
+For acceptance of a droop replacement, use the
+[feasibility precursor](feasibility_gate.md), which also freezes equipment
+freedom, optional source angle limits and tolerances, and distinguishes an
+unresolved search from certified infeasibility.
+
 ```julia
 validation = validate_equilibrium(case, result.state)
 validation.valid

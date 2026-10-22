@@ -300,4 +300,3 @@ The workflow draws on the following project patterns:
 - [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl): formulation-oriented architecture;
 - [JuMP nonlinear modeling](https://jump.dev/JuMP.jl/stable/manual/nonlinear/): sparse nonlinear derivatives;
 - [MadNLP.jl](https://madsuite.org/MadNLP.jl/stable/): sparse nonlinear optimization and solver backends.
-

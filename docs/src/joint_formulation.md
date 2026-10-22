@@ -217,14 +217,6 @@ Applying the triangle inequality to the two deadband terms, and then the
 \leq 2\log(2)\left(\frac{\epsilon_v}{m}+\epsilon_q\right).
 ```
 
-With the joint API, epsilon_v=epsilon and epsilon_q=epsilon times Q scale.
-The public experiment uses the largest coefficient across controls and each
-selected slope's lower bound. It budgets 1e-6 pu curve error within the unchanged
-1e-5 exact-droop tolerance. Numerical constraint residuals still require separate
-validation. This conservative example policy leaves the default unchanged and
-can produce stiff derivatives. It is an approximation bound, not a convergence
-certificate; see [extended evidence](s1_extension.md).
-
 
 ## Optional equivalent controller coordinates
 

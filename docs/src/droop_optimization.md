@@ -63,7 +63,10 @@ the caller fix that setting at its M2 value. Available settings are:
 - nonnegative lower and upper deadband widths.
 
 The two widths may differ, providing an asymmetric deadband while preserving
-the standard saturated `VoltVarDroop` family. The active/reactive dispatch
+the standard saturated `VoltVarDroop` family. Both widths may also be fixed at
+zero while slope and reference remain free; this uses the specialized affine
+raw response described in [Solvers](solvers.md). Variable-width bounds that
+permit collapse to zero remain rejected. The active/reactive dispatch
 objective remains the M2 objective; no hidden design penalty is introduced.
 
 ```julia
@@ -164,3 +167,9 @@ volt-var family. Reactive capability and reactive output at deadband remain
 fixed. Arbitrary free-knot PWL topology optimization is intentionally deferred:
 without a separate regularization and identifiability contract it can overfit a
 small contingency set while producing non-unique, hard-to-interpret curves.
+
+## Multi-controller security design
+
+The vector `DroopControl` interface and iterative contingency-addition driver
+are documented in [Droop security design](droop_security.md). They share the
+ordinary SCOPF builder and retain M9 equipment policies.

@@ -854,20 +854,14 @@ S1 now offers opt-in controller coordinates through `optimize_joint_design(...; 
 
 `examples/s1_staged_initialization.jl` composes existing joint-design solves in two independent experimental workflows: fixed controls → free equipment → free joint design, or nominal → intermediate → target demand. Temporary preparation policies restrict the original design domain; they do not change equipment equations. Load continuation changes only demand, preserving dispatch and droop references. All stages share a cooperative wall deadline and iteration budget, including the final bounded restart policy.
 
-Only independently validated stages with settings inside the strict initialization domain supply physical primal seeds. Changed formulations receive no transferred duals. Unsuccessful stages preserve the last accepted seed. Restricted-stage feasible points are recorded separately; final acceptance still requires a solve of the full target problem. The default optimizer API and restart policy are unchanged. Stage diagnostics retain actual free-controller counts, seed lineage, failure details and budget charges. The [staged evidence](docs/src/s1_staged.md) compares each workflow with its frozen direct-solve baseline.
-
 
 ### S1 solution-quality diagnostics
 
 `examples/s1_kkt.jl` reads the solved JuMP model to reconstruct physical-coordinate Lagrangian-gradient terms, complementarity and inequality-dual signs. The original native-plus-physical acceptance rule remains authoritative; diagnostic quality is a separate report. `s1_kkt_geometry.jl` rebuilds the same formulation and evaluates retained final-point Jacobians without solving, checking variable and regular-constraint layouts before reading saved multipliers. It reports near-parallel saturated-droop/active-Q-bound rows and cancellation-sensitive multiplier contributions without claiming exact rank deficiency.
 
-Hypothetical positive row scaling is analyzed through the corresponding inverse multiplier transformation; it is not applied to a solver. Any future numerical treatment must retain physical validation and account for transformed tolerances. Local numerical dependence must be investigated before adopting blanket row equilibration. No equipment constraints are removed or changed by this diagnostic layer. See the [stationarity evidence](docs/src/s1_kkt.md).
-
 ### Experimental implied droop-Q bounds
 
 `optimize_joint_design(...; droop_q_bounds=:implied)` provides an opt-in numerical formulation for S1 experiments. For available generators with an attached volt-var controller, it omits the generator-Q variable bounds already implied in exact arithmetic by the smoothed saturation and the validated nesting of controller capability inside generator limits. Unattached and unavailable generators retain their ordinary bounds. The `qg` variable, droop equality, power balance, objective, smoothing and result schema remain unchanged.
-
-The default is `:explicit`. Model metadata records the selected mode and generator IDs whose bounds were omitted. Restart-context hashes include the mode so a seed cannot cross formulations silently. Independent physical validation remains mandatory and catches generator/control-limit excursions, including floating-point endpoint effects. The [S1 comparison](docs/src/s1_implied_q.md) shows mixed reliability, so this option is not promoted into normal execution or M9.
 
 ### Experimental reduced droop-Q formulation
 
@@ -887,8 +881,15 @@ objective representation and derivative sparsity even though it preserves the
 physical feasible set and objective on the declared domain. Model metadata and
 restart-context hashes record the mode.
 
-The explicit formulation remains the default. Independent validation still
-checks reconstructed Q, AC balance, equipment limits and the exact droop curve.
-The [paired S1 evidence](docs/src/s1_reduced_q.md) improves MadNLP but regresses
-Ipopt and loses one prior MadNLP success, so reduced space remains experimental
-and is not used by M9.
+## Limit-aware automatic active response (2026-10-21)
+
+`Study` defaults to nonzero effective active-capability-range participation.
+Preventive response projects weighted common requests onto generator/controller
+active bounds and optional response-movement bounds; zero-weight units hold
+base output. Saturation no longer blocks all other participating generators.
+The smooth reactive builder uses a piecewise active projection; CCOpt uses
+projection KKT pairs. Independent replay checks the exact physical response.
+`balancing_power` stores the request signal, not aggregate delivered power after
+saturation. Study v10/result v5 tag this contract and historical coupled files
+require original-source replay. See `docs/src/scopf.md`. Historical P2 evidence
+needs new-policy qualification; the P2/release gates remain open.

@@ -1,4 +1,7 @@
-"""Scenario-indexed SCOPF output; `:base` is always present. States may be missing after failure."""
+"""Scenario-indexed SCOPF output; `:base` is always present. States may be missing
+on failure. `balancing_power` stores the common active-response request signal;
+after saturation it differs from total delivered adjustment and can be nonunique.
+"""
 struct SCOPFResult
     states::Dict{Symbol,Union{Nothing,ACState{Float64}}}
     balancing_power::Dict{Symbol,Float64}
@@ -27,7 +30,8 @@ SCOPFResult(states, balancing_power, objective, termination_status, primal_statu
         mode, encoding, smooth_epsilon, smooth_reactive_relative_epsilon,
         smooth_reactive_epsilon, solver, reactive_assignments,
         Dict{Symbol,Dict{Int,Float64}}(), Dict{Symbol,Dict{Int,Float64}}(),
-        TapControl[], ShuntControl[], SCOPFControlPolicy())
+        TapControl[], ShuntControl[],
+        SCOPFControlPolicy(taps=:preventive, shunts=:preventive))
 
 function _scenario_tap_controls(study::Study, case::Case)
     available = Set(b.id for b in case.network.branches if b.available)
@@ -53,21 +57,92 @@ function _couple_equipment!(model, policy, base_taps, base_shunts, scenario)
     nothing
 end
 
-function _add_response_constraints!(model, study, scenario, base, variables, prefix)
+function _add_response_constraints!(model, study, scenario, base, variables, prefix,
+    encoding::Symbol=occursin("CCOpt", solver_name(model)) ? :complementarity : :smooth)
     delta = nothing
     if study.mode == :preventive
+        if encoding == :complementarity && !get(model.ext,:limit_aware_response,false)
+            # CCOpt has two independent relaxation floors. Keep both below
+            # native convergence accuracy for the additional projection pairs.
+            # Public optimizer_attributes are applied later and can override.
+            set_optimizer_attribute(model,"sigma_min",1e-14)
+            set_optimizer_attribute(model,"relaxation_update",
+                CCOpt.ProportionalRelaxationUpdate(sigma_min=1e-14))
+            model.ext[:limit_aware_response] = true
+        end
         alpha = _participation(study, scenario)
+        responding = count(i -> alpha[i] > 0 &&
+            get(study.redispatch_limits,scenario.generators[i].id,Inf) > 0, eachindex(alpha))
         initial_delta = sum(start_value(variables.pg[i]) -
             (base isa ACState ? base.pg[i] : start_value(base.pg[i]))
             for (i,g) in enumerate(scenario.generators) if g.available; init=0.0)
-        delta = @variable(model, base_name = prefix * "balancing_power", start = initial_delta)
+        base_pg = base isa ACState ? base.pg : start_value.(base.pg)
+        signal_start = _response_signal_start(study, scenario, base_pg, initial_delta)
+        delta = @variable(model, base_name = prefix * "response_signal", start = signal_start)
         for (i, g) in enumerate(scenario.generators)
             g.available || continue
-            @constraint(model, variables.pg[i] == base.pg[i] + alpha[i] * delta)
+            if alpha[i] == 0 || get(study.redispatch_limits, g.id, Inf) == 0
+                @constraint(model, variables.pg[i] == base.pg[i])
+                continue
+            end
+            # With a single movable participant, select the canonical signal
+            # whose request equals delivery. Bounds still enforce all limits;
+            # this removes redundant saturated-signal representations only.
+            if responding == 1
+                @constraint(model, variables.pg[i] == base.pg[i]+alpha[i]*delta)
+                continue
+            end
+            lo, hi = _active_response_bounds(scenario, i, study.reactive_assignments)
+            if encoding == :complementarity
+                pg_i, base_p = variables.pg[i], base.pg[i]
+                # The nonnegative projection slacks enforce these same bounds.
+                # Avoid duplicate variable-bound rows in the MPCC formulation.
+                has_lower_bound(pg_i) && delete_lower_bound(pg_i)
+                has_upper_bound(pg_i) && delete_upper_bound(pg_i)
+                raw_start = base_pg[i] + alpha[i]*signal_start
+                projected = clamp(raw_start, _response_bounds(study,scenario,i,base_pg[i])...)
+                set_start_value(pg_i, projected)
+                stationarity = @expression(model, pg_i-base_p-alpha[i]*delta)
+                pairs = Tuple{Any,Float64}[(lo, -1.0), (hi, 1.0)]
+                if haskey(study.redispatch_limits,g.id)
+                    r = study.redispatch_limits[g.id]
+                    append!(pairs, [(base_p-r,-1.0),(base_p+r,1.0)])
+                end
+                # Projection KKT: affine slacks and nonnegative multipliers.
+                for (k,(bound,sign)) in enumerate(pairs)
+                    bound_start = bound isa Real ? bound : start_value(base_p)+sign*study.redispatch_limits[g.id]
+                    slack = @variable(model, lower_bound=0,
+                        base_name=prefix*"p_slack_$(i)_$(k)",
+                        start=max(0.0,sign*(bound_start-projected)))
+                    multiplier = @variable(model, lower_bound=0,
+                        base_name=prefix*"p_multiplier_$(i)_$(k)", start=0.0)
+                    @constraint(model, slack == sign*(bound-pg_i))
+                    @constraint(model, [slack,multiplier] in _COMPLEMENTARITY_MOI.Complements(2))
+                    add_to_expression!(stationarity, sign, multiplier)
+                end
+                @constraint(model, stationarity == 0)
+                continue
+            end
+            if haskey(study.redispatch_limits, g.id)
+                r = study.redispatch_limits[g.id]
+                base_p = base.pg[i]
+                lower = @NLexpression(model, max(lo, base_p-r))
+                upper = @NLexpression(model, min(hi, base_p+r))
+            else
+                lower, upper = lo, hi
+            end
+            # Exact piecewise projection: saturated participants stop moving,
+            # while the common signal can continue driving the others.
+            pg_i, base_p, weight = variables.pg[i], base.pg[i], alpha[i]
+            @NLconstraint(model, pg_i == min(upper, max(lower, base_p + weight * delta)))
         end
     end
     for (i, g) in enumerate(scenario.generators)
         g.available || continue
+        if study.mode == :preventive && encoding == :complementarity &&
+            responding > 1 && alpha[i] > 0 && get(study.redispatch_limits,g.id,Inf) > 0
+            continue # Any movement bounds are already projection KKT slacks.
+        end
         if study.mode == :corrective || haskey(study.redispatch_limits, g.id)
             limit = get(study.redispatch_limits, g.id, 0.0)
             @constraint(model, -limit <= variables.pg[i] - base.pg[i] <= limit)
@@ -97,10 +172,15 @@ function solve_scopf(study::Study;
     fixed_base_tap_settings::AbstractDict = Dict{Int,Float64}(),
     fixed_base_shunt_settings::AbstractDict = Dict{Int,Float64}(),
     _model_hook::Union{Nothing,Function} = nothing,
+    _optimizer_lock::Union{Nothing,ReentrantLock} = nothing,
     _phase1_power_balance::Bool = false,
+    _droop_parameter_builder::Union{Nothing,Function} = nothing,
+    sparse_balance::Bool = false,
 )
     study = _validated_study(study)
     encoding in (:smooth, :complementarity) || throw(ArgumentError("unknown control encoding"))
+    sparse_balance && encoding != :smooth &&
+        throw(ArgumentError("sparse_balance is currently a smooth-builder option"))
     all(x -> isfinite(x) && x > 0, (smooth_epsilon, smooth_reactive_relative_epsilon)) ||
         throw(ArgumentError("smoothing widths must be positive and finite"))
     isnothing(smooth_reactive_epsilon) ||
@@ -118,6 +198,12 @@ function solve_scopf(study::Study;
         model = Model(optimizer_factory)
     end
     silent && set_silent(model)
+    if !isnothing(_droop_parameter_builder)
+        encoding == :smooth && isnothing(fixed_base_state) && !_phase1_power_balance ||
+            throw(ArgumentError("shared droop design requires a smooth, unfixed SCOPF"))
+    end
+    droop_parameters = isnothing(_droop_parameter_builder) ? Dict() :
+        _droop_parameter_builder(model)
     fixed_taps = Dict{Int,Float64}(fixed_base_tap_settings)
     fixed_shunts = Dict{Int,Float64}(fixed_base_shunt_settings)
     if isnothing(fixed_base_state)
@@ -156,8 +242,10 @@ function solve_scopf(study::Study;
             lost_p = sum(pg[i] for (i,g) in enumerate(case.generators) if !g.available; init=0.0)
             alpha = study.mode == :preventive ? _participation(study, case) :
                 [g.available ? 1.0 / count(g -> g.available, case.generators) : 0.0 for g in case.generators]
+            signal = study.mode == :preventive ? _response_signal_start(study, case, pg, lost_p) : lost_p
             for (i,g) in enumerate(case.generators)
-                pg[i] = g.available ? clamp(pg[i] + alpha[i] * lost_p, g.p_min, g.p_max) : 0.0
+                lo, hi = _response_bounds(study, case, i, pg[i])
+                pg[i] = g.available ? (alpha[i] > 0 ? clamp(pg[i] + alpha[i] * signal, lo, hi) : pg[i]) : 0.0
                 g.available || (qg[i] = 0.0)
             end
             initial = ACState(fixed_base_state.vm,fixed_base_state.va,pg,qg)
@@ -183,6 +271,7 @@ function solve_scopf(study::Study;
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
                 initial_state=initial, reactive_assignments=study.reactive_assignments,
                 tap_controls=tap_arg, shunt_controls=shunt_arg,
+                droop_parameter_variables=droop_parameters, sparse_balance,
                 power_balance_slacks=_phase1_power_balance)
         else
             _build_complementarity_opf_model(case; silent=silent,
@@ -193,7 +282,7 @@ function solve_scopf(study::Study;
         end
         push!(variables, vars)
         if k > 1
-            delta = _add_response_constraints!(model, study, case, variables[1], vars, prefix)
+            delta = _add_response_constraints!(model, study, case, variables[1], vars, prefix, encoding)
             isnothing(delta) || (deltas[id] = delta)
             base_taps = isnothing(fixed_base_state) ? variables[1].taps : fixed_taps
             base_shunts = isnothing(fixed_base_state) ? variables[1].shunts : fixed_shunts
@@ -223,7 +312,13 @@ function solve_scopf(study::Study;
             tap_settings, shunt_settings, copy(study.tap_controls),
             copy(study.shunt_controls), study.control_policy)
     end
-    optimize!(model)
+    if isnothing(_optimizer_lock)
+        optimize!(model)
+    else
+        lock(_optimizer_lock) do
+            optimize!(model)
+        end
+    end
     states = Dict{Symbol,Union{Nothing,ACState{Float64}}}(id => nothing for id in ids)
     if !isnothing(fixed_base_state)
         states[:base] = ACState(Float64.(fixed_base_state.vm),Float64.(fixed_base_state.va),

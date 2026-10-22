@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — limit-aware automatic active response
+
+- Replace fixed proportional preventive response with exact bounded weighted
+  requests, allowing unsaturated participants to supply the remainder.
+- Default to nonzero effective active-capability-range weights; preserve explicit
+  weights and enforce attached droop capability and response movement limits.
+- Update independent replay, response predictor and campaign policy fingerprints.
+- Study v10/result v5 explicitly tag the response model; historical coupled
+  preventive files cannot silently acquire the replacement semantics.
+- Preserve historical P2 evidence; new-policy qualification remains pending.
+
+
 All notable changes to DroopOPF.jl are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
@@ -7,30 +19,117 @@ and releases use [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Expanded 105% zero-shedding connected-outage qualification with Ipopt, equivalent direct-relief equations, implied-Q-bound cleanup, and incremental shared-demand recovery with independent original-network validation.
+
+- Capped 500-bus continuation through 106.25%, a validated common-controller five-demand feasibility witness, and independent Ipopt/MadNLP/CCOpt joint optimization attempts with bounded recoveries and original-network/reduction replay. The preceding 105% connected-security controller remains retained.
+
+- Targeted 500-bus CCOpt stage diagnostics and independent emergency-policy design qualification at 105%, with exact network reduction, original-network outage replay, joint necessary-condition audits and parameter/operating figures. The 110% emergency target and CCOpt remain unresolved; original normal-limit results retain their separate scope.
+
+- 500-bus solver and independent-demand qualification with 51 free slopes and
+  references shared across outages. Ipopt recovers 100% connected-outage
+  qualification; Ipopt and MadNLP each qualify independent 90% and 95% designs.
+  Added demand-matched S1 initialization, reserve-start QPs, contingency
+  addition, guarded near-point recovery, full-network replay and all-generator
+  curve/control plots. CCOpt and original normal-limit 105% remain unqualified after bounded retries;
+  the original 110% certificate and overall S2 open status are retained.
+
+- Free-droop 500-bus continuation study with exact active response, independent
+  original-network checks, equivalent droop-only scaling, accepted-anchor
+  recovery and staged resource polishing. Reports include all 51 droop curves,
+  equipment/operating values and a separately audited DR-first allocation
+  witness. Native feasibility and minimum-resource claims remain distinct.
+
+- 500-bus expanded-master demand continuation with independently audited
+  exact-policy points and bounded active-response diagnostic/restoration runs.
+  Relaxed response is never accepted as an original-model recovery; corrective
+  tap/shunt bounds, original branch ratings and full-network checks are retained.
+  Reports distinguish local failures, policy diagnostics and qualified coverage.
+
+- Exact zero-injection network-reduction study adapters for the 500-bus S2
+  investigation, including full and partial reductions, original branch terminal
+  ratings and voltage/angle constraints, per-outage reconstruction, independent
+  full-network acceptance checks, matched compact comparisons and audit guards.
+  Original physical infeasibility and islanding classifications are unchanged.
+
+- 500-bus bottleneck and demand-boundary investigation under confirmed emergency
+  voltage/110% Rate A caps, 1% DR and 10 MW contingency shedding. Added
+  feasibility-first hard models, demand continuation, exact necessary-condition
+  upper samples, shared-controller sampled feasibility, connected-outage
+  checkpoints, bounded dispatch recovery, island-budget proofs and reporting.
+  Local failures remain distinct from certificates; full 500-bus S2 stays open.
+  No physical remedies or release publication are included.
+
+- Confirmed-control 500-bus S2 pilot, bounded CCOpt recovery records,
+  independent topology/AC/droop/equipment/reserve audits and documentation
+  figures. Ipopt and MadNLP passed the three-outage pilot; reserve-aware MadNLP
+  recovery then qualified all 389 connected outages at nominal demand,
+  with 390 independently replayed unique states. The required 110%/G60 case
+  has a verified rational active-loss infeasibility certificate, including
+  acceptance-tolerance robustness; the five-demand target cannot pass under
+  the original normal-limit, full-demand policy.
+  Held-out checks were deferred and CCOpt remains unqualified. The 171 loaded islands without generation
+  preclude an all-loads-served full N-1 claim.
+
+- Frozen nominal-controller 14-bus S2 demand qualification: 9/15 combinations
+  pass at 100/105/110%; 90/95% remain unqualified after bounded retries.
+  Conditional line 7–8/G5-trip retained-network validation and 546 independent
+  state/projection checks preserve the original nominal scorecard.
+
+- Embedded all 18 S2 operating/controller figures in documentation, plus 12
+  S1 14-bus all-free-control solver-comparison figures using 15 independently
+  replayed saved designs; S1 numerical scope and historical scores unchanged.
+
+- S1 closed for the declared 14/500-bus sampled base-case scope; original-limit
+  and security limitations remain separate. Pending release notes are in
+  `RELEASE_NOTES_UNRELEASED.md`.
+- Qualified the user-confirmed native 14-bus S2 nominal-demand study for all
+  24 connected eligible outages: 9/9 solver runs and 157 independent state
+  replays passed. One islanding outage remains excluded; no full N-1 claim.
+
+- Exact constant-zero-deadband droop specialization removes redundant voltage
+  hinges while retaining reactive saturation, with smooth derivative-equivalence
+  checks and S1 diagnosis/replay reports: 11/12 primary passes and 12/12 after
+  one historical-policy bounded retry; full regression 3,042/3,042.
+
+- Complementary S1 free-droop studies for the selected 14- and 500-bus cases,
+  with independent slope/reference bounds, per-demand design and frozen-candidate
+  checks, retained failures, same-model solver recovery, and independent replay.
+
+- S1 14-bus closeout with a hashed frozen joint loss-reference case, five demand
+  witnesses, retained solver failures, serialized-case replay and generated reports.
+  Added the staged 500-bus qualification plan; broader S1 scaling remains open.
+
+- Default selected tap and shunt timing to corrective, allowing independent
+  scenario settings within declared equipment bounds; preventive sharing is
+  now explicit, while legacy schema migrations preserve their prior policy.
+- Multi-controller smooth droop design through the SCOPF builder, preserving
+  preventive/corrective equipment and active-response policies.
+- Bounded contingency-addition driver with deterministic selection, complete
+  iteration evidence, exact final AC audits, and separate eligible/full-N-1 flags.
+- Small full-enumeration reference, actual-droop discovery/held-out filtering
+  qualification, bounded public-network runners, and reproducible reports/plots.
+- Opt-in sparse balance expressions for controlled smooth OPF/SCOPF, included
+  in resumable campaign fingerprints; legacy controlled-case defaults remain.
+
+### Fixed
+
+- Preserve Study equipment and response policies when replacing droop settings,
+  sweeping slopes, and evaluating held-out contingencies.
+- Reconstruct island generator initial values within strict domains when an
+  independently validated base has only tolerance-sized bound overshoots.
+
+### Qualification
+
+- The frozen filter missed five discovery and seven held-out outages under
+  actual droop response. Screening remains a heuristic; exhaustive final audits
+  are mandatory in the new design driver. Public solver failures are retained
+  separately from small-network feature acceptance.
+
 ## [0.9.0] - 2026-09-29
 
 ### Added
-
-- M9.1 SCOPF control policy with continuous tap and simple-bank variables,
-  preventive sharing by default, explicit corrective timing, automatic shared
-  reactive assignments, scenario equipment persistence, and independent
-  reconstructed-network validation.
-- M9.2 per-device corrective movement budgets and allowed-action semantics,
-  including independent base-to-contingency delta validation and schema v8/v4
-  persistence with v7/v3 migration.
-- M9.3 paired immediate-frozen and settled-recourse steady-state assessment with
-  a shared saved base, comparative voltage/thermal/Q margins, and JSON/Markdown
-  reporting.
-- Initial S2 IEEE-118/300 direct/staged qualification evidence, kept separate
-  from S1 and retaining time-limit, slow-progress, and interrupted cells.
-- Frozen S2 initial scorecard plus an artifact-generated 29-cell IEEE-118
-  expansion across equipment families, timing, reactive-control mix, holdout
-  outages, multiple transformer locations, and +3% load stress, with SVG figures.
-- Bounded same-model warm retries for the four initial expansion misses,
-  recovering the physically valid Ipopt holdout while retaining three CCOpt
-  exact-droop failures as separate evidence.
-- Diagnostic SCOPF Phase-I power-balance restoration followed only by an exact
-  unchanged-model retry; elastic results are never accepted as SCOPF solutions.
 
 ### Fixed
 
@@ -41,35 +140,6 @@ and releases use [Semantic Versioning](https://semver.org/).
 ## [0.8.0] - 2026-09-28
 
 ### Added
-
-- M8 explicit reactive-control assignments: `FreeQ`, `FixedQ`, AVR, and
-  Volt–VAr modes; local, remote-bus, and identified branch-terminal voltage
-  locations; common-location AVR Q-range sharing; independent equilibrium
-  validation; and legacy-compatible persistence.
-- Smooth Ipopt/MadNLP and exact CCOpt AVR formulations, including PV-to-PQ
-  behavior at generator-Q limits, independent regime checks, and
-  cross-solver regressions.
-- AVR-aware base-case tap, simple-bank, and joint-design APIs with persisted
-  reactive assignments and independently replayed physical validation.
-- Reproducible IEEE-118/300 AVR qualification artifacts. Staged k1 → k2 → k3
-  continuation passes the Ipopt and MadNLP envelopes at loads 1.00 and 1.01;
-  the exact CCOpt lane and its cross-seed diagnostic are retained with solver
-  statuses and complementarity residuals.
-- CCOpt parity for base-case continuous joint design: exact complementarity
-  droop with the same tap-ratio, simple-bank, and bounded droop-parameter
-  variables used by the Ipopt/MadNLP formulation, including independent replay,
-  complementarity residuals, serialization, and a matched solver benchmark.
-- Exact CCOpt encoding in the dedicated continuous tap and simple-bank design
-  APIs, with the same physical replay and solver-residual metadata.
-- An explicitly separate S1 CCOpt pilot with cumulative inner-iteration budgets,
-  relaxation diagnostics, two-start synthetic and IEEE 118 evidence, and
-  retained standard-accuracy exact-droop failures plus tighter follow-ups.
-- A machine-checked IEEE 118/300 feasibility audit separating validated model
-  witnesses from solver failures and clarifying that the +5% cases are fixed
-  robustness stresses rather than loadability-boundary calculations.
-- A resumable, per-attempt checkpointed CCOpt S1 control-family matrix and
-  matched 12-cell frozen lane, including direct exact-droop audits, cross-seed,
-  conditional droop-only feasibility, and IEEE-300 continuation evidence.
 
 ## [0.4.0] - 2026-09-18
 
@@ -158,3 +228,37 @@ First public M1 milestone release.
 [0.3.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/frederikgeth/DroopOPF.jl/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/frederikgeth/DroopOPF.jl/releases/tag/v0.1.0
+
+<!-- S2_MULTIDEMAND -->
+## S2 14-bus shared multi-demand follow-up
+
+**1 accepted shared design; 27/27 frozen solver–demand combinations accepted.** Shared slopes/references are trained on five demands and all 24 connected outages; the selected accepted controller is frozen at five training and four held-out demands for Ipopt, MadNLP and CCOpt. Independent replay: 1050 connected-state records and 42 conditional G5-trip projections, zero discrepancies. Corrective tap/continuous-bank bounds remain unchanged. This sampled steady-state result makes no continuous-envelope or general islanding claim. S1 remains closed; no release has been published.
+<!-- /S2_MULTIDEMAND -->
+
+<!-- S2_SOLVER_DESIGNS -->
+## Independent MadNLP and CCOpt shared-design follow-up
+
+Accepted free multi-demand designs: **ipopt, madnlp**. The new backends optimize their own shared slopes/references from the accepted Ipopt full witness; accepted designs are independently replayed and compared with Ipopt. See the [solver design comparison](docs/src/s2_14bus_solver_designs.md). Original campaign scores, rejected attempts and S1 closure remain unchanged.
+<!-- /S2_SOLVER_DESIGNS -->
+
+
+
+
+
+<!-- S2_CCOPT_RECOVERY -->
+## Targeted CCOpt convergence recovery
+
+**CCOpt recovered an accepted free multi-demand design.** The recovery starts from the accepted MadNLP full primal witness and tests proportional/scheduled relaxation without changing the physical contract. See the [CCOpt recovery report](docs/src/s2_14bus_ccopt_recovery.md) for diagnostics, updated curves and held-out outcomes. Historical attempts and S1 closure remain unchanged.
+<!-- /S2_CCOPT_RECOVERY -->
+
+<!-- S2_14BUS_REVIEW -->
+## 14-bus S2 review decision
+
+The declared sampled 14-bus scope is closed. See the [14-bus review](docs/src/s2_14bus_review.md). Broader S2 remains open; S1 remains closed.
+<!-- /S2_14BUS_REVIEW -->
+
+<!-- S2_CURRENT_ACCEPTED -->
+## Consolidated S2 14-bus accepted results
+
+The [main S2 14-bus report](docs/src/s2_14bus.md) and [complete gallery](docs/src/s2_14bus_figures.md) now lead with accepted free Ipopt, MadNLP and recovered CCOpt multi-demand designs. Fourteen current figures cover 675 connected-state records and 27 conditional projections; all pass independent replay. The original 18 nominal-campaign figures and failed attempts remain historical. No numerical optimisation was run for consolidation; S1 and the declared sampled 14-bus scope remain closed, while broader S2 remains open.
+<!-- /S2_CURRENT_ACCEPTED -->

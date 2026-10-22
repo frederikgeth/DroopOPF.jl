@@ -1,7 +1,7 @@
 """Physical settings for the optimizable standard volt-var droop family.
 
 `deadband_low` and `deadband_high` are nonnegative widths below and above
-`v_ref`; they may differ, but their sum must be positive.
+`v_ref`; they may differ or both be fixed at zero for a no-deadband curve.
 """
 struct DroopSettings{T<:Real}
     slope::T
@@ -20,8 +20,6 @@ struct DroopSettings{T<:Real}
         v_ref > zero(T) || throw(ArgumentError("voltage reference must be positive"))
         deadband_low >= zero(T) && deadband_high >= zero(T) ||
             throw(ArgumentError("deadband widths must be nonnegative"))
-        deadband_low + deadband_high > zero(T) ||
-            throw(ArgumentError("the total deadband width must be positive"))
         v_ref - deadband_low > zero(T) ||
             throw(ArgumentError("the lower deadband edge must be positive"))
         new{T}(slope, v_ref, deadband_low, deadband_high)
@@ -131,13 +129,7 @@ function with_droop_settings(
         controls = controls,
         attachments = study.case.attachments,
     )
-    return Study(
-        case;
-        contingencies = study.contingencies,
-        mode = study.mode,
-        participation = study.participation,
-        redispatch_limits = study.redispatch_limits,
-    )
+    return _copy_study(study; case)
 end
 
 with_droop_settings(study::Study, design::DroopDesignResult) =
@@ -260,7 +252,8 @@ function optimize_droop_parameters(
     )
     v_ref_range[1] - deadband_low_range[2] > 0 ||
         throw(ArgumentError("bounds permit a nonpositive lower deadband edge"))
-    deadband_low_range[1] + deadband_high_range[1] > 0 ||
+    (deadband_low_range == (0.,0.) && deadband_high_range == (0.,0.)) ||
+        deadband_low_range[1] + deadband_high_range[1] > 0 ||
         throw(ArgumentError("bounds permit a zero-width deadband"))
     initial = isnothing(initial_settings) ? DroopSettings(
         clamp(reference.slope, slope_range...), clamp(reference.v_ref, v_ref_range...),
@@ -292,131 +285,15 @@ function optimize_droop_parameters(
     equilibrium_report(study, reference_result).valid ||
         throw(ArgumentError("the reference M2 study must solve and validate before optimization"))
 
-    model = Model(optimizer_factory)
-    silent && set_silent(model)
-    parameters = (
-        slope = _droop_design_variable(model, "m3_slope", slope_range, initial.slope),
-        v_ref = _droop_design_variable(model, "m3_v_ref", v_ref_range, initial.v_ref),
-        deadband_low = _droop_design_variable(
-            model,
-            "m3_deadband_low",
-            deadband_low_range,
-            initial.deadband_low,
-        ),
-        deadband_high = _droop_design_variable(
-            model,
-            "m3_deadband_high",
-            deadband_high_range,
-            initial.deadband_high,
-        ),
-    )
-    ids = [:base; [contingency.id for contingency in study.contingencies]]
-    cases = [study.case; [scenario_case(study.case, contingency) for contingency in study.contingencies]]
-    variables = []
-    deltas = Dict{Symbol,VariableRef}()
-    for (index, (id, case)) in enumerate(zip(ids, cases))
-        _, scenario_variables = _build_acopf_model(
-            case;
-            voltage_epsilon = smooth_epsilon,
-            reactive_relative_epsilon = smooth_reactive_relative_epsilon,
-            reactive_epsilon = smooth_reactive_epsilon,
-            silent = silent,
-            shared_model = model,
-            scenario_prefix = "scenario_$(index)_",
-            set_objective = false,
-            initial_state = reference_result.states[id],
-            droop_parameter_variables = Dict(Int(control_id) => parameters),
-        )
-        push!(variables, scenario_variables)
-        if index > 1
-            delta = _add_response_constraints!(
-                model,
-                study,
-                case,
-                variables[1],
-                scenario_variables,
-                "scenario_$(index)_",
-            )
-            isnothing(delta) || (deltas[id] = delta)
-        end
-    end
-    base_variables = first(variables)
-    @objective(
-        model,
-        Min,
-        sum(
-            (base_variables.pg[i] - generator.initial_p)^2 +
-            1.0e-3 * (base_variables.qg[i] - generator.initial_q)^2
-            for (i, generator) in enumerate(study.case.generators)
-        ),
-    )
-    for (key, value) in optimizer_attributes
-        set_optimizer_attribute(model, key, value)
-    end
-    optimize!(model)
-
-    states = Dict{Symbol,Union{Nothing,ACState{Float64}}}(id => nothing for id in ids)
-    balancing = Dict{Symbol,Float64}()
-    if has_values(model)
-        for (id, scenario_variables) in zip(ids, variables)
-            values = [
-                value.(getproperty(scenario_variables, field))
-                for field in (:vm, :va, :pg, :qg)
-            ]
-            if all(vector -> all(isfinite, vector), values) && all(>(0), values[1])
-                states[id] = ACState(values...)
-            end
-        end
-        for (id, delta) in deltas
-            balancing[id] = value(delta)
-        end
-    end
-    scopf_result = SCOPFResult(
-        states,
-        balancing,
-        has_values(model) ? objective_value(model) : NaN,
-        Symbol(string(termination_status(model))),
-        Symbol(string(primal_status(model))),
-        study.mode,
-        :smooth,
-        Float64(smooth_epsilon),
-        Float64(smooth_reactive_relative_epsilon),
-        isnothing(smooth_reactive_epsilon) ? nothing : Float64(smooth_reactive_epsilon),
-        solver_name(model),
-        study.reactive_assignments,
-    )
-    settings = if has_values(model)
-        DroopSettings(
-            _droop_design_value(parameters.slope),
-            _droop_design_value(parameters.v_ref),
-            _droop_design_value(parameters.deadband_low),
-            _droop_design_value(parameters.deadband_high),
-        )
-    else
-        DroopSettings(
-            clamp(reference.slope, slope_range...),
-            clamp(reference.v_ref, v_ref_range...),
-            clamp(reference.deadband_low, deadband_low_range...),
-            clamp(reference.deadband_high, deadband_high_range...),
-        )
-    end
-    return DroopDesignResult(
-        Int(control_id),
-        DroopSettings(
-            Float64(reference.slope),
-            Float64(reference.v_ref),
-            Float64(reference.deadband_low),
-            Float64(reference.deadband_high),
-        ),
-        DroopSettings(
-            Float64(settings.slope),
-            Float64(settings.v_ref),
-            Float64(settings.deadband_low),
-            Float64(settings.deadband_high),
-        ),
-        reference_result.objective,
-        scopf_result,
-    )
+    controls = [DroopControl(control_id; slope_bounds, v_ref_bounds,
+        deadband_low_bounds, deadband_high_bounds, initial)]
+    design = optimize_droop_parameters(study, controls;
+        smooth_epsilon, smooth_reactive_relative_epsilon, smooth_reactive_epsilon,
+        optimizer_factory, optimizer_attributes, silent,
+        initial_states=reference_result.states)
+    settings = get(design.settings, Int(control_id), initial)
+    return DroopDesignResult(Int(control_id), _float_settings(reference),
+        _float_settings(settings), reference_result.objective, design.result)
 end
 
 """Independently replay an optimized design with an exact physical droop curve."""
@@ -445,18 +322,14 @@ function evaluate_held_out_contingencies(
     all(contingency -> !(contingency.id in training_ids), contingencies) ||
         throw(ArgumentError("held-out contingency IDs must not appear in training"))
     optimized = with_droop_settings(study, design)
-    held_out = Study(
-        optimized.case;
-        contingencies = contingencies,
-        mode = optimized.mode,
-        participation = optimized.participation,
-        redispatch_limits = optimized.redispatch_limits,
-    )
+    held_out = _copy_study(optimized; contingencies)
     base = get(design.result.states, :base, nothing)
     isnothing(base) && throw(ArgumentError("the optimized design has no base state"))
     result = evaluate_contingencies(
         held_out,
         base;
+        fixed_base_tap_settings=get(design.result.tap_settings, :base, Dict()),
+        fixed_base_shunt_settings=get(design.result.shunt_settings, :base, Dict()),
         smooth_epsilon = smooth_epsilon,
         smooth_reactive_relative_epsilon = smooth_reactive_relative_epsilon,
         smooth_reactive_epsilon = smooth_reactive_epsilon,

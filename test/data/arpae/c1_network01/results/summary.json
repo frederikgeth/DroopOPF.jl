@@ -1,0 +1,90 @@
+{
+  "case": "ARPA-E GOC Challenge 1 Network Model 01, Scenario 02",
+  "baseMVA": 100.0,
+  "counts": {
+    "buses": 500,
+    "generators_total": 90,
+    "generators_online": 51,
+    "branch_circuits_total": 599,
+    "branches_online": 593,
+    "transformers_total": 131,
+    "lines_total": 468,
+    "switched_shunts": 17
+  },
+  "bus_voltage_limits_pu": {
+    "min": 0.9,
+    "max": 1.1
+  },
+  "opf": {
+    "formulation": "AC polar OPF, upstream PMSC test/PowerModels standard OPF; taps and shunts fixed",
+    "status": "LOCALLY_SOLVED",
+    "objective": 27564.920690487754,
+    "objective_units": "GOC cost units",
+    "voltage_margin_min_low_pu": {
+      "margin": 0.1401195144918842,
+      "bus": "492",
+      "vm": 1.0401195144918842
+    },
+    "voltage_margin_min_high_pu": {
+      "margin": 1.5605309933164335e-08,
+      "bus": "144",
+      "vm": 1.0999999843946902
+    },
+    "closest_generator_P_bound": {
+      "margin_MW": -1.4407771420366089e-06,
+      "gen": "14",
+      "bound": "Pmin"
+    },
+    "closest_generator_Q_bound": {
+      "margin_MVAr": 4.809463899080324e-05,
+      "gen": "71",
+      "bound": "Qmax"
+    },
+    "max_branch_loading": {
+      "fraction": 0.9999999735324546,
+      "branch": "309",
+      "flow_MVA": 219.99999417714005,
+      "rating_MVA": 220.00000000000003
+    }
+  },
+  "scopf": {
+    "formulation": "AC contingency-cut SCOPF, iterative fixed point; fixed taps/shunts, source INL generator response",
+    "status": "LOCALLY_SOLVED",
+    "objective": 33193.91779729565,
+    "iterations": 4,
+    "objective_units": "GOC cost units",
+    "explicit_scenarios": 5,
+    "voltage_margin_min_low_pu": {
+      "margin": 0.03302123575087401,
+      "bus": "182",
+      "vm": 0.933021235750874
+    },
+    "voltage_margin_min_high_pu": {
+      "margin": 3.527734748764999e-08,
+      "bus": "144",
+      "vm": 1.0999999647226526
+    },
+    "closest_generator_P_bound": {
+      "margin_MW": -6.115755457614114e-07,
+      "gen": "78",
+      "bound": "Pmax"
+    },
+    "closest_generator_Q_bound": {
+      "margin_MVAr": 4.032252459706953e-06,
+      "gen": "78",
+      "bound": "Qmin"
+    },
+    "max_branch_loading": {
+      "fraction": 0.5283240732765768,
+      "branch": "532",
+      "flow_MVA": 315.40947174611637,
+      "rating_MVA": 597.0
+    }
+  },
+  "branch_rating_note": "branch_solution.csv gives A/B/C normal/emergency ratings for every circuit; rate A is used for OPF and rate C for SCOPF contingencies.",
+  "limitations": [
+    "SCOPF `run_c1_scopf_contigency_cuts` returns only the base-network solution in its standard API; scopf_ac_all_states.json is an exact final-master solve with the 4 contingencies retained at the converged fixed point.",
+    "The upstream SCOPF model uses unbounded contingency generator variables (`bounded=false`); contingency P/Q limit margins are reported and may be negative. These values reveal model behavior and should not be described as all generator limits being enforced.",
+    "PowerModels SCOPF convergence criterion is no new violated contingencies found; its output logs warned that some active contingencies remained insecure during intermediate checks."
+  ]
+}

@@ -74,11 +74,13 @@ Returns `(result, resumed_count, evaluated_count, fingerprint)`.
 """
 function run_contingency_campaign(directory::AbstractString, case::Case, base::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
-    participation::AbstractDict=Dict(g.id=>1.0 for g in case.generators if g.available),
+    participation::AbstractDict=default_participation(case),
     screening_enabled::Bool=true, audit_screened_ids::AbstractVector{Symbol}=Symbol[],
     loading_threshold::Real=0.8, voltage_guard::Real=0.02, lodf_tolerance::Real=1e-8,
-    reactive_guard::Real=0.1, ac_risk_guard::Bool=true,
+    reactive_guard::Real=0.1, ac_risk_guard::Bool=true, droop_response_guard::Bool=false,
     smooth_epsilon::Real=1e-4,
+    sparse_balance::Bool=false,
+    workers::Integer=1,
     optimizer_attributes::AbstractDict=Dict("max_iter"=>1000, "max_cpu_time"=>120.0),
     on_checkpoint=identity)
     validate_equilibrium(case, base).valid || throw(ArgumentError("base state must independently validate"))
@@ -88,9 +90,9 @@ function run_contingency_campaign(directory::AbstractString, case::Case, base::A
     environment = Dict(name => isfile(joinpath(project,name)) ?
         bytes2hex(SHA.sha256(read(joinpath(project,name)))) : nothing
         for name in ("Project.toml", "Manifest.toml", "Manifest-v$(VERSION.major).$(VERSION.minor).toml"))
-    policy = (; screening_enabled, audit_screened_ids=sort(unique(audit_screened_ids)),
-        loading_threshold, voltage_guard, lodf_tolerance, reactive_guard, ac_risk_guard, smooth_epsilon,
-        optimizer_attributes, participation)
+    policy = (; active_response="limit_aware_v1", screening_enabled, audit_screened_ids=sort(unique(audit_screened_ids)),
+        loading_threshold, voltage_guard, lodf_tolerance, reactive_guard, ac_risk_guard, droop_response_guard, smooth_epsilon,
+        optimizer_attributes, participation, sparse_balance, workers)
     contract = _json_data((; schema_version=1, case, base, catalog, policy,
         julia_version=string(VERSION), ipopt_version=string(Base.pkgversion(Ipopt)),
         jump_version=string(Base.pkgversion(JuMP)), source, environment))
@@ -145,7 +147,7 @@ function run_contingency_campaign(directory::AbstractString, case::Case, base::A
         end
         result = assess_contingency_pipeline(case, base; catalog, participation,
             screening_enabled, audit_screened_ids, loading_threshold, voltage_guard,
-            lodf_tolerance, reactive_guard, ac_risk_guard, smooth_epsilon, optimizer_attributes,
+            lodf_tolerance, reactive_guard, ac_risk_guard, droop_response_guard, smooth_epsilon, optimizer_attributes, sparse_balance, workers,
             _assessment_loader=loader, _assessment_callback=checkpoint)
         _campaign_atomic(joinpath(directory,"campaign.json"),
             Dict("fingerprint"=>fingerprint, "resumed_count"=>resumed[],
@@ -170,10 +172,11 @@ infeasibility. Zero observed misses is evidence only for this input set.
 function validate_contingency_filter(case::Case, base::ACState;
     catalog::ContingencyCatalog=contingency_catalog(case),
     loading_threshold::Real=0.8, voltage_guard::Real=0.02,
-    reactive_guard::Real=0.1, ac_risk_guard::Bool=true, kwargs...)
+    reactive_guard::Real=0.1, ac_risk_guard::Bool=true, droop_response_guard::Bool=false, kwargs...)
     decisions = filter_contingencies(case, base; catalog, loading_threshold, voltage_guard,
-        reactive_guard, ac_risk_guard)
-    exact = assess_contingency_pipeline(case, base; catalog, screening_enabled=false, kwargs...)
+        reactive_guard, ac_risk_guard, droop_response_guard, participation=get(kwargs,:participation,default_participation(case)))
+    exact = assess_contingency_pipeline(case, base; catalog, screening_enabled=false, loading_threshold, voltage_guard,
+        reactive_guard, ac_risk_guard, droop_response_guard, kwargs...)
     by_id = Dict(a.entry.contingency.id=>a for a in exact.assessments)
     rows = NamedTuple[]
     for kind in (:line, :transformer, :generator)
@@ -200,7 +203,7 @@ function validate_contingency_filter(case::Case, base::ACState;
             screened_physical_failures=physical, ranking_budgets=budgets))
     end
     (; case, base_state=base, catalog,
-        settings=(;loading_threshold,voltage_guard,reactive_guard,ac_risk_guard,solver_options=Dict(kwargs)),
+        settings=(;loading_threshold,voltage_guard,reactive_guard,ac_risk_guard,droop_response_guard,solver_options=Dict(kwargs)),
         decisions, exact, families=rows,
         no_observed_misses=all(row.screened_unresolved == 0 for row in rows))
 end

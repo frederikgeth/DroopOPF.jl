@@ -2,11 +2,6 @@
 
 ## Purpose
 
-This document is a self-contained handoff for continuing the investigation of
-DroopOPF's transformer-tap, shunt, Volt–VAr droop, and generator-voltage-control
-models. The immediate goal is to determine whether the remaining IEEE-118/300
-frozen-test failures are caused by:
-
 1. incorrect equipment equations;
 2. inappropriate controller assignments or synthetic data;
 3. inadequate physical reactive capability; or
@@ -54,11 +49,6 @@ continuous-bank, sign, availability, replay, and voltage-squared tests pass.
 
 The incremental IEEE matrix produced:
 
-- shunt-only cells: 68/68 strict passes;
-- one-droop/one-shunt cells: 24/24 strict passes;
-- all 12 synthetic IEEE-118 banks pass without droops;
-- all 32 synthetic IEEE-300 banks pass without droops through load 1.03.
-
 The shunt equation is not the main source of the frozen failures. Continuous
 shunt feasibility and discrete/legal-step implementability must remain separate
 questions.
@@ -68,15 +58,6 @@ questions.
 The checkpointed diagnostic starts from the untouched PGLib case and adds
 droops or synthetic shunt banks cumulatively. It uses:
 
-- IEEE-118 loads 1.00 and 1.05;
-- IEEE-300 loads 1.00, 1.01, 1.02, and 1.03;
-- Ipopt and MadNLP;
-- nominal raw anchor start;
-- smooth epsilon `1e-6`;
-- exact-droop acceptance `1e-5`;
-- the frozen one-reset policy;
-- source transformer ratios fixed.
-
 Main result:
 
 | Scope | Passed | Failed |
@@ -85,11 +66,6 @@ Main result:
 | Raw PGLib, no added control | 12 | 0 |
 | Shunt-only increments | 68 | 0 |
 | One droop plus one shunt | 24 | 0 |
-| IEEE-118 | 83 | 5 |
-| IEEE-300 nominal | 58 | 0 |
-| IEEE-300 load 1.01 | 45 | 13 |
-| IEEE-300 load 1.02 | 42 | 16 |
-| IEEE-300 load 1.03 | 30 | 28 |
 
 All one-, two-, and four-droop fixed/free cells pass. Failures emerge with larger
 droop populations under stress and are non-monotonic in count, formulation,
@@ -113,9 +89,6 @@ Artifacts and runner:
 
 - `artifacts/s1_incremental_controls/report.md`
 - `artifacts/s1_incremental_controls/summary.json`
-- `examples/s1_incremental_controls.jl`
-
-### IEEE-300 controller 5 / generator 11
 
 The first recurring stressed hotspot in the deterministic cumulative ordering is
 controller 5:
@@ -168,20 +141,6 @@ Artifacts:
 - `artifacts/s1_incremental_control5/summary.json`
 
 ### Same-case witness-seed matrix
-
-The 12 unresolved cells in the 24-cell frozen Ipopt/MadNLP matrix were rerun
-from a validated witness for the *same* network and load. Each seed contained
-the full physical decision—AC state plus tap, shunt, and droop settings—not
-just the state. The target equations, objective, smoothing, strict validation,
-and one-reset budget were unchanged. Same-backend seeds were preferred; the
-three IEEE-118 nominal MadNLP cells used an Ipopt primal seed with no duals.
-
-- 7/12 strict passes from the witness seed;
-- all five IEEE-300 and both stressed IEEE-118 MadNLP targets pass;
-- the two stressed IEEE-118 Ipopt targets terminate `LOCALLY_SOLVED` but retain
-  exact-droop mismatch about `1.122e-5`, just above the frozen `1e-5` gate;
-- the three nominal IEEE-118 MadNLP targets retain `SLOW_PROGRESS` despite
-  balance and exact-droop residuals near machine precision.
 
 This establishes both basin-sensitive failures and residual/termination
 robustness failures. It does not replace any direct-start frozen decision, and
@@ -346,39 +305,6 @@ may silently redefine the other.
 - Store every failed iterate and raw mismatch.
 
 ### Explicit reactive-control modes
-
-Current implementation: opt-in base-case assignments support FreeQ, FixedQ,
-and VoltVarDroop in smooth OPF and the CCOpt entry point, with independent
-equilibrium validation. Exact base-case AVR is implemented in CCOpt and its
-central-path approximation in Ipopt/MadNLP, with independent regime validation
-and small-case cross-solver agreement. Study v5/result v2 persistence and
-SCOPF replay are implemented with legacy-schema compatibility. Common-location
-AVRs use proportional Q-range sharing and aggregate PV/PQ limits. Remote-bus
-and identified branch-terminal AVR locations are implemented; an outaged
-monitoring branch disables its branch-terminal regulator. Preliminary
-one-device and unstaged k3 attempts retain their bounded no-result outcomes;
-they are historical direct-path non-passes, not the final staged scorecard. A
-predeclared three-device, one-per-bus headroom set is used for the qualified
-staged lane. AVR-aware base-case joint
-tap/shunt design is implemented and persisted. The k3 AVR set validates under
-Ipopt at loads 1.00 and 1.01 for both IEEE systems. The direct IEEE-118 k3
-joint-tap run has a retained bounded non-pass, but a same-case staged k1 → k2
-→ k3 continuation validates all three stages, identifying initialization and
-conditioning rather than k3 infeasibility. The staged policy validates the full
-Ipopt and MadNLP joint-design envelopes at loads 1.00 and 1.01 on both
-IEEE-118 and IEEE-300: all 24 stage/backend/case cells are `LOCALLY_SOLVED` and
-independently valid. The exact CCOpt staged lane validates 11/12 physical
-cells (7/12 with a strict `LOCALLY_SOLVED` status gate): only IEEE-300 load
-1.01 k3 is invalid (`LOCALLY_INFEASIBLE`), after physically valid but
-`ALMOST_LOCALLY_SOLVED` k1/k2 stages. Diagnosing that exact stressed-k3 boundary
-with a full smooth k3 cross-seed recovers a valid exact point
-(`ALMOST_LOCALLY_SOLVED`, complementarity residual `2.484e-8`, tap movement
-from the seed about `5.18e-9`). The original `LOCALLY_INFEASIBLE` result is
-therefore basin-sensitive rather than physical infeasibility. M9.1 SCOPF policy
-integration is now implemented and synthetically qualified; public IEEE
-qualification remains open.
-Pure FreeQ/FixedQ calls through CCOpt
-delegate to MadNLP and must not count as independent third-solver evidence.
 
 - Implement `FreeQ`, `FixedQ`, `AVR`, and `VoltVarDroop` assignments.
 - Enforce at most one reactive-control mode per generator.
@@ -556,10 +482,6 @@ Never accept a slack solution as a strict physical result. Classify every cell a
 5. `raw_case_unqualified`;
 6. `minimum_violation_positive`.
 
-The failed IEEE-300 five-droop load-1.02 path already belongs to
-`solver_path_failure_with_witness` because a valid stricter six-droop solution
-exists and remains feasible after removing controller 6's equality.
-
 ### Numerical remedies against the unchanged frozen contract
 
 Evaluate:
@@ -609,13 +531,6 @@ test failure.
 
 Proceed to full SCOPF only when:
 
-- raw base cases validate over the declared envelope;
-- FreeQ, FixedQ, AVR, and Volt–VAr unit tests pass;
-- transformer and shunt oracle tests pass;
-- physically qualified 118/300 base cases have reliable witnesses;
-- failures are classified rather than pooled;
-- preventive/corrective timing is declared.
-
 For SCOPF:
 
 - droop and AVR may provide automatic response;
@@ -655,12 +570,6 @@ nonlinear model can terminate at an infeasible restoration point from a direct
 start even when a validated staged witness exists. That outcome remains a
 solver-start failure, not an infeasibility claim.
 
-The bounded **S2 equipment-aware SCOPF public qualification** gate is complete.
-It retains direct and staged IEEE-118/300 results separately, compares
-Ipopt/MadNLP and exact CCOpt, and reports solver status, physical replay,
-equipment coupling, and seed lineage. Broader reliability work remains active;
-S1 continues independently against its unchanged frozen contract.
-
 The remaining M9 feature slices are distinct from S2:
 
 - **M9.2 — explicit corrective-action budgets (implemented):** constrain movement from the
@@ -674,13 +583,6 @@ The remaining M9 feature slices are distinct from S2:
   Report voltage, thermal and Q margins, AVR target error and saturation. These
   are two steady-state assessments, not a transient trajectory.
 
-S2 large-case execution is now process-isolated and resumable. Each stage has
-an external 180-second wall limit in addition to solver limits. The IEEE-300
-retry reconfirmed Ipopt's invalid `TIME_LIMIT` fixed seed; MadNLP and CCOpt were
-terminated at the external wall limit without producing fixed-seed artifacts.
-Those are bounded no-results, not infeasibility evidence, so IEEE-300 staged and
-paired-response qualification remains open.
-
 A separate direct-witness recovery lane initializes every fixed-equipment
 scenario from the direct M9.1 result instead of leaving contingency states cold.
 Ipopt still ended at `TIME_LIMIT`, although only power-balance residuals
@@ -688,39 +590,7 @@ remained; MadNLP and CCOpt reached the same external wall limit without an
 artifact. This excludes that simple all-scenario seed substitution as a complete
 recovery, without changing the declared fixed-seed S2 lane.
 
-Contingency-count homotopy was tested in both orders for IEEE-300 Ipopt. The
-line-only stage is physically valid but status-rejected, while generator-only is
-valid `LOCALLY_SOLVED`; adding the second contingency in either order leaves a
-line-outage power-balance residual at `TIME_LIMIT`. Separately, M9.3 is now run
-directly from the equipment-aware M9.1 base result: Ipopt immediate passes and
-its settled state is physical but status-rejected; CCOpt settled passes while
-its immediate state does not; both MadNLP stages remain invalid. These paired
-results do not close the still-missing staged-M9.1 IEEE-300 lane.
-
 ## Recommended immediate execution order
-
-1. Freeze the exact test contract and produce a per-cell ledger of status,
-   strict residuals, last finite iterate, seed lineage, and known witnesses.
-2. Build the smallest deterministic reproducer for each distinct failure class,
-   starting with IEEE-300 controller 5 at load 1.02; include one-device,
-   transition-count, and pairwise variants.
-3. Add Phase-I restoration and witness-based classification to every frozen
-   failure.  Do not call an unclassified failed solve infeasible.
-4. On the unchanged frozen model, compare targeted numerical remedies: compatible
-   warm starts, continuation, scaling/coordinates, reduced-Q and smooth-clamp
-   alternatives, derivative/Hessian paths, and exact-complementarity comparison.
-5. Promote a remedy only if it meets the Phase-6 reliability gate across the
-   complete frozen matrix; retain unsuccessful attempts and diagnostic budgets.
-6. In parallel, add the backward-compatible explicit reactive-control data model
-   and its unit-level invariants—without making it a prerequisite for resolving
-   the legacy frozen lane.
-7. Implement and verify AVR, then produce raw envelopes and Q-reserve reports.
-8. Declare qualification annotations and run separately labelled controller,
-   `Q_ref`/`V_ref`, slope, and anchor-construction comparison lanes.
-9. Freeze the physically qualified benchmark alongside (not in place of) the
-   adversarial frozen benchmark.
-10. Begin SCOPF only after the base-case gate passes for the relevant physical
-    lane and frozen-lane reliability evidence remains intact.
 
 ## Interpretation rules
 

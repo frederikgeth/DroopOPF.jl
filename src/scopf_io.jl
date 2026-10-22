@@ -41,8 +41,8 @@ end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        version = kind == "DroopOPF.Study" ? 9 : kind == "DroopOPF.SCOPFResult" ? 4 : 1
-        JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
+        version = kind == "DroopOPF.Study" ? 10 : kind == "DroopOPF.SCOPFResult" ? 5 : 1
+        JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "active_response"=>"limit_aware_v1", "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
     return path
@@ -88,11 +88,21 @@ write_contingency_pipeline(path::AbstractString, result::ContingencyPipelineResu
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
     version = get(document,"schema_version",nothing)
-    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6, 7, 8, 9) :
-        kind == "DroopOPF.SCOPFResult" ? (1, 2, 3, 4) : (1,)
+    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6, 7, 8, 9, 10) :
+        kind == "DroopOPF.SCOPFResult" ? (1, 2, 3, 4, 5) : (1,)
     version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
     data = document["data"]
+    if kind in ("DroopOPF.Study", "DroopOPF.SCOPFResult")
+        current = kind == "DroopOPF.Study" ? version >= 10 : version >= 5
+        coupled = get(data,"mode",nothing) == "preventive" &&
+            (kind == "DroopOPF.Study" ? !isempty(data["contingencies"]) :
+                !isempty(data["balancing_power"]))
+        if current || coupled
+            get(document,"active_response",nothing) == "limit_aware_v1" ||
+                throw(ArgumentError("response-policy mismatch: historical fixed-participation evidence requires its original source; rebuild this study under limit-aware response in a fresh campaign"))
+        end
+    end
     if kind == "DroopOPF.Study"
         if version < 5
             data["reactive_assignments"] = nothing

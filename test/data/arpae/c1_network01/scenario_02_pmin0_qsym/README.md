@@ -1,0 +1,3 @@
+# scenario_02 Pmin-zero, symmetric-Q study variant
+
+This derived case copies `scenario_02/` without modifying it. In the PSS/E RAW generator records, every Pmin (PB) is set to 0 MW, including offline records, and reactive limits are made symmetric using `Qmin = -max(|Qmin_original|, |Qmax_original|)` and `Qmax = +max(|Qmin_original|, |Qmax_original|)`. Pmax and all other input files are preserved. `generator_limits_original_and_study.csv` records each generator's original and modified limits, along with its source PG/QG and status. Fixed-equipment OPF/SCOPF and all-state results are in `../results/scenario_02_pmin0_qsym/`.

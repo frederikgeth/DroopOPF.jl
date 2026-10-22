@@ -29,7 +29,8 @@ struct Generator{T<:Real}
         q_min <= initial_q <= q_max ||
             throw(ArgumentError("initial_q must lie within reactive-power limits"))
         p_min <= p_max || throw(ArgumentError("p_min must not exceed p_max"))
-        q_min < q_max || throw(ArgumentError("q_min must be less than q_max"))
+        (q_min < q_max || (!available && q_min == q_max)) ||
+            throw(ArgumentError("q_min must be less than q_max for an available generator"))
         new{T}(Int(id), Int(bus_id), available, p_min, p_max, q_min, q_max, initial_p, initial_q)
     end
 end

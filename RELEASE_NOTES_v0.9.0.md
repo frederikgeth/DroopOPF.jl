@@ -18,23 +18,6 @@ reactive-control equilibrium, equipment availability, preventive coupling, and
 corrective movement. Study/result schemas preserve older fixed-equipment data,
 and paired assessments support JSON and Markdown reporting.
 
-The bounded S2 public qualification is retained under `artifacts/s2_scopf`.
-Its IEEE-118 expansion accepts 25/29 direct cells and 26/29 with a declared
-bounded same-model warm retry across tap, shunt, joint,
-multi-location, preventive, corrective, AVR, mixed-control, holdout, and +3%
-load-stress cases. The frozen IEEE-118/300 scorecard reports direct, staged,
-immediate, and settled results separately. IEEE-300 staged M9.1 remains open;
-timeouts, slow progress, and physical-only results are retained and are not
-infeasibility certificates.
-
-The M9 release gate requires independent validation and synthetic regression
-coverage for all three slices, accepted public witnesses at IEEE-118 and
-IEEE-300 scale, retained bounded solver evidence, a passing package suite,
-documentation, and a runnable example. It does not claim universal convergence,
-full N-1 coverage, global optimality, discrete implementability, or transient
-security. Broader reliability work continues in S2/M10, while S1 remains a
-separate frozen base-case investigation.
-
 Validation: the package test suite passed 2319/2319 tests, the documentation
 build passed, and `examples/m9_1_equipment_scopf.jl` completed with independently
 valid preventive and corrective workflows.

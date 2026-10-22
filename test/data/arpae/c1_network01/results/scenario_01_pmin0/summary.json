@@ -1,0 +1,113 @@
+{
+  "case": "scenario_01_pmin0",
+  "base_mva": 100.0,
+  "counts": {
+    "bus_records": 15,
+    "buses_with_solution": 14,
+    "generator_records": 6,
+    "online_generators": 5,
+    "branch_records": 22,
+    "online_branches": 20,
+    "transformer_records": 4,
+    "online_transformers": 3,
+    "fixed_shunt_records": 2,
+    "switched_shunt_records": 2,
+    "shunts_in_service": 2
+  },
+  "limits": {
+    "bus_vmin_pu": 0.9,
+    "bus_vmax_pu": 1.1,
+    "branch_thermal_basis": "Rate A; apparent flow checked at both ends",
+    "branch_angle_limits": "from each branch record, generally +/-60 degrees"
+  },
+  "opf": {
+    "status": "LOCALLY_SOLVED",
+    "objective": 988.442674887539
+  },
+  "scopf": {
+    "status": "LOCALLY_SOLVED",
+    "objective": 988.442674887539,
+    "iterations": 1
+  },
+  "margins": {
+    "min_voltage": {
+      "bus_id": "14",
+      "vm_pu": 1.063514596914012,
+      "vmin_pu": 0.9,
+      "margin_to_vmin_pu": 0.16351459691401204
+    },
+    "max_voltage": {
+      "bus_id": "6",
+      "vm_pu": 1.099999889282977,
+      "vmax_pu": 1.1,
+      "margin_to_vmax_pu": 1.1071702310516685e-07
+    },
+    "closest_rate_a": {
+      "branch_id": "20",
+      "from_bus": 4,
+      "to_bus": 9,
+      "max_end_flow_mva": 5.710970830867113,
+      "rate_a_mva": 24.0,
+      "margin_to_rate_a_mva": 18.28902916913289,
+      "loading_rate_a_pct": 23.79571179527964
+    },
+    "highest_rate_a_loading": {
+      "branch_id": "21",
+      "from_bus": 5,
+      "to_bus": 6,
+      "transformer": true,
+      "max_end_flow_mva": 44.42369113808908,
+      "rate_a_mva": 115.99999999999999,
+      "margin_to_rate_a_mva": 71.5763088619109,
+      "loading_rate_a_pct": 38.2962854638699
+    },
+    "highest_transformer_rate_a_loading": {
+      "branch_id": "21",
+      "from_bus": 5,
+      "to_bus": 6,
+      "max_end_flow_mva": 44.42369113808908,
+      "rate_a_mva": 115.99999999999999,
+      "margin_to_rate_a_mva": 71.5763088619109,
+      "loading_rate_a_pct": 38.2962854638699
+    },
+    "closest_branch_angle_bound": {
+      "branch_id": "3",
+      "from_bus": 2,
+      "to_bus": 3,
+      "angle_difference_deg": 5.1370057057258585,
+      "angle_min_deg": -60.0001403060998,
+      "angle_max_deg": 60.0001403060998,
+      "margin_to_angle_min_deg": 65.13714601182566,
+      "margin_to_angle_max_deg": 54.86313460037394
+    },
+    "closest_pmin": {
+      "gen_id": "1",
+      "bus_id": 1,
+      "pg_mw": -9.730854223071027e-07,
+      "pmin_mw": 0.0,
+      "margin_to_pmin_mw": -9.730854223071027e-07
+    },
+    "closest_pmax": {
+      "gen_id": "4",
+      "bus_id": 6,
+      "pg_mw": 110.50325062844158,
+      "pmax_mw": 110.50327558070421,
+      "margin_to_pmax_mw": 2.4952262633881617e-05
+    },
+    "closest_qmin": {
+      "gen_id": "4",
+      "bus_id": 6,
+      "qg_mvar": -14.316975148796413,
+      "qmin_mvar": -19.11302463384345,
+      "margin_to_qmin_mvar": 4.796049485047038
+    },
+    "closest_qmax": {
+      "gen_id": "5",
+      "bus_id": 8,
+      "qg_mvar": 6.3654831056556604,
+      "qmax_mvar": 19.23728256560862,
+      "margin_to_qmax_mvar": 12.87179945995296
+    }
+  },
+  "equipment_control_policy": "Transformer taps and shunt settings fixed to source-case values in all states; no movement budget."
+}

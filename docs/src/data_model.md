@@ -94,33 +94,6 @@ constraints and CCOpt delegates to MadNLP; these runs are not independent
 third-solver evidence. Explicit VoltVarDroop assignments retain the exact
 complementarity encoding.
 
-Exact AVR holds the regulated voltage at its setpoint when Q is interior.
-At the upper Q limit it permits voltage below the setpoint; at the lower Q
-limit it permits voltage above the setpoint. The encoding uses two nonnegative
-voltage-release variables complementary to the respective Q-limit slacks.
-The independent validator checks these physical regimes directly and reports
-`:avr`, using `avr_voltage_tolerance` (default `1e-5`) for voltage and
-`limit_tolerance` for Q-limit proximity. Unavailable generators do not regulate.
-AVRs at the same regulated location must declare the same setpoint. Available
-generators form one aggregate regulator: their normalized Q positions
-`(Q-Qmin)/(Qmax-Qmin)` are equal, so output is shared in proportion to each
-unit's Q range and the aggregate Q limits govern voltage release. Outages
-automatically regroup the surviving units. The independent validator reports
-`:avr_sharing` for inconsistent allocations. `:remote_bus` regulates the named
-network bus and `:generator_terminal` must name the generator's own bus. A
-`:branch_terminal` location must provide `branch_id` and `side`; it regulates
-that endpoint's bus voltage and is disabled in a scenario where its monitoring
-branch is unavailable. Remote and branch-terminal behavior is covered by
-small-case regressions. The retained IEEE-118/300 qualification uses
-generator-terminal AVR only and must not be generalized to remote or
-branch-terminal public-case performance.
-Smooth AVR uses the same two Q-slack/voltage-release pairs with
-`slack * release == smooth_voltage_epsilon^2`. Thus Ipopt and MadNLP follow a
-central path approaching the exact CCOpt graph rather than replacing AVR with
-an arbitrary high-gain droop curve. At finite smoothing, Q remains slightly
-inside its limits; the default `1e-4` voltage smoothing keeps the tested
-small-case deviation within the independent AVR tolerances.
-
 ## Attachments
 
 `GeneratorControlAttachment` connects one generator to one control and gives
@@ -157,8 +130,11 @@ line-only v1 studies to unity/zero and rejects contradictory transformer metadat
 labelled v1. Unchanged result/report document kinds retain schema v1. Older
 readers reject v2, rather than silently losing transformer physics.
 
-Study schema v9 persists the explicit line/transformer kind. Older studies
-reload with `kind=:line` so their prior electrical behaviour remains unchanged.
+Study schema v9 introduced the explicit line/transformer kind; current v10 also
+identifies limit-aware automatic active response. Supported older uncoupled or
+corrective studies reload with `kind=:line` when kind metadata is absent.
+Historical coupled preventive studies require original-source replay rather than
+silent migration to a different active-response policy.
 
 M5.2–M5.4 support fixed ratios and fixed phase shifts in AC evaluation,
 OPF, SCOPF and existing bounded droop design. Unavailable branches contribute

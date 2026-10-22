@@ -150,7 +150,15 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
             generator.available || continue
             change = state.pg[i] - base.pg[i]
             if study.mode == :preventive && isfinite(delta)
-                violation = max(violation, abs(change - alpha[i] * delta))
+                # Replay the exact bounded law, independently of the NLP graph.
+                lo, hi = _active_response_bounds(case, i, study.reactive_assignments)
+                if haskey(study.redispatch_limits, generator.id)
+                    r = study.redispatch_limits[generator.id]
+                    lo, hi = max(lo, base.pg[i]-r), min(hi, base.pg[i]+r)
+                end
+                expected = alpha[i] == 0 ? base.pg[i] :
+                    clamp(base.pg[i] + alpha[i]*delta, lo, hi)
+                violation = max(violation, abs(state.pg[i] - expected))
             end
             if study.mode == :corrective || haskey(study.redispatch_limits, generator.id)
                 violation = max(violation, abs(change) - get(study.redispatch_limits, generator.id, 0.0))

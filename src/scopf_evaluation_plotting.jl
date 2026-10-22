@@ -105,9 +105,10 @@ function write_scopf_input_plot(path::AbstractString, study::Study;
         response = if id == :base
             "base dispatch"
         elseif study.mode == :preventive
-            participants = [string(g.id) for g in case.generators
-                if g.available && get(study.participation, g.id, 0.0) > 0]
-            "preventive: G" * join(participants, ",G")
+            alpha = _participation(study,case)
+            participants = [string(g.id) for (i,g) in enumerate(case.generators)
+                if alpha[i] > 0]
+            "preventive limit-aware: G" * join(participants, ",G")
         else
             movable = ["G$id≤$(_svg_number(limit))" for (id, limit) in
                 sort(collect(study.redispatch_limits); by=first)]
@@ -265,7 +266,7 @@ function write_scopf_evaluation_report(path::AbstractString, study::Study,
         "- Primal status: `$(report.primal_status)`",
         "- Objective: `$(report.objective)`", "",
         "## Assumptions and interpretation", "",
-        "Steady-state AC equations with the declared demand, topology, generator limits and reactive controls. Power and voltage are per-unit; angles are radians. Preventive response uses surviving participation weights; corrective response uses the declared redispatch bounds. Equipment follows the declared timing and movement limits.", "",
+        "Steady-state AC equations with the declared demand, topology, generator limits and reactive controls. Power and voltage are per-unit; angles are radians. Preventive response uses limit-aware surviving participation weights with saturation and redistribution; corrective response uses the declared redispatch bounds. Equipment follows the declared timing and movement limits.", "",
         "A solver success flag alone is not validation. Checks independently replay the saved states and solved tap/shunt settings against the declared study. PASS applies only to these scenarios and tolerances; it is not a dynamic-security, global-optimality or all-contingency certificate. Missing or malformed states are NOT EVALUATED, never physical passes. Response-delta plots include outage changes, are descriptive rather than pass/fail, and floor values at 1e-8.", "",
         "## Reproducible inputs, outputs and tolerances", "",
         "The accompanying evaluation-inputs.json and evaluation-outputs.json contain the complete declared study and saved solution, including network data, controls, limits, policy and scenario states. evaluation-validation.json contains the independently recomputed checks.", "",

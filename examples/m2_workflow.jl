@@ -5,7 +5,7 @@ case = m2_case()
 study = Study(case;
     contingencies=[Contingency(:line_22; branch_ids=[22]),
                    Contingency(:generator_9; generator_ids=[9])],
-    participation=Dict(7=>1.0,9=>1.0))
+    participation=default_participation(case))
 result = solve(study; smooth_epsilon=1e-5)
 report = equilibrium_report(study,result)
 report.valid || error(markdown_report(report))

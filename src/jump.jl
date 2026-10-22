@@ -12,6 +12,10 @@ struct ACOPFResult{T<:Real}
     smooth_reactive_epsilon::Union{Nothing,T}
 end
 
+# Only specialize widths that are constant zero; a variable initialized at zero
+# must retain its deadband dependence.
+_fixed_zero_deadband(low, high) = low isa Real && high isa Real && iszero(low) && iszero(high)
+
 function _smooth_positive(x, epsilon)
     return epsilon * log1pexp(x / epsilon)
 end
@@ -48,9 +52,13 @@ function _smooth_droop_value(
     voltage_epsilon::Real,
     reactive_epsilon::Real,
 )
-    low = _smooth_positive(control.schedule.v_db_low - voltage, voltage_epsilon)
-    high = _smooth_positive(voltage - control.schedule.v_db_high, voltage_epsilon)
-    raw = control.q_at_deadband + (low - high) / control.slope
+    raw = if control.schedule.v_db_low == control.schedule.v_db_high
+        control.q_at_deadband + (control.schedule.v_ref - voltage) / control.slope
+    else
+        low = _smooth_positive(control.schedule.v_db_low - voltage, voltage_epsilon)
+        high = _smooth_positive(voltage - control.schedule.v_db_high, voltage_epsilon)
+        control.q_at_deadband + (low - high) / control.slope
+    end
     q_min, q_max = control.capability.q_min, control.capability.q_max
     return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
            _smooth_positive(raw - q_max, reactive_epsilon)
@@ -66,9 +74,13 @@ function _smooth_droop_value(
     voltage_epsilon::Real,
     reactive_epsilon::Real,
 )
-    low = _smooth_positive(v_ref - deadband_low - voltage, voltage_epsilon)
-    high = _smooth_positive(voltage - v_ref - deadband_high, voltage_epsilon)
-    raw = control.q_at_deadband + (low - high) / slope
+    raw = if _fixed_zero_deadband(deadband_low, deadband_high)
+        control.q_at_deadband + (v_ref - voltage) / slope
+    else
+        low = _smooth_positive(v_ref - deadband_low - voltage, voltage_epsilon)
+        high = _smooth_positive(voltage - v_ref - deadband_high, voltage_epsilon)
+        control.q_at_deadband + (low - high) / slope
+    end
     q_min, q_max = control.capability.q_min, control.capability.q_max
     return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
            _smooth_positive(raw - q_max, reactive_epsilon)
@@ -88,7 +100,8 @@ function _smooth_droop_expression!(model, name, control, voltage, parameters,
     high = Expr(:call, vsoft, Expr(:call, :-,
         Expr(:call, :-, voltage, parameters.v_ref), parameters.deadband_high))
     raw = JuMP.add_nonlinear_expression(model, Expr(:call, :+, control.q_at_deadband,
-        Expr(:call, :/, Expr(:call, :-, low, high), parameters.slope)))
+        Expr(:call, :/, _fixed_zero_deadband(parameters.deadband_low, parameters.deadband_high) ?
+            Expr(:call, :-, parameters.v_ref, voltage) : Expr(:call, :-, low, high), parameters.slope)))
     qmin, qmax = control.capability.q_min, control.capability.q_max
     return Expr(:call, :+, qmin, Expr(:call, :-,
         Expr(:call, qsoft, Expr(:call, :-, raw, qmin)),
@@ -141,6 +154,7 @@ function _build_acopf_model(
     droop_q_formulation::Symbol = :explicit,
     reactive_assignments = nothing,
     power_balance_slacks::Bool = false,
+    sparse_balance::Bool = false,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -366,7 +380,7 @@ function _build_acopf_model(
             # Omit exact-zero admittances before constructing the expression tree.
             # JuMP's legacy nonlinear graph otherwise retains dense dependencies.
             # Preserve legacy droop warm-start trajectories used by CCOpt.
-            neighbors = isempty(case.controls) && isnothing(reactive_assignments) ?
+            neighbors = sparse_balance || (isempty(case.controls) && isnothing(reactive_assignments)) ?
                 [j for j in 1:nbus if !iszero(Y[i, j])] : collect(1:nbus)
             p_generation = sum(pg[k] for k in generators_at_bus[i]; init = 0.0)
             q_generation = sum(qg[k] for k in generators_at_bus[i]; init = 0.0)
@@ -446,6 +460,7 @@ function solve_opf(
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
     reactive_assignments = nothing,
+    sparse_balance::Bool = false,
 )
     validate_case(case)
     isnothing(reactive_assignments) || validate_reactive_assignments(case, reactive_assignments)
@@ -462,6 +477,7 @@ function solve_opf(
         optimizer_factory = optimizer_factory,
         initial_state = initial_state,
         reactive_assignments = reactive_assignments,
+        sparse_balance = sparse_balance,
     )
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
