@@ -1,7 +1,7 @@
 # Experimental numerical initializer for the exact S2 compatibility benchmark.
 # Import never solves. A converged Newton point is a start, never acceptance.
 using SparseArrays, LinearAlgebra
-function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60,pv_preparation=false)
+function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60,pv_preparation=false,initial_guess=nothing)
     D=P2S2.DroopOPF
     normal=D._feasibility_scaled_case(study.case,factor)
     c=D.scenario_case(normal,event)
@@ -38,7 +38,11 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60,p
         pvtargets[j]=sum(targets)/length(targets)
     end
     lost=sum(preventive.state.pg[i] for (i,g) in enumerate(c.generators) if !g.available)
-    z=vcat(flat ? zeros(n-1) : preventive.state.va[angles],flat ? ones(n) : preventive.state.vm,lost)
+    z=if isnothing(initial_guess)
+        vcat(flat ? zeros(n-1) : preventive.state.va[angles],flat ? ones(n) : preventive.state.vm,lost)
+    else
+        vcat(initial_guess.state.va[angles],initial_guess.state.vm,initial_guess.delta)
+    end
     function evaluate(z; jacobian=false)
         va=zeros(n);va[angles]=z[1:n-1];vm=z[n:2n-1]
         pg=zeros(length(c.generators));qg=copy(pg);p=-copy(pload);q=-copy(qload);dq=zeros(n)
@@ -110,13 +114,21 @@ function p2_sparse_start(study,preventive,event;factor=1.,flat=true,maxiter=60,p
         flat_voltage=flat,pv_preparation,post_outage_oracle_used=false,held_equipment="preventive settings",reactive_preparation=pv_preparation ? "PV targets inferred from preventive Q and inverse droop; no preventive voltage/angle values copied; full Q/droop model restored in native solve" : "Mixed fixed-Q/droop Newton preparation",
         acceptance="Initializer only: native optimization and full independent audit still required"))
 end
-function p2_sparse_cold_trial(x,seed,events,folder;rep=1,pv_preparation=false,seconds=60.)
+function p2_sparse_cold_trial(x,seed,events,folder;rep=1,pv_preparation=false,seconds=60.,droop_correction=false)
     # Deliberately discard every stored post-outage state before preparation.
     preventive=seed.states[(1.,:base)]
     states=Dict{Tuple{Float64,Symbol},Any}((1.,:base)=>preventive);diagnostics=Any[];started=time()
     for e in events
         p=p2_sparse_start(seed.study,preventive,e;flat=true,pv_preparation)
-        states[(1.,e.id)]=p.entry;push!(diagnostics,(;event=e.id,p.diagnostic...))
+        if droop_correction
+            pv=p
+            corrected=p2_sparse_start(seed.study,preventive,e;flat=false,initial_guess=p.entry)
+            corrected.diagnostic.converged && (p=corrected)
+            push!(diagnostics,(;event=e.id,p.diagnostic...,pv_diagnostic=pv.diagnostic,droop_diagnostic=corrected.diagnostic))
+        else
+            push!(diagnostics,(;event=e.id,p.diagnostic...))
+        end
+        states[(1.,e.id)]=p.entry
     end
     fresh=(;study=seed.study,states)
     P2S2.fd_save(joinpath(folder,"preparation.json"),(;rep,diagnostics,seconds=time()-started,post_outage_oracle_used=false))

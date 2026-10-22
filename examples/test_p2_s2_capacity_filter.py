@@ -30,4 +30,10 @@ class CapacityTests(unittest.TestCase):
   self.base['state']['pg']=[.8,.8,.8];self.study['redispatch_limits']={'1':0.,'2':0.};self.assertTrue(self.screen()['certified_infeasible'])
  def test_nonfinite_base_falls_back(self):
   self.base['state']['pg'][0]=float('nan');self.assertFalse(self.screen()['certified_infeasible'])
+ def test_nonfinite_weight_falls_back(self):
+  self.study['participation']['1']=float('inf');self.assertFalse(self.screen()['certified_infeasible'])
+ def test_explicit_reactive_policy_falls_back(self):
+  self.study['reactive_assignments']=[{}];self.assertFalse(self.screen()['certified_infeasible'])
+ def test_invalid_tolerance_falls_back(self):
+  self.assertFalse(self.screen(tolerance=-1e-6)['certified_infeasible'])
 if __name__=='__main__':unittest.main()

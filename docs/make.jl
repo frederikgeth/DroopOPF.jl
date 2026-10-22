@@ -35,6 +35,7 @@ makedocs(
         "P2 exact S2 benchmark" => "p2_s2_500.md",
         "P2 500-bus multi-demand continuation" => "p2_s2_multidemand.md",
         "Remaining P2 qualification" => "p2_remaining_qualification.md",
+        "P2 open-gate continuation" => "p2_open_gates.md",
         "P2 S1/S2 implementation" => "p2_s2_implementation.md",
         "M4 robustness" => "robustness.md",
         "M4 scale-up decision" => "scale_up_decision.md",

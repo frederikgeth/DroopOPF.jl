@@ -23,6 +23,7 @@ using DroopOPF
     include("test_filter_qualification.jl")
     include("test_solver_compatibility.jl")
     include("test_p2_first_order_nlp.jl")
+    include("test_p2_partitioned_nlp.jl")
     include("test_validation.jl")
     include("test_matpower.jl")
     include("test_transformer_data.jl")
