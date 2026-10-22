@@ -70,3 +70,25 @@ are declared explicitly for hermetic package tests. The outaged-equipment
 regression uses smoothing continuation and tighter numerical convergence with
 unchanged physical acceptance tolerances. No release tag or merge is published
 by this qualification campaign.
+
+## Outcome of this continuation
+
+The prepared cold workflow passed all 389 connected outages at nominal demand,
+with native convergence and independent original-network replay. Its mixed
+11-outage subset passed one warm-up and three repetitions. Remote Ubuntu CI
+passed 3,177 checks each on Julia 1.10 and 1.12, including the derivative adapters.
+All 28,577 prior sealed artifacts and 70 source inputs remain unchanged.
+
+The capacity filter had zero exclusions among 3,501 accepted references and
+certified 23 infeasible outage/dispatch pairs from two validated stress bases.
+It does not establish general predictive failure recall or safe-outage skipping.
+
+P2 remains open for complete multi-demand resource/loss optimization. A live
+sample of the full coupled model measured a 17.0 GiB footprint (17.1 GiB peak)
+on the 16 GiB host and was stopped for memory pressure. Smaller shared-curve
+zero-resource candidates and nominal loss candidates also remained unresolved,
+including retries with normalized variables and the original sparse AC model.
+Those zero-resource candidates impose a stricter objective level set; their
+failure does not invalidate the accepted S2 emergency/relief witnesses or prove
+physical infeasibility. Practical optimization decomposition or larger-memory
+execution remains necessary. No stable release was published by this work.

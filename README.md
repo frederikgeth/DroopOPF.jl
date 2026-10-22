@@ -355,5 +355,9 @@ shared controller at 90/95/100/105% with zero shedding and another through
 [Remaining qualification attempts](docs/src/p2_remaining_qualification.md) add
 four held-out demands per network, three exhaustive 500-bus repetitions, paired
 performance comparisons and local Julia 1.10/1.12 checks. Warm recovery is
-qualified in the tested scope; pure 500-bus flat starts, broader predictive
-filtering and full resource-objective qualification remain open.
+qualified in the tested scope. The subsequent [open-gate continuation](docs/src/p2_open_gates.md)
+adds a flat-start reconstruction workflow that passes all 389 connected outages
+at nominal demand, an S2-specific necessary capacity filter, and successful remote
+Ubuntu CI on Julia 1.10/1.12. Direct flat Ipopt remains distinct from that prepared
+workflow; broader predictive filtering and full resource-objective qualification
+remain open.

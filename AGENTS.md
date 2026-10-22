@@ -128,3 +128,30 @@ and local regression/compatibility checks. Distinguish bounded subsets from
 full-catalogue qualification, preserve failed attempts, and require independent
 physical replay. Unsupported predictive filtering must fall back to exact solves.
 Do not change physical limits or count numerical failure as infeasibility.
+
+## Open-gate continuation recorded (2026-10-22)
+
+The user continued all still-open P2 work. Exact S2 controls/response remained
+unchanged; no repeated equipment confirmation was requested. See
+`artifacts/p2_open_gates_20261022/REPORT.md` and `docs/src/p2_open_gates.md`.
+The prepared cold workflow reconstructs from flat voltage and preventive PG/Q,
+then performs a native constrained solve: 389/389 connected nominal outages
+passed with common frozen curves/base and independent replay. Raw direct-flat
+Ipopt remains distinct. Remote Julia 1.10/1.12 CI passed 3,177 checks each.
+
+The optional rational capacity filter is specific to the exact S2 proportional,
+fixed-preventive-dispatch contract. It proves necessary exclusions only; never
+apply its signal bound to the production limit-aware model or call an excluded
+outage/dispatch pair an unrecoverable network. General safe-skipping is not
+qualified or enabled. All final accepted designs still need complete AC replay.
+
+Full coupled resource optimization remains open. A native 389-outage model was
+measured at 17.0 GiB footprint/17.1 GiB peak on the 16 GiB host. Address that
+measured memory problem before repeating a monolithic campaign. Derivative
+partitioning retains one coupled NLP; it is not optimization decomposition.
+Stronger zero-resource level-set candidates and numerical normalization did not
+produce accepted resource/loss witnesses. Do not promote their time limits to
+physical infeasibility, change the S2 allowances, or count subset objectives as
+full multi-demand priorities. Original S2 and all prior sealed P2 evidence remain
+unchanged. Equipment normalization is supported in the original AC builder;
+the current reduction prototype explicitly rejects normalized taps.

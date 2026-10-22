@@ -36,4 +36,10 @@ class CapacityTests(unittest.TestCase):
   self.study['reactive_assignments']=[{}];self.assertFalse(self.screen()['certified_infeasible'])
  def test_invalid_tolerance_falls_back(self):
   self.assertFalse(self.screen(tolerance=-1e-6)['certified_infeasible'])
+ def test_nonfinite_resistance_falls_back(self):
+  self.study['case']['network']['branches'][0]['resistance']=float('nan');self.assertFalse(self.screen()['certified_infeasible'])
+ def test_nonfinite_tolerance_falls_back(self):
+  self.assertFalse(self.screen(tolerance=float('inf'))['certified_infeasible'])
+ def test_corrective_dispatch_policy_falls_back(self):
+  self.study['mode']='corrective';self.assertFalse(self.screen()['certified_infeasible'])
 if __name__=='__main__':unittest.main()

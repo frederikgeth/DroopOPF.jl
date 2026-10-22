@@ -3,9 +3,10 @@
 @eval P2S2 begin
 isdefined(@__MODULE__,:P2FirstOrderEvaluator) || include(joinpath(ROOT,"examples/p2_first_order_nlp.jl"))
 isdefined(@__MODULE__,:P2PartitionedEvaluator) || include(joinpath(ROOT,"examples/p2_partitioned_nlp.jl"))
-function og_attempt(x,folder,factors,events;seed=x.seed,fixed_controller=false,fixed_base=false,seconds=30.,retry=false,zero_shedding=true,initialization="scenario",objective_kind="feasibility",resource_caps=Dict{String,Float64}(),target_generator=nothing,memory_budget_bytes=6*2^30,partitioned=false)
+function og_attempt(x,folder,factors,events;seed=x.seed,fixed_controller=false,fixed_base=false,seconds=30.,retry=false,zero_shedding=true,initialization="scenario",objective_kind="feasibility",resource_caps=Dict{String,Float64}(),target_generator=nothing,memory_budget_bytes=6*2^30,partitioned=false,normal_outages=false,normalized_controls=false,reduced_network=true)
+    normalized_controls && reduced_network && x.size==500 && throw(ArgumentError("Equipment normalization requires reduced_network=false for the current S2 adapter"))
     ispath(folder)&&error("Do not overwrite attempt: $folder");mkpath(folder)
-    emergency=x.size==500
+    emergency=x.size==500 && !normal_outages
     initialization in ("flat","base","neighbor","scenario")||error("Unknown initialization")
     original_seed=seed
     if initialization!="scenario"
@@ -34,7 +35,7 @@ function og_attempt(x,folder,factors,events;seed=x.seed,fixed_controller=false,f
     contract=(;case_size=x.size,factors,outages=[e.id for e in events],emergency,relief=emergency,
         thermal_multiplier=emergency ? 1.1 : 1.,fixed_controller,fixed_base,zero_shedding=zero_shedding,zero_dr=!emergency,
         response_relaxation_cap=0.,restore=false,active_response="s2_proportional_v1",
-        first_order_evaluator=retry,partitioned,target_generator,objective_scale=objective_kind=="stress" ? -100. : 100.,memory_budget_bytes,
+        first_order_evaluator=retry,partitioned,normal_outages,normalized_controls,reduced_network,target_generator,objective_scale=objective_kind=="stress" ? -100. : 100.,memory_budget_bytes,
         initial_controller=seed.study.case.controls,objective=objective_kind,
         seconds,retry,initialization,objective_kind,resource_caps,native_acceptable_iter=5,native_acceptable_tol=1e-6,native_acceptable_constr_viol_tol=1e-7,reference_controls=x.reference.controls,angles=x.angles,
         source_study=joinpath(x.source,x.size==14 ? "controller.json" : "controller-feasibility.json"),
@@ -44,11 +45,11 @@ function og_attempt(x,folder,factors,events;seed=x.seed,fixed_controller=false,f
         if Sys.maxrss()>memory_budget_bytes
             error("P2 model construction exceeded the declared process RSS budget: $(Sys.maxrss()) > $memory_budget_bytes")
         end
-        (x.size==500 ? nr_build_ac : p2_ac)(c;kwargs...)
+        (x.size==500 && reduced_network ? nr_build_ac : p2_ac)(c;kwargs...)
     end
     t=try @timed el_build(x,factors,events;seed,solver=:ipopt,emergency,relief=emergency,
-        thermal_multiplier=emergency ? 1.1 : 1.,fixed_controller,fixed_base,restore=false,
-        zero_shedding=zero_shedding,zero_dr=!emergency,ac_builder=guarded_ac,penalty_proxies=(objective_kind=="emergency"||haskey(resource_caps,"emergency")),direct_relief=x.size==500)
+        thermal_multiplier=emergency ? 1.1 : 1.,fixed_controller,fixed_base,normalization=normalized_controls,restore=false,
+        zero_shedding=zero_shedding,zero_dr=!emergency,ac_builder=guarded_ac,penalty_proxies=(objective_kind=="emergency"||haskey(resource_caps,"emergency")),direct_relief=x.size==500 && reduced_network)
     catch err
         occursin("P2 model construction exceeded",sprint(showerror,err)) || rethrow()
         record=(;stage="build",status="RESOURCE_BUDGET_EXCEEDED",native_success=false,objective=nothing,
