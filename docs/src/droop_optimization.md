@@ -43,7 +43,7 @@ The AC model is nonconvex, and the current objective may be weakly sensitive to
 the droop setting, so voltage and loading diagnostics should be reviewed with
 the objective.
 
-![M3 fixed-slope security trade-off](https://raw.githubusercontent.com/frederikgeth/DroopOPF.jl/main/m3_slope_validation/m3_slope_tradeoff.svg)
+Historical figure: M3 fixed-slope security trade-off. See [archived research evidence](research.md).
 
 ## M2 reproduction gate
 
@@ -139,7 +139,7 @@ The function intentionally covers only the domain-specific curve comparison.
 The workflow composes it with the existing M2 scenario plots rather than
 introducing a separate plotting framework or dependency.
 
-![M3 reference and optimized droop design](https://raw.githubusercontent.com/frederikgeth/DroopOPF.jl/main/m3_validation/m3_droop_design_comparison.svg)
+Historical figure: M3 reference and optimized droop design. See [archived research evidence](research.md).
 
 The comparison distinguishes training points from the held-out line-33 point
 and explicitly records that the optimized G9 control has no operating point
@@ -147,7 +147,7 @@ when G9 is unavailable. The held-out result is also passed through the normal
 M2 residual-to-tolerance visualization; the horizontal threshold at one remains
 the numerical acceptance boundary.
 
-![M3 held-out residual validation](https://raw.githubusercontent.com/frederikgeth/DroopOPF.jl/main/m3_validation/held_out/m2_validation_residuals.svg)
+Historical figure: M3 held-out residual validation. See [archived research evidence](research.md).
 
 ## Acceptance gates
 

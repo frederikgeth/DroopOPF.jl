@@ -1,5 +1,9 @@
 # Security-constrained AC OPF (M2 and M9.1)
 
+Historical `artifacts/` paths on this page identify local campaign records, not
+files bundled with the release. See [archive access](research.md) and the
+[current qualification index](milestones.md).
+
 The SCOPF engine jointly optimizes one base dispatch and a declared set of line and
 generator outages. Droop settings remain fixed across scenarios. Each scenario
 has its own AC voltages, angles, active generation, and reactive generation.

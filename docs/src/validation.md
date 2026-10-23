@@ -38,3 +38,5 @@ The report checks:
 For cross-solver tests, start with `1e-5` per-unit AC residuals, `5e-4`
 per-unit exact droop residuals, and `1e-5` complementarity products. Tighten
 these after scaling and conditioning have been characterized on larger cases.
+
+See the [milestone index](milestones.md) and [selected validation figures and reports](validation_evidence.md).

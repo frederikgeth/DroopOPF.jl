@@ -22,7 +22,7 @@ The dedicated `optimize_taps` and `optimize_shunts` APIs accept the same
 design, omit `optimizer_factory` in exact mode and pass CCOpt settings through
 `optimizer_attributes`.
 
-The numerical tables and figures below are generated from retained evidence. Reproduce the solve and plot workflows in [Examples](research.md), then run `python3 examples/build_m7_gallery.py`. Input studies, versioned designs, detailed reports and regression logs remain under `artifacts/m7_1`, `artifacts/m7_2` and `artifacts/m7_3`.
+The tables below summarize historical synthetic studies. A selected [tap-sweep figure](validation_evidence.md) is included in this documentation. Full inputs, gallery figures and reports for `m7_1`, `m7_2` and `m7_3` are in the local research archives; restore those prerequisites before using `examples/build_m7_gallery.py`.
 
 ## M7.1 — Transformer taps
 
@@ -34,16 +34,7 @@ Fixed-bound and standalone equivalence, a 41-point tap sweep and one/two-free-ta
 | tap 11 free | 1.994948e-05 | 1.0023 | 2.870759e-13 | 0.002113501 |
 | taps 11 and 22 free | 1.993398e-05 | 1.001548 | 5.830753e-14 | 0.002108155 |
 
-![Tap sweep](research.md)
-[Download tap sweep as PDF](research.md)
-
-![Operating points](research.md)
-[Download operating points as PDF](research.md)
-
-![Tap settings](research.md)
-[Download tap settings as PDF](research.md)
-
-[Machine-readable evidence](research.md)
+[Archived full evidence and restoration instructions](research.md)
 
 ## M7.2 — Simple capacitor/reactor banks
 
@@ -58,19 +49,7 @@ Each bank has one step type. A fractional count scales G and B together. Taps an
 | reactor | one free | 2.935434e-05 | 1.236122e-12 | 0.002287783 | 0.002376528 |
 | reactor | both free | 2.557165e-05 | 6.664602e-11 | 0.002289591 | 0.001898015 |
 
-![Susceptance sweep](research.md)
-[Download susceptance sweep as PDF](research.md)
-
-![Bank envelopes](research.md)
-[Download bank envelopes as PDF](research.md)
-
-![Operating points](research.md)
-[Download operating points as PDF](research.md)
-
-![Active losses](research.md)
-[Download active losses as PDF](research.md)
-
-[Machine-readable evidence](research.md)
+[Archived full evidence and restoration instructions](research.md)
 
 ## M7.3 — Joint equipment and droop design
 
@@ -113,22 +92,7 @@ Each comparison below changes only droop freedom. Variation across these four be
 
 Some starts may reach different valid local solutions. Similar objectives with different settings indicate weak parameter identification on this case. Multi-start evidence is not a global-optimality certificate.
 
-![Objectives](research.md)
-[Download objectives as PDF](research.md)
-
-![Settings](research.md)
-[Download settings as PDF](research.md)
-
-![Operating points](research.md)
-[Download operating points as PDF](research.md)
-
-![Multistart](research.md)
-[Download multistart as PDF](research.md)
-
-![Matched benefits](research.md)
-[Download matched benefits as PDF](research.md)
-
-[Machine-readable evidence](research.md)
+[Archived full evidence and restoration instructions](research.md)
 
 ## Acceptance and next scope
 

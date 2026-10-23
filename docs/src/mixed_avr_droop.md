@@ -1,5 +1,9 @@
 # Mixed AVR and volt–var droop studies
 
+Historical `artifacts/` paths on this page identify local campaign records, not
+files bundled with the release. See [archive access](research.md) and the
+[current qualification index](milestones.md).
+
 `Generator(...; s_rated=S)` declares a positive apparent-power rating in per-unit
 on the **case system MVA base**. Omission (`nothing`) preserves the historical
 rectangular capability. An explicit rating adds `P²+Q² ≤ S²` in each optimized
@@ -213,7 +217,7 @@ filter are not applied. Historical exact-S2 drivers and sealed results retain
 that historical policy. Fresh results are written to
 `artifacts/p2_mixed_limit_aware_20261023`; the original S2 study stays paused.
 
-The completed scan passes 386/389 connected outages across all five periods,
+The earlier, superseded scan passes 386/389 connected outages across all five periods,
 including all 51 generator outages. Lines 21 and 36 and transformer 562 remain
 numerically unresolved. The base candidate retains 21.580884% minimum upward
 headroom and no generator reaches Pmax in any base period; five-hour base loss
@@ -224,7 +228,7 @@ but full security qualification remains open. See the
 
 ### Targeted P2 recovery under original limits (2026-10-23)
 
-The [targeted recovery](research.md) found a common five-period design for
+The [targeted recovery](validation_evidence.md) found a common five-period design for
 line 21, line 36 and transformer 562 with no rating, voltage, capability or
 equipment-budget relaxation. Preventive dispatch, shared droop and the AVR
 schedule were reoptimized with a feasibility objective. The prior reserve-aware
