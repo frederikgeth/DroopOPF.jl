@@ -58,8 +58,9 @@ large campaign scripts require the optional evidence inputs described below.
 - [Research evidence and restoration](docs/src/research.md)
 - [Release notes](RELEASE_NOTES.md)
 
-Research evidence is delivered separately as optional archives with SHA-256
-checksums. Downloading it is not necessary to install or test the library.
+Research evidence is preserved separately in local archives with SHA-256
+checksums; publication of those archives is pending a separate sharing decision.
+The archives are not necessary to install or test the library.
 Original sealed campaign contents remain unchanged. Git history is retained;
 ordinary Git clones can still include historical large objects.
 

@@ -1,18 +1,32 @@
 # Optional research evidence
 
 The software release does not include the historical `artifacts/` tree. Its
-contents, including failed attempts, are preserved in optional archives on the
-[v0.10.0-rc1 release](https://github.com/frederikgeth/DroopOPF.jl/releases/tag/v0.10.0-rc1).
+contents, including failed attempts, have been preserved in verified local
+archives by the maintainer. **Those archives are not public release assets.**
+They are not required to install, test or use the library. Archive publication
+requires a separate data-sharing decision.
+
+The following inventory documents the local preservation format; it is not a
+list of downloads supplied with this release.
 
 | Asset | Contents |
 |---|---|
-| `campaigns.tar.gz` | Full historical campaign outputs and sealed manifests |
+| `campaigns.tar.gz.part01` … `part03` | Full historical campaign outputs and sealed manifests |
 | `research-docs.tar.gz` | Original study reports, figure galleries, roadmap and historical notes |
 | `research-drivers.tar.gz` | Exact source, tests, full study inputs, example drivers and environment snapshot |
 | `evidence-index.json` | SHA-256 archive checksums, file counts and verification status |
 | `*-files.json` | Original relative paths and per-file SHA-256 hashes |
 
-Archives preserve repository-relative paths. Restore them into a **separate
+The campaign archive is split into three ordered parts. After downloading them,
+reassemble and compare SHA-256 with `evidence-index.json`:
+
+```sh
+cat campaigns.tar.gz.part01 campaigns.tar.gz.part02 campaigns.tar.gz.part03 > campaigns.tar.gz
+shasum -a 256 campaigns.tar.gz
+```
+
+`campaign-parts.json` supplies checksums for the individual parts. The other two
+archives are standalone gzip tar files. Archives preserve repository-relative paths. Restore them into a **separate
 research directory**, not over an installed release: historical source and docs
 can differ from the release. Verify archive checksums before extraction, then
 verify individual files against the corresponding file index. Sealed campaign

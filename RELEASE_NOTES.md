@@ -3,7 +3,8 @@
 This release candidate separates installable software from historical research
 outputs. The source tree retains the library, all small-network tests, example
 drivers and operational documentation. Large results, study figures and full
-benchmark inputs are optional, checksum-verified release assets.
+benchmark inputs are preserved in separate checksum-verified local archives. Those archives are
+not included among the public release assets.
 
 The release includes limit-aware active response, shared reactive design,
 multi-period mixed AVR/droop security models, apparent-power constraints,
