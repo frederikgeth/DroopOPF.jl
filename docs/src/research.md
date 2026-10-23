@@ -42,3 +42,16 @@ and policies; use the [release scope](release_scope.md) for current status.
 S1/S2/P1/P2/P3 are study and development labels, not required downloads.
 The original S2 campaign remains paused. Archived source snapshots are retained
 for reproducibility, not as alternative supported implementations.
+
+## Restore a local archived campaign
+
+The maintainer can restore a campaign into a new directory without overwriting
+an existing study:
+
+```sh
+python3 tools/release/restore_campaign.py /path/to/research-v0.10.0-rc1 \
+  psse_saved_solution_check_20261022 /path/to/restored-campaign
+```
+
+The command verifies the archive SHA-256 and every selected file before making
+the restored directory available. It refuses an existing destination.
