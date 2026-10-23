@@ -59,7 +59,7 @@ large campaign scripts require the optional evidence inputs described below.
 - [Release notes](RELEASE_NOTES.md)
 
 Research evidence is preserved separately in local archives with SHA-256
-checksums; publication of those archives is pending a separate sharing decision.
+checksums; those archives remain local and are not distributed with this release.
 The archives are not necessary to install or test the library.
 Original sealed campaign contents remain unchanged. Git history is retained;
 ordinary Git clones can still include historical large objects.
