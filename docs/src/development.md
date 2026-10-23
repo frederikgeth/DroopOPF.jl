@@ -22,28 +22,23 @@ contingency worker tests; serial-only runs skip that concurrency branch.
 
 `.github/workflows/CI.yml` runs the package tests on Julia `1.10` and `1.12`.
 `.github/workflows/Documentation.yml` builds the docs for pull requests and
-deploys the `main` and tagged-version documentation to GitHub Pages through
+deploys the `main` documentation to GitHub Pages through
 Documenter.jl.
 
 The deployment workflow requires GitHub Pages to be enabled for the repository.
 Documenter uses the repository `GITHUB_TOKEN`, so no deploy key is needed for
 this same-repository deployment.
 
-## Roadmap
+## Milestone and qualification records
 
-The staged development plan is maintained in
-[`ROADMAP.md`](https://github.com/frederikgeth/DroopOPF.jl/blob/main/ROADMAP.md):
+Use the [milestone index](milestones.md) for navigation and the
+[release scope](release_scope.md) for current qualification boundaries.
+M1–M4 are historical implementation milestones; their original small-case
+scale-up decision is not the current status. Sparse models, scenario addition,
+parallel assessment and 14/500-bus studies now have bounded qualification.
+General safe predictive skipping and full coupled resource/loss optimization
+remain open. Original S2 remains paused; later P2 evidence is a separate campaign.
 
-- M1: AC OPF with generator volt-var droops — complete in `0.1.0`;
-- M2: security-constrained AC OPF — complete in `0.2.0`; see [the response contract](scopf.md);
-- M3: complete in `0.3.0` — validated fixed-slope search, bounded
-  standard-droop optimization, exact replay, and held-out validation.
-- M4: complete in `0.4.0` — named M2 multi-start comparison, near-breakpoint distance,
-  device-level binding findings, and critical-contingency classification are
-  implemented, together with M3 design-parameter starts and parameter-spread
-  reporting, two pinned public PGLib regressions, reproducible model-size/time/
-  allocation measurements, and an evidence-based scale-up decision.
-
-The scale-up gate is not yet passed. Contingency screening, constraint
-generation, parallel evaluation, ExaModels, and large benchmark work remain
-deferred because M4 did not identify a bottleneck at the validated small scale.
+See the [validation references](validation_evidence.md) for selected numerical
+results and figures, and [research evidence](research.md) for archived reports.
+Package tests check software regressions; they do not rerun the large campaigns.

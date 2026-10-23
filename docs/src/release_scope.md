@@ -29,3 +29,5 @@ qualification. The earlier full model used roughly 17 GiB RAM; separating saved
 research files does not change that numerical memory requirement.
 
 See [research evidence](research.md) for exact historical contracts and manifests.
+
+See the [milestone index](milestones.md) and [selected validation figures and reports](validation_evidence.md).

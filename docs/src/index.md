@@ -7,3 +7,5 @@ Start with [installation](getting_started.md), [release scope](release_scope.md)
 [mixed controls](mixed_avr_droop.md) or [PSS/E](psse.md).
 
 Historical study reports and figures are in the optional [research archives](research.md).
+
+See the [milestone index](milestones.md) and [selected validation figures and reports](validation_evidence.md).

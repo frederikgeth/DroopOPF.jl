@@ -1,5 +1,9 @@
 # P3 multi-period droop design
 
+Historical `artifacts/` paths on this page identify local campaign records, not
+files bundled with the release. See [archive access](research.md) and the
+[current qualification index](milestones.md).
+
 The initial multi-period capability solves one deterministic sequence of AC
 operating periods in a single sparse nonlinear model. A single set of reactive
 voltage-droop parameters is shared across all periods. Each period has its own

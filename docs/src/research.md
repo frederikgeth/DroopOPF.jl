@@ -46,3 +46,8 @@ python3 tools/release/restore_campaign.py /path/to/research-v0.10.0-rc1 \
 
 The command verifies the archive SHA-256 and every selected file before making
 the restored directory available. It refuses an existing destination.
+
+A small, curated [validation reference gallery](validation_evidence.md) is bundled
+with the documentation. It contains selected summaries and figures, not full
+research archives, network inputs or solver logs. The historical roadmap is
+archived; the public [milestone index](milestones.md) provides current navigation.

@@ -247,7 +247,7 @@ PYTHON=/path/to/python-with-matplotlib julia --project=. examples/m6_1_fixed_shu
 It generates a GS/BS conversion table, expected/computed P(V) and Q(V) curves,
 availability and round-trip checks, and deliberate omission/double-count/sign
 errors. A one-bus OPF checks safe use of the shared Ybus path. Switched-bank
-states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [M6 evidence](https://github.com/frederikgeth/DroopOPF.jl/blob/transformers/artifacts/m6/report.md).
+states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [archived M6 evidence](research.md).
 
 ## Supplied switched-bank states (M6.2–M6.3)
 

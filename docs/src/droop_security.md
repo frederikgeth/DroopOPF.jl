@@ -1,5 +1,9 @@
 # Droop design with contingency addition
 
+Historical `artifacts/` paths on this page identify local campaign records, not
+files bundled with the release. See [archive access](research.md) and the
+[current qualification index](milestones.md).
+
 ## Physical and acceptance contract
 
 The design variables are selected controllers' positive slopes (pu voltage per

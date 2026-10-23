@@ -9,6 +9,11 @@ for p in root.rglob('*'):
  if p.stat().st_size>5_000_000:errors.append('oversized release file: '+str(p.relative_to(root)))
 for p in [root/'README.md',*(root/'docs/src').glob('*.md')]:
  text=re.sub(r'```.*?```','',p.read_text(),flags=re.S)
+ for image in re.findall(r'!\[[^\]]*\]\(([^\s)]+)\)',text):
+  if image.startswith(('http:', 'https:')):
+   errors.append(f'{p.relative_to(root)}: remote documentation image must be bundled: {image}')
+  elif pathlib.Path(image.split('#')[0]).suffix.lower() not in ['.png','.svg','.jpg','.jpeg','.webp','.gif']:
+   errors.append(f'{p.relative_to(root)}: image target is not an image: {image}')
  for link in re.findall(r'\]\(([^\s)]+)\)',text):
   if link.startswith(('http:','https:','mailto:','#','@')):continue
   path=link.split('#')[0]

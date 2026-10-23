@@ -1,5 +1,9 @@
 # PSS/E RAW data parser
 
+Historical `artifacts/` paths on this page identify local campaign records, not
+files bundled with the release. See [archive access](research.md) and the
+[current qualification index](milestones.md).
+
 `parse_psse_raw` reads full-case bus/branch RAW revisions **33, 34 and 36**.
 `import_psse_case` converts the supported electrical subset into a DroopOPF
 `Case`, with source identities, supplied operating points and diagnostics.
