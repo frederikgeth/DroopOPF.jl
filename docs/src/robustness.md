@@ -97,5 +97,5 @@ be distinguished when interpreting results.
 julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark
 ```
 
-See the [M4 scale-up decision](scale_up_decision.md) for the measured evidence
+See the [M4 scale-up decision](research.md) for the measured evidence
 and the decision not to select a P2 scaling algorithm from tiny-case data.

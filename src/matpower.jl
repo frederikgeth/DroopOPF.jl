@@ -138,6 +138,9 @@ function load_matpower_case(
                 available = row[11] > 0,
                 tap_ratio = iszero(row[9]) ? 1.0 : row[9],
                 phase_shift = deg2rad(row[10]),
+                # MATPOWER uses TAP=0 for a transmission line. A supplied
+                # TAP (including unity) or phase shift identifies a transformer.
+                kind = !iszero(row[9]) || !iszero(row[10]) ? :transformer : :line,
             ),
         )
     end

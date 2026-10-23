@@ -1,0 +1,1 @@
+Small RAW fixture from the public ARPA-E Grid Optimization Competition, via LANL-ANSI PowerModelsSecurityConstrained.jl test/data/c1/scenario_01. Original bytes retained. Full study inputs and derived results are in the optional research-drivers archive.

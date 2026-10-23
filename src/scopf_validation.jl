@@ -13,6 +13,7 @@ struct SCOPFReport
     scenario_ids::Vector{Symbol}
     scenarios::Dict{Symbol,EquilibriumValidationReport{Float64}}
     coupling_violation::Dict{Symbol,Float64}
+    equipment_coupling_violation::Dict{Symbol,Float64}
     encoded_droop_residual::Dict{Symbol,Float64}
     violations::Dict{Symbol,Vector{Symbol}}
     tolerances::NamedTuple
@@ -38,14 +39,23 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
     cases = [study.case; [scenario_case(study.case, c) for c in study.contingencies]]
     reports = Dict{Symbol,EquilibriumValidationReport{Float64}}()
     coupling = Dict{Symbol,Float64}()
+    equipment_coupling = Dict{Symbol,Float64}()
     encoded_droop = Dict{Symbol,Float64}()
     violations = Dict(id => Symbol[] for id in ids)
     result.encoding in (:smooth,:complementarity) || push!(violations[:base], :unknown_encoding)
     result.mode == study.mode || push!(violations[:base], :response_mode_mismatch)
     _json_data(result.reactive_assignments) == _json_data(study.reactive_assignments) ||
         push!(violations[:base], :reactive_assignments_mismatch)
+    _json_data(result.tap_controls) == _json_data(study.tap_controls) ||
+        push!(violations[:base], :tap_controls_mismatch)
+    _json_data(result.shunt_controls) == _json_data(study.shunt_controls) ||
+        push!(violations[:base], :shunt_controls_mismatch)
+    result.control_policy == study.control_policy ||
+        push!(violations[:base], :control_policy_mismatch)
     Set(keys(result.states)) == Set(ids) || push!(violations[:base], :scenario_set_mismatch)
     base = get(result.states, :base, nothing)
+    base_taps = get(result.tap_settings, :base, Dict{Int,Float64}())
+    base_shunts = get(result.shunt_settings, :base, Dict{Int,Float64}())
     for (id, case) in zip(ids, cases)
         state = get(result.states, id, nothing)
         if isnothing(state)
@@ -62,7 +72,37 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
             push!(violations[id], :nonfinite_or_invalid_state)
             continue
         end
-        report = validate_equilibrium(case, state;
+        taps = get(result.tap_settings, id, Dict{Int,Float64}())
+        shunts = get(result.shunt_settings, id, Dict{Int,Float64}())
+        expected_taps = Set(c.branch_id for c in _scenario_tap_controls(study, case))
+        expected_shunts = Set(c.bank_id for c in study.shunt_controls)
+        if Set(keys(taps)) != expected_taps
+            push!(violations[id], :tap_settings)
+        end
+        if Set(keys(shunts)) != expected_shunts
+            push!(violations[id], :shunt_settings)
+        end
+        for control in study.tap_controls
+            control.branch_id in expected_taps || continue
+            setting = get(taps, control.branch_id, NaN)
+            isfinite(setting) &&
+                control.lower-limit_tolerance <= setting <= control.upper+limit_tolerance ||
+                push!(violations[id], :tap_settings)
+        end
+        for control in study.shunt_controls
+            setting = get(shunts, control.bank_id, NaN)
+            policy = _shunt_policy(case, control)
+            isfinite(setting) &&
+                policy.lower-limit_tolerance <= setting <= policy.upper+limit_tolerance ||
+                push!(violations[id], :shunt_settings)
+        end
+        physical_case = case
+        if Set(keys(taps)) == expected_taps &&
+           all(isfinite, values(taps)) && Set(keys(shunts)) == expected_shunts &&
+           all(isfinite, values(shunts))
+            physical_case = with_shunt_settings(with_tap_settings(case, taps), shunts)
+        end
+        report = validate_equilibrium(physical_case, state;
             power_tolerance=power_tolerance, droop_tolerance=droop_tolerance,
             limit_tolerance=limit_tolerance, unavailable_tolerance=unavailable_tolerance,
             smooth_epsilon=result.encoding == :smooth ? result.smooth_epsilon : nothing,
@@ -85,8 +125,8 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
                 control = attachment.control
                 epsilon_q = reactive_smoothing_epsilon(control,result.smooth_reactive_relative_epsilon;
                     absolute_epsilon=result.smooth_reactive_epsilon)
-                expected = _smooth_droop_value(control,state.vm[bus_indices[attachment.location.bus_id]],
-                    result.smooth_epsilon,epsilon_q)
+                expected = _smooth_capability_droop_value(control,state.vm[bus_indices[attachment.location.bus_id]],
+                    state.pg[i],case.generators[i],result.smooth_epsilon,epsilon_q)
                 encoded_droop[id] = max(encoded_droop[id],abs(state.qg[i]-expected))
             end
         end
@@ -110,7 +150,15 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
             generator.available || continue
             change = state.pg[i] - base.pg[i]
             if study.mode == :preventive && isfinite(delta)
-                violation = max(violation, abs(change - alpha[i] * delta))
+                # Replay the exact bounded law, independently of the NLP graph.
+                lo, hi = _active_response_bounds(case, i, study.reactive_assignments)
+                if haskey(study.redispatch_limits, generator.id)
+                    r = study.redispatch_limits[generator.id]
+                    lo, hi = max(lo, base.pg[i]-r), min(hi, base.pg[i]+r)
+                end
+                expected = alpha[i] == 0 ? base.pg[i] :
+                    clamp(base.pg[i] + alpha[i]*delta, lo, hi)
+                violation = max(violation, abs(state.pg[i] - expected))
             end
             if study.mode == :corrective || haskey(study.redispatch_limits, generator.id)
                 violation = max(violation, abs(change) - get(study.redispatch_limits, generator.id, 0.0))
@@ -118,6 +166,22 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
         end
         coupling[id] = violation
         violation <= coupling_tolerance || push!(violations[id], :active_power_response)
+        equipment_violation = 0.0
+        for (timing, limits, base_settings, settings, expected) in (
+            (study.control_policy.taps, study.control_policy.tap_movement_limits,
+                base_taps, taps, expected_taps),
+            (study.control_policy.shunts, study.control_policy.shunt_movement_limits,
+                base_shunts, shunts, expected_shunts))
+            for device_id in intersect(Set(keys(base_settings)), expected)
+                movement = abs(get(settings, device_id, NaN) - base_settings[device_id])
+                allowed = timing == :preventive ? 0.0 :
+                    isnothing(limits) ? Inf : get(limits, device_id, 0.0)
+                equipment_violation = max(equipment_violation, movement - allowed)
+            end
+        end
+        equipment_coupling[id] = equipment_violation
+        equipment_violation <= coupling_tolerance ||
+            push!(violations[id], :equipment_response)
     end
     physical_valid = all(isempty, values(violations))
     encoded_valid = all(id -> all(v -> v == :droop, violations[id]) &&
@@ -128,7 +192,8 @@ function validate_equilibrium(study::Study, result::SCOPFResult;
     tolerances = (; power_tolerance, droop_tolerance, limit_tolerance, unavailable_tolerance, coupling_tolerance)
     return SCOPFReport(study.case.id, physical_valid && solver_success, physical_valid, encoded_valid,
         result.termination_status, result.primal_status, result.objective, study.mode,
-        result.encoding, result.solver, ids, reports, coupling, encoded_droop, violations, tolerances)
+        result.encoding, result.solver, ids, reports, coupling, equipment_coupling,
+        encoded_droop, violations, tolerances)
 end
 
 equilibrium_report(study::Study, result::SCOPFResult; kwargs...) =
@@ -142,15 +207,15 @@ function markdown_report(report::SCOPFReport)
         "- Mode: `$(report.mode)`; encoding: `$(report.encoding)`",
         "- Base dispatch objective: $(report.objective)",
         "- Tolerances (p.u., reference angle in radians): `$(report.tolerances)`", "",
-        "| Scenario | AC residual | Exact droop residual | Encoded droop residual | Smooth/exact gap | Branch margin | Response violation | Failures |",
-        "|---|---:|---:|---:|---:|---:|---:|---|"]
+        "| Scenario | AC residual | Exact droop residual | Encoded droop residual | Smooth/exact gap | Branch margin | P-response violation | Equipment violation | Failures |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---|"]
     for id in report.scenario_ids
         failures = isempty(report.violations[id]) ? "none" : join(string.(report.violations[id]), ", ")
         if haskey(report.scenarios, id)
             r = report.scenarios[id]
-            push!(lines, "| $id | $(r.power_balance_max) | $(r.droop_residual_max) | $(report.encoded_droop_residual[id]) | $(r.smooth_exact_droop_gap) | $(r.branch_thermal_min_margin) | $(get(report.coupling_violation, id, 0.0)) | $failures |")
+            push!(lines, "| $id | $(r.power_balance_max) | $(r.droop_residual_max) | $(report.encoded_droop_residual[id]) | $(r.smooth_exact_droop_gap) | $(r.branch_thermal_min_margin) | $(get(report.coupling_violation, id, 0.0)) | $(get(report.equipment_coupling_violation, id, 0.0)) | $failures |")
         else
-            push!(lines, "| $id | — | — | — | — | — | — | $failures |")
+            push!(lines, "| $id | — | — | — | — | — | — | — | $failures |")
         end
     end
     push!(lines, "", "Controls and network limits are checked independently in each scenario. " *

@@ -1,19 +1,3 @@
-"""Explicit continuous tap policy. Omitted branches remain fixed at supplied ratios."""
-struct TapControl
-    branch_id::Int
-    lower::Float64
-    upper::Float64
-    initial::Union{Nothing,Float64}
-    nominal::Union{Nothing,Float64}
-    function TapControl(id::Integer; lower::Real, upper::Real, initial=nothing, nominal=nothing)
-        id > 0 || throw(ArgumentError("branch ID must be positive"))
-        isfinite(lower) && isfinite(upper) && 0 < lower <= upper || throw(ArgumentError("tap bounds must be finite, positive and ordered"))
-        isnothing(initial) || (isfinite(initial) && lower <= initial <= upper) || throw(ArgumentError("initial tap must lie within bounds"))
-        isnothing(nominal) || (isfinite(nominal) && nominal > 0) || throw(ArgumentError("nominal tap must be finite and positive"))
-        new(Int(id),Float64(lower),Float64(upper),isnothing(initial) ? nothing : Float64(initial),isnothing(nominal) ? nothing : Float64(nominal))
-    end
-end
-
 struct TapOPFResult
     opf::ACOPFResult{Float64}
     taps::Dict{Int,Float64}
@@ -44,14 +28,16 @@ function with_tap_settings(case::Case,taps::AbstractDict)
     all(id->any(b->b.id==id,net.branches),keys(taps)) || throw(ArgumentError("unknown tap branch ID"))
     branches=[Branch(b.id,b.from_bus,b.to_bus;resistance=b.resistance,reactance=b.reactance,
         charging=b.charging,thermal_limit=b.thermal_limit,available=b.available,
-        phase_shift=b.phase_shift,tap_ratio=get(taps,b.id,b.tap_ratio)) for b in net.branches]
+        phase_shift=b.phase_shift,tap_ratio=get(taps,b.id,b.tap_ratio),kind=b.kind) for b in net.branches]
     Case(case.id;base_power=case.base_power,base_frequency=case.base_frequency,
         network=ACNetwork(net.buses,branches;shunts=net.shunts,banks=net.banks),
         generators=case.generators,loads=case.loads,controls=case.controls,attachments=case.attachments)
 end
 
 # Terminal powers depend on tau inside the NLP; phase shift stays fixed.
-function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,controls,shunt_controls=nothing;normalize_controls=false)
+function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,
+    controls,shunt_controls=nothing;normalize_controls=false,
+    power_balance_slacks=false,scenario_prefix="")
     net=case.network; indices=_bus_indices(net); n=length(net.buses)
     taps=Dict{Int,Union{VariableRef,AffExpr}}()
     for c in controls
@@ -97,8 +83,20 @@ function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_
         selected=[bank for bank in net.banks if haskey(shunt_vars,bank.id) && indices[bank.bus_id]==i]
         gv=sum(only(bank.step_conductances)/only(bank.step_susceptances)*shunt_vars[bank.id] for bank in selected;init=0.)
         bv=sum(shunt_vars[bank.id] for bank in selected;init=0.)
-        @NLconstraint(model,pgen-load_p[i] == sum(pp[k] for k in eachindex(pp))+(g+gv)*vm[i]^2)
-        @NLconstraint(model,qgen-load_q[i] == sum(qq[k] for k in eachindex(qq))-(b+bv)*vm[i]^2)
+        ppos=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"p_balance_pos[$i]") : 0.0
+        pneg=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"p_balance_neg[$i]") : 0.0
+        qpos=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"q_balance_pos[$i]") : 0.0
+        qneg=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"q_balance_neg[$i]") : 0.0
+        power_balance_slacks && append!(model.ext[:power_balance_slacks],
+            (ppos,pneg,qpos,qneg))
+        @NLconstraint(model,pgen-load_p[i]+ppos-pneg ==
+            sum(pp[k] for k in eachindex(pp))+(g+gv)*vm[i]^2)
+        @NLconstraint(model,qgen-load_q[i]+qpos-qneg ==
+            sum(qq[k] for k in eachindex(qq))-(b+bv)*vm[i]^2)
     end
     taps,shunt_vars
 end

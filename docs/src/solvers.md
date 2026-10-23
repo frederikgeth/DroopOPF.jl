@@ -32,6 +32,20 @@ hinge is represented as a nonnegative complementarity pair. Reactive clipping
 is represented by the KKT conditions for projection of the raw droop value
 onto the control's reactive interval.
 
+When both deadband widths are fixed at exactly zero, the raw response is
+`Qraw = Qref + (Vref - V) / slope`. The model omits the two voltage-hinge
+pairs and their four auxiliary variables; the two Q-projection pairs remain.
+This applies to fixed curves and to designs with free slope/reference and fixed
+zero widths. Positive or variable widths retain the general hinge formulation.
+The smooth backend uses the same affine raw response and retains its reactive
+saturation smoothing. This is algebraically equivalent to subtracting the two
+voltage softplus terms, including derivatives.
+
+`ccopt_encoding_audit` marks these controllers with
+`voltage_hinges_eliminated=true`; their hinge errors are zero by construction.
+Raw-response, projection and independent exact-droop errors remain reported.
+
+
 ```julia
 ccopt_result = solve_opf_complementarity(case)
 ```

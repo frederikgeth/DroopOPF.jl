@@ -1,62 +1,9 @@
 # DroopOPF.jl
 
-DroopOPF.jl is a Julia library for equilibrium-aware AC optimal power flow. It
-provides explicit reactive-control semantics, smooth nonlinear and exact
-complementarity formulations, independent physical validation, continuous
-equipment design, and security-constrained workflows.
+AC OPF, reactive control design and independently validated steady-state SCOPF.
 
-!!! note "Current status"
+Start with [installation](getting_started.md), [release scope](release_scope.md),
+[SCOPF](scopf.md), [multi-period operation](multi_period.md),
+[mixed controls](mixed_avr_droop.md) or [PSS/E](psse.md).
 
-    v0.8.0 releases M8 explicit FreeQ, FixedQ, AVR, and Volt–VAr assignments
-    plus AVR-aware base-case equipment design. The frozen S1 IEEE 118/300
-    reliability gate remains open; the qualified AVR lane is separate evidence.
-    Coordinated preventive/corrective equipment policy remains M9.
-
-## Formulations
-
-| Use case | Entry point |
-|---|---|
-| Smooth AC OPF with Ipopt | `solve_opf(case)` |
-| Smooth AC OPF with MadNLP | `solve_opf(case; optimizer_factory = MadNLP.Optimizer)` |
-| Exact PWL droop graph with CCOpt | `solve_opf_complementarity(case)` |
-| Explicit reactive modes | `ReactiveControlAssignment(...)` |
-| Continuous equipment and reactive-control design | `optimize_joint_design(...)` |
-| Independent equilibrium checks | `equilibrium_report(case, result)` |
-| Droop operating-point plot | `write_droop_plot(...)` |
-| Validated M3 slope sweep | `sweep_droop_slope(...)` |
-| Bounded M3 droop design | `optimize_droop_parameters(...)` |
-| Named SCOPF multi-start comparison | `solve_scopf_multistart(...)` |
-| Breakpoint and binding diagnostics | `scopf_diagnostics(...)` |
-| Reproducible SCOPF measurements | `benchmark_scopf(...)` |
-
-The smooth model uses stable softplus terms and generator-specific reactive
-smoothing widths. The complementarity model encodes the voltage hinges and
-reactive clipping directly as complementarity pairs.
-
-## Where to begin
-
-- [Getting started](getting_started.md) — install and solve a first case.
-- [Data model](data_model.md) — construct networks, generators, and droops.
-- [Solver formulations](solvers.md) — choose smooth or exact
-  complementarity semantics.
-- [Validation](validation.md) — check physical equilibrium and curve
-  membership independently of the solver.
-- [M3 droop optimization](droop_optimization.md) — compare fixed candidates,
-  optimize bounded settings, and validate held-out scenarios.
-- [M4 robustness](robustness.md) — compare starts and extract structured
-  breakpoint, limit, and critical-scenario findings.
-- [M4 scale-up decision](scale_up_decision.md) — inspect measured model-size,
-  timing, and allocation evidence before choosing a scaling algorithm.
-- [M7 equipment optimization](equipment_optimization.md) — tables and plots for tap, simple-bank and joint droop design.
-- [Data model: explicit reactive-control modes](data_model.md#explicit-reactive-control-modes) — FreeQ, FixedQ, AVR, Volt–VAr, regulated locations, sharing, and persistence.
-- [Milestones and S1 status](milestones.md) — release status, reliability gate,
-  and direct links to retained solver evidence.
-- [S1 current decision report](s1_summary.md) — authoritative scorecards,
-  failure classification, evidence provenance, and the M9 entry decision.
-- [Examples](examples.md) — reproduce the M1 regime and solver studies.
-- [API reference](api.md) — generated documentation for exported
-  types and functions.
-
-The project-level [architecture](https://github.com/frederikgeth/DroopOPF.jl/blob/main/ARCHITECTURE.md)
-and [roadmap](https://github.com/frederikgeth/DroopOPF.jl/blob/main/ROADMAP.md)
-provide the broader design context.
+Historical study reports and figures are in the optional [research archives](research.md).

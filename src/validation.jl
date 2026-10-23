@@ -119,11 +119,9 @@ function validate_equilibrium(
             control_active_power_violation,
             max(control.capability.p_min - active_power, active_power - control.capability.p_max, 0.0),
         )
-        exact = clamp(
-            evaluate(droop_curve(control), state.vm[location_index]),
-            control.capability.q_min,
-            control.capability.q_max,
-        )
+        qlo,qhi=reactive_limits(generator,active_power)
+        lo=max(control.capability.q_min,qlo);hi=min(control.capability.q_max,qhi)
+        exact = lo<=hi ? clamp(evaluate(droop_curve(control),state.vm[location_index]),lo,hi) : Inf
         push!(exact_droop_residuals, state.qg[generator_index] - exact)
         if !isnothing(smooth_epsilon)
             q_epsilon = reactive_smoothing_epsilon(
@@ -131,9 +129,10 @@ function validate_equilibrium(
                 reactive_relative_epsilon;
                 absolute_epsilon = smooth_reactive_epsilon,
             )
-            smooth = _smooth_droop_value(
+            smooth = _smooth_capability_droop_value(
                 control,
                 state.vm[location_index],
+                active_power,generator,
                 smooth_epsilon,
                 q_epsilon,
             )
@@ -177,18 +176,25 @@ function validate_equilibrium(
             voltage_error = state.vm[bus_indices[first(group).location.bus_id]] -
                 first(group).mode.voltage_setpoint
             q = sum(state.qg[i] for i in indices)
-            q_min = sum(g.q_min for g in generators)
-            q_max = sum(g.q_max for g in generators)
+            bounds=[reactive_limits(g,state.pg[i]) for (i,g) in zip(indices,generators)]
+            q_min = sum(b[1] for b in bounds)
+            q_max = sum(b[2] for b in bounds)
             # Check physical regimes directly, independently of solver auxiliaries.
             valid_avr = abs(voltage_error) <= avr_voltage_tolerance ||
                 (voltage_error > 0 && abs(q - q_min) <= limit_tolerance) ||
                 (voltage_error < 0 && abs(q - q_max) <= limit_tolerance)
             valid_avr || (:avr in violations || push!(violations, :avr))
-            positions = [(state.qg[i] - g.q_min) / (g.q_max - g.q_min)
-                for (i, g) in zip(indices, generators)]
+            positions = [(state.qg[i]-b[1])/(b[2]-b[1])
+                for (i,b) in zip(indices,bounds) if b[2]-b[1]>limit_tolerance]
+            isempty(positions) && (positions=[0.0])
             maximum(positions) - minimum(positions) <=
                 avr_sharing_tolerance || push!(violations, :avr_sharing)
         end
+    end
+    for (i,g) in enumerate(case.generators)
+        g.available && !isnothing(g.s_rated) || continue
+        hypot(state.pg[i],state.qg[i])<=g.s_rated+limit_tolerance ||
+            (:generator_apparent_power in violations || push!(violations,:generator_apparent_power))
     end
     _max_abs(fixed_q_residuals) <= power_tolerance || push!(violations, :fixed_q)
     power_balance_max <= power_tolerance || push!(violations, :power_balance)

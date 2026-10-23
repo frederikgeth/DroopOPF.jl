@@ -9,10 +9,20 @@ _json_data(x::AbstractDict) = Dict(string(k) => _json_data(v) for (k,v) in x)
 _json_data(x::NamedTuple) = Dict(string(k) => _json_data(v) for (k,v) in pairs(x))
 function _json_data(x::Union{Bus,Branch,Load,FixedShunt,ShuntBank,Generator,RegulatedLocation,VoltageSchedule,
     ReactiveCapability,GeneratorControlAttachment,ACNetwork,Case,Contingency,Study,
-    ACState,ACOPFResult,SCOPFResult,SCOPFReport,EquilibriumValidationReport,
+    ACState,ACOPFResult,SCOPFResult,SCOPFReport,EquilibriumValidationReport,EquilibriumReport,
     SCOPFMultiStartRun,SCOPFMultiStartResult,DroopBreakpointDiagnostic,
-    SCOPFFinding,SCOPFDiagnostics})
-    return Dict(string(k) => _json_data(getfield(x,k)) for k in fieldnames(typeof(x)))
+    SCOPFFinding,SCOPFDiagnostics,TapControl,ShuntControl,SCOPFControlPolicy,
+    SCOPFStageAssessment, ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank,
+    ContingencyAssessment, ContingencyScreeningScore, IslandSelection,
+    IslandedContingencyAssessment, ContingencyFilterDecision,
+    ContingencyPipelineRank, ContingencyPipelineAssessment, ContingencyPipelineResult})
+    # Heterogeneous field generators cause recursive inference through the
+    # entire Study/Case graph. JSON objects intentionally have dynamic values.
+    data = Dict{String,Any}()
+    for k in fieldnames(typeof(x))
+        data[string(k)] = Base.invokelatest(_json_data, getfield(x, k))
+    end
+    return data
 end
 function _json_data(x::VoltVarDroop)
     # Curve knots are derived from these physical settings.
@@ -31,8 +41,8 @@ end
 
 function _write_scopf_json(path, kind, payload)
     open(path, "w") do io
-        version = kind == "DroopOPF.Study" ? 6 : kind == "DroopOPF.SCOPFResult" ? 2 : 1
-        JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "data"=>_json_data(payload)); pretty=true)
+        version = kind == "DroopOPF.Study" ? (any(g->!isnothing(g.s_rated),payload.case.generators) ? 11 : 10) : kind == "DroopOPF.SCOPFResult" ? 5 : 1
+        JSON.json(io, Dict("schema_version"=>version, "kind"=>kind, "active_response"=>"limit_aware_v1", "data"=>_json_data(payload)); pretty=true)
         println(io)
     end
     return path
@@ -50,6 +60,10 @@ write_scopf_result(path::AbstractString, result::SCOPFResult) =
 write_scopf_report(path::AbstractString, report::SCOPFReport) =
     _write_scopf_json(path, "DroopOPF.SCOPFReport", report)
 
+"""Write a paired M9.3 immediate/settled assessment to JSON."""
+write_scopf_stage_assessment(path::AbstractString, assessment::SCOPFStageAssessment) =
+    _write_scopf_json(path, "DroopOPF.SCOPFStageAssessment", assessment)
+
 """Write all multi-start outcomes and the objective-comparison classification."""
 write_scopf_multistart(path::AbstractString, result::SCOPFMultiStartResult) =
     _write_scopf_json(path, "DroopOPF.SCOPFMultiStartResult", result)
@@ -58,20 +72,62 @@ write_scopf_multistart(path::AbstractString, result::SCOPFMultiStartResult) =
 write_scopf_diagnostics(path::AbstractString, diagnostics::SCOPFDiagnostics) =
     _write_scopf_json(path, "DroopOPF.SCOPFDiagnostics", diagnostics)
 
+"""Write a structurally classified N-1 candidate catalog to JSON."""
+write_contingency_catalog(path::AbstractString, catalog::ContingencyCatalog) =
+    _write_scopf_json(path, "DroopOPF.ContingencyCatalog", catalog)
+
+"""Write an exact-evaluation contingency ranking to JSON."""
+write_contingency_ranking(path::AbstractString,
+    ranks::AbstractVector{<:ContingencyRank}) =
+    _write_scopf_json(path, "DroopOPF.ContingencyRanking", ranks)
+
+"""Write the complete routed contingency pipeline and its checks to JSON."""
+write_contingency_pipeline(path::AbstractString, result::ContingencyPipelineResult) =
+    _write_scopf_json(path, "DroopOPF.ContingencyPipelineResult", result)
+
 function _read_scopf_json(path, kind)
     document = JSON.parsefile(path)
     version = get(document,"schema_version",nothing)
-    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6) :
-        kind == "DroopOPF.SCOPFResult" ? (1, 2) : (1,)
+    supported = kind == "DroopOPF.Study" ? (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) :
+        kind == "DroopOPF.SCOPFResult" ? (1, 2, 3, 4, 5) : (1,)
     version in supported || throw(ArgumentError("unsupported JSON schema version"))
     get(document,"kind",nothing) == kind || throw(ArgumentError("unexpected JSON document kind"))
     data = document["data"]
+    if kind in ("DroopOPF.Study", "DroopOPF.SCOPFResult")
+        current = kind == "DroopOPF.Study" ? version >= 10 : version >= 5
+        coupled = get(data,"mode",nothing) == "preventive" &&
+            (kind == "DroopOPF.Study" ? !isempty(data["contingencies"]) :
+                !isempty(data["balancing_power"]))
+        if current || coupled
+            get(document,"active_response",nothing) == "limit_aware_v1" ||
+                throw(ArgumentError("response-policy mismatch: historical fixed-participation evidence requires its original source; rebuild this study under limit-aware response in a fresh campaign"))
+        end
+    end
     if kind == "DroopOPF.Study"
         if version < 5
             data["reactive_assignments"] = nothing
         else
             haskey(data, "reactive_assignments") ||
                 throw(ArgumentError("v5 study requires reactive_assignments"))
+        end
+        if version < 7
+            data["tap_controls"] = []
+            data["shunt_controls"] = []
+            data["control_policy"] = Dict("taps"=>"preventive",
+                "shunts"=>"preventive", "reactive"=>"automatic")
+        else
+            all(haskey(data, k) for k in
+                ("tap_controls", "shunt_controls", "control_policy")) ||
+                throw(ArgumentError("v7 study requires equipment controls and policy"))
+        end
+        if version < 8
+            data["control_policy"] = Dict{String,Any}(data["control_policy"])
+            data["control_policy"]["tap_movement_limits"] = nothing
+            data["control_policy"]["shunt_movement_limits"] = nothing
+        else
+            all(haskey(data["control_policy"], k) for k in
+                ("tap_movement_limits", "shunt_movement_limits")) ||
+                throw(ArgumentError("v8 study policy requires movement-limit fields"))
         end
         network = data["case"]["network"]
         if version < 4
@@ -98,10 +154,38 @@ function _read_scopf_json(path, kind)
                 all(haskey(b, k) for k in ("tap_ratio", "phase_shift")) ||
                     throw(ArgumentError("v2 study branches require tap_ratio and phase_shift"))
             end
+            if version < 9
+                b["kind"] = "line"
+            else
+                get(b, "kind", nothing) in ("line", "transformer") ||
+                    throw(ArgumentError("v9 study branches require kind line or transformer"))
+            end
         end
     end
-    kind == "DroopOPF.SCOPFResult" && version < 2 &&
-        (data["reactive_assignments"] = nothing)
+    if kind == "DroopOPF.SCOPFResult"
+        version < 2 && (data["reactive_assignments"] = nothing)
+        if version < 3
+            data["tap_settings"] = Dict()
+            data["shunt_settings"] = Dict()
+            data["tap_controls"] = []
+            data["shunt_controls"] = []
+            data["control_policy"] = Dict("taps"=>"preventive",
+                "shunts"=>"preventive", "reactive"=>"automatic")
+        else
+            all(haskey(data, k) for k in ("tap_settings", "shunt_settings",
+                "tap_controls", "shunt_controls", "control_policy")) ||
+                throw(ArgumentError("v3 SCOPF result requires equipment settings and policy"))
+        end
+        if version < 4
+            data["control_policy"] = Dict{String,Any}(data["control_policy"])
+            data["control_policy"]["tap_movement_limits"] = nothing
+            data["control_policy"]["shunt_movement_limits"] = nothing
+        else
+            all(haskey(data["control_policy"], k) for k in
+                ("tap_movement_limits", "shunt_movement_limits")) ||
+                throw(ArgumentError("v4 SCOPF result policy requires movement-limit fields"))
+        end
+    end
     return data
 end
 
@@ -133,6 +217,25 @@ end
 _reactive_assignments_from_data(data) = isnothing(data) ? nothing :
     ReactiveControlAssignment[_reactive_assignment_from_data(a) for a in data]
 
+_tap_controls_from_data(data) = TapControl[TapControl(c["branch_id"];
+    lower=Float64(c["lower"]), upper=Float64(c["upper"]),
+    initial=isnothing(c["initial"]) ? nothing : Float64(c["initial"]),
+    nominal=isnothing(c["nominal"]) ? nothing : Float64(c["nominal"])) for c in data]
+
+_shunt_controls_from_data(data) = ShuntControl[ShuntControl(c["bank_id"];
+    lower=isnothing(c["lower"]) ? nothing : Float64(c["lower"]),
+    upper=isnothing(c["upper"]) ? nothing : Float64(c["upper"]),
+    initial=isnothing(c["initial"]) ? nothing : Float64(c["initial"]),
+    nominal=isnothing(c["nominal"]) ? nothing : Float64(c["nominal"])) for c in data]
+
+_control_policy_from_data(data) = SCOPFControlPolicy(
+    taps=Symbol(data["taps"]), shunts=Symbol(data["shunts"]),
+    reactive=Symbol(data["reactive"]),
+    tap_movement_limits=isnothing(data["tap_movement_limits"]) ? nothing :
+        Dict(parse(Int,k)=>Float64(v) for (k,v) in data["tap_movement_limits"]),
+    shunt_movement_limits=isnothing(data["shunt_movement_limits"]) ? nothing :
+        Dict(parse(Int,k)=>Float64(v) for (k,v) in data["shunt_movement_limits"]))
+
 """Load a study and recheck case, outage, and response-policy validity."""
 function read_study(path::AbstractString)
     data = _read_scopf_json(path, "DroopOPF.Study")
@@ -142,13 +245,15 @@ function read_study(path::AbstractString)
     branches = Branch[Branch(b["id"],b["from_bus"],b["to_bus"]; resistance=Float64(b["resistance"]),
         reactance=Float64(b["reactance"]), charging=Float64(b["charging"]),
         thermal_limit=Float64(b["thermal_limit"]), available=b["available"],
-        tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"])) for b in n["branches"]]
+        tap_ratio=Float64(b["tap_ratio"]), phase_shift=Float64(b["phase_shift"]),
+        kind=Symbol(b["kind"])) for b in n["branches"]]
     shunts = FixedShunt[FixedShunt(s["id"],s["bus_id"]; conductance=Float64(s["conductance"]),
         susceptance=Float64(s["susceptance"]), available=s["available"]) for s in n["shunts"]]
     banks = ShuntBank[ShuntBank(b["id"],b["bus_id"]; step_conductances=Float64.(b["step_conductances"]),
         step_susceptances=Float64.(b["step_susceptances"]),legal_states=b["legal_states"],
         state=b["state"],nominal_state=b["nominal_state"],available=b["available"]) for b in n["banks"]]
     generators = [Generator(g["id"],g["bus_id"]; available=g["available"],
+        s_rated=isnothing(get(g,"s_rated",nothing)) ? nothing : Float64(g["s_rated"]),
         p_min=Float64(g["p_min"]), p_max=Float64(g["p_max"]), q_min=Float64(g["q_min"]),
         q_max=Float64(g["q_max"]), initial_p=Float64(g["initial_p"]), initial_q=Float64(g["initial_q"])) for g in c["generators"]]
     loads = Load[Load(l["id"],l["bus_id"]; p=Float64(l["p"]),q=Float64(l["q"])) for l in c["loads"]]
@@ -175,7 +280,10 @@ function read_study(path::AbstractString)
     return Study(case; contingencies=contingencies,mode=Symbol(data["mode"]),
         participation=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["participation"]),
         redispatch_limits=Dict(parse(Int,k)=>Float64(v) for (k,v) in data["redispatch_limits"]),
-        reactive_assignments=_reactive_assignments_from_data(data["reactive_assignments"]))
+        reactive_assignments=_reactive_assignments_from_data(data["reactive_assignments"]),
+        tap_controls=_tap_controls_from_data(data["tap_controls"]),
+        shunt_controls=_shunt_controls_from_data(data["shunt_controls"]),
+        control_policy=_control_policy_from_data(data["control_policy"]))
 end
 
 function _scopf_result_from_data(d)
@@ -190,7 +298,16 @@ function _scopf_result_from_data(d)
         Symbol(d["termination_status"]),Symbol(d["primal_status"]),Symbol(d["mode"]),Symbol(d["encoding"]),
         Float64(d["smooth_epsilon"]),Float64(d["smooth_reactive_relative_epsilon"]),
         isnothing(d["smooth_reactive_epsilon"]) ? nothing : Float64(d["smooth_reactive_epsilon"]),d["solver"],
-        _reactive_assignments_from_data(d["reactive_assignments"]))
+        _reactive_assignments_from_data(d["reactive_assignments"]),
+        Dict(Symbol(id)=>Dict(parse(Int,k)=>(isnothing(v) ? NaN : Float64(v))
+            for (k,v) in settings)
+            for (id,settings) in d["tap_settings"]),
+        Dict(Symbol(id)=>Dict(parse(Int,k)=>(isnothing(v) ? NaN : Float64(v))
+            for (k,v) in settings)
+            for (id,settings) in d["shunt_settings"]),
+        _tap_controls_from_data(d["tap_controls"]),
+        _shunt_controls_from_data(d["shunt_controls"]),
+        _control_policy_from_data(d["control_policy"]))
 end
 
 """Load saved states and metadata. Revalidate them against the corresponding study before use."""
