@@ -19,9 +19,11 @@ function Bus(id::Integer; v_min = 0.9, v_max = 1.1, reference::Bool = false)
     return Bus{T}(id, T(v_min), T(v_max), reference)
 end
 
-"""Two-terminal branch with a from-side complex tap `tap_ratio * cis(phase_shift)`.
-The ratio is positive and dimensionless; phase shift is in radians. Defaults
-preserve line behavior. Ratio and phase are fixed equipment inputs in M5.
+"""Two-terminal line or transformer with a from-side complex tap
+`tap_ratio * cis(phase_shift)`. `kind` is explicit `:line` or `:transformer`
+metadata; it does not alter the electrical equations. The ratio is positive and
+dimensionless; phase shift is in radians. Ratio and phase are fixed equipment
+inputs in M5.
 """
 struct Branch{T<:Real}
     id::Int
@@ -34,6 +36,7 @@ struct Branch{T<:Real}
     available::Bool
     tap_ratio::T
     phase_shift::T
+    kind::Symbol
 
     function Branch{T}(
         id::Integer,
@@ -46,6 +49,7 @@ struct Branch{T<:Real}
         available::Bool,
         tap_ratio::T = one(T),
         phase_shift::T = zero(T),
+        kind::Symbol = :line,
     ) where {T<:Real}
         id > 0 || throw(ArgumentError("branch id must be positive"))
         from_bus > 0 || throw(ArgumentError("branch from_bus must be positive"))
@@ -58,7 +62,9 @@ struct Branch{T<:Real}
             throw(ArgumentError("branch impedance cannot be zero"))
         thermal_limit > zero(T) || throw(ArgumentError("branch thermal_limit must be positive"))
         tap_ratio > zero(T) || throw(ArgumentError("branch tap_ratio must be positive"))
-        new{T}(Int(id), Int(from_bus), Int(to_bus), resistance, reactance, charging, thermal_limit, available, tap_ratio, phase_shift)
+        kind in (:line, :transformer) ||
+            throw(ArgumentError("branch kind must be :line or :transformer"))
+        new{T}(Int(id), Int(from_bus), Int(to_bus), resistance, reactance, charging, thermal_limit, available, tap_ratio, phase_shift, kind)
     end
 end
 
@@ -73,10 +79,11 @@ function Branch(
     available::Bool = true,
     tap_ratio = 1,
     phase_shift = 0,
+    kind::Symbol = :line,
 )
     T = promote_type(typeof(resistance), typeof(reactance), typeof(charging), typeof(thermal_limit), typeof(tap_ratio), typeof(phase_shift))
     return Branch{T}(
-        id, from_bus, to_bus, T(resistance), T(reactance), T(charging), T(thermal_limit), available, T(tap_ratio), T(phase_shift),
+        id, from_bus, to_bus, T(resistance), T(reactance), T(charging), T(thermal_limit), available, T(tap_ratio), T(phase_shift), kind,
     )
 end
 
@@ -227,7 +234,7 @@ function ACNetwork(
     bs = Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in buses]
     brs = Branch{T}[
         Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance), T(br.reactance),
-                  T(br.charging), T(br.thermal_limit), br.available, T(br.tap_ratio), T(br.phase_shift)) for br in branches
+                  T(br.charging), T(br.thermal_limit), br.available, T(br.tap_ratio), T(br.phase_shift), br.kind) for br in branches
     ]
     ss = FixedShunt{T}[FixedShunt{T}(s.id, s.bus_id, T(s.conductance),
         T(s.susceptance), s.available) for s in shunts]

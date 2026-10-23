@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/release-*"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -33,4 +34,9 @@ jobs:
       - name: Instantiate project
         run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
       - name: Run package tests
+        env:
+          JULIA_NUM_THREADS: 2
+          OPENBLAS_NUM_THREADS: 1
         run: julia --project=. -e 'using Pkg; Pkg.test()'
+      - name: Independent smoke example
+        run: julia --project=. examples/release_smoke.jl

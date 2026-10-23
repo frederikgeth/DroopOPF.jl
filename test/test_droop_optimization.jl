@@ -157,7 +157,7 @@ import MadNLP
     )
 
     @test_throws ArgumentError DroopSettings(0.0, 1.0, 0.01, 0.01)
-    @test_throws ArgumentError DroopSettings(0.05, 1.0, 0.0, 0.0)
+    @test DroopSettings(0.05, 1.0, 0.0, 0.0).deadband_low == 0.0
     @test_throws ArgumentError optimize_droop_parameters(
         study,
         2;

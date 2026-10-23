@@ -1,18 +1,3 @@
-"""Select a simple bank for continuous B optimization (pu); omitted bounds use its legal-count envelope."""
-struct ShuntControl
-    bank_id::Int
-    lower::Union{Nothing,Float64}
-    upper::Union{Nothing,Float64}
-    initial::Union{Nothing,Float64}
-    nominal::Union{Nothing,Float64}
-    function ShuntControl(id::Integer;lower=nothing,upper=nothing,initial=nothing,nominal=nothing)
-        id>0 || throw(ArgumentError("bank ID must be positive"))
-        all(x->isnothing(x) || (x isa Real && isfinite(x)),(lower,upper,initial,nominal)) || throw(ArgumentError("shunt settings must be finite"))
-        isnothing(lower) || isnothing(upper) || lower<=upper || throw(ArgumentError("reversed shunt bounds"))
-        new(Int(id),map(x->isnothing(x) ? nothing : Float64(x),(lower,upper,initial,nominal))...)
-    end
-end
-
 struct ShuntOPFResult
     opf::ACOPFResult{Float64}
     susceptances::Dict{Int,Float64}

@@ -10,7 +10,7 @@ DroopOPF.jl currently installs from GitHub:
 
 ```julia
 import Pkg
-Pkg.add(url = "https://github.com/frederikgeth/DroopOPF.jl.git")
+Pkg.add(url = "https://github.com/frederikgeth/DroopOPF.jl.git", rev = "v0.10.0-rc1")
 ```
 
 For a checkout, instantiate the project from the repository root:
@@ -26,7 +26,7 @@ Julia `1.10` or newer is supported by the package project.
 Create a `Case` from an `ACNetwork`, `Load`s, `Generator`s, `VoltVarDroop`
 controls, and `GeneratorControlAttachment`s. A complete runnable two-bus
 example is available at
-[`examples/m1_regime_case_study.jl`](https://github.com/frederikgeth/DroopOPF.jl/blob/main/examples/m1_regime_case_study.jl).
+[`examples/m1_regime_case_study.jl`](https://github.com/frederikgeth/DroopOPF.jl/blob/v0.10.0-rc1/examples/m1_regime_case_study.jl).
 
 ```julia
 using DroopOPF

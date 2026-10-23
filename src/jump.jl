@@ -12,6 +12,10 @@ struct ACOPFResult{T<:Real}
     smooth_reactive_epsilon::Union{Nothing,T}
 end
 
+# Only specialize widths that are constant zero; a variable initialized at zero
+# must retain its deadband dependence.
+_fixed_zero_deadband(low, high) = low isa Real && high isa Real && iszero(low) && iszero(high)
+
 function _smooth_positive(x, epsilon)
     return epsilon * log1pexp(x / epsilon)
 end
@@ -48,9 +52,13 @@ function _smooth_droop_value(
     voltage_epsilon::Real,
     reactive_epsilon::Real,
 )
-    low = _smooth_positive(control.schedule.v_db_low - voltage, voltage_epsilon)
-    high = _smooth_positive(voltage - control.schedule.v_db_high, voltage_epsilon)
-    raw = control.q_at_deadband + (low - high) / control.slope
+    raw = if control.schedule.v_db_low == control.schedule.v_db_high
+        control.q_at_deadband + (control.schedule.v_ref - voltage) / control.slope
+    else
+        low = _smooth_positive(control.schedule.v_db_low - voltage, voltage_epsilon)
+        high = _smooth_positive(voltage - control.schedule.v_db_high, voltage_epsilon)
+        control.q_at_deadband + (low - high) / control.slope
+    end
     q_min, q_max = control.capability.q_min, control.capability.q_max
     return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
            _smooth_positive(raw - q_max, reactive_epsilon)
@@ -66,19 +74,33 @@ function _smooth_droop_value(
     voltage_epsilon::Real,
     reactive_epsilon::Real,
 )
-    low = _smooth_positive(v_ref - deadband_low - voltage, voltage_epsilon)
-    high = _smooth_positive(voltage - v_ref - deadband_high, voltage_epsilon)
-    raw = control.q_at_deadband + (low - high) / slope
+    raw = if _fixed_zero_deadband(deadband_low, deadband_high)
+        control.q_at_deadband + (v_ref - voltage) / slope
+    else
+        low = _smooth_positive(v_ref - deadband_low - voltage, voltage_epsilon)
+        high = _smooth_positive(voltage - v_ref - deadband_high, voltage_epsilon)
+        control.q_at_deadband + (low - high) / slope
+    end
     q_min, q_max = control.capability.q_min, control.capability.q_max
     return q_min + _smooth_positive(raw - q_min, reactive_epsilon) -
            _smooth_positive(raw - q_max, reactive_epsilon)
+end
+
+function _smooth_capability_droop_value(control,v,p,g,veps,qeps)
+    isnothing(g.s_rated) && return _smooth_droop_value(control,v,veps,qeps)
+    raw=control.schedule.v_db_low==control.schedule.v_db_high ?
+        control.q_at_deadband+(control.schedule.v_ref-v)/control.slope :
+        control.q_at_deadband+(_smooth_positive(control.schedule.v_db_low-v,veps)-
+            _smooth_positive(v-control.schedule.v_db_high,veps))/control.slope
+    lo,hi=reactive_limits(g,p);lo=max(lo,control.capability.q_min);hi=min(hi,control.capability.q_max)
+    lo+_smooth_positive(raw-lo,qeps)-_smooth_positive(raw-hi,qeps)
 end
 
 # Keep scalar softplus operators separate so legacy JuMP can retain exact
 # Hessians when droop settings are variables. This is the same smooth curve as
 # _smooth_droop_value, with unchanged voltage and reactive smoothing widths.
 function _smooth_droop_expression!(model, name, control, voltage, parameters,
-    voltage_epsilon, reactive_epsilon)
+    voltage_epsilon, reactive_epsilon; q_bounds=nothing)
     vsoft = Symbol(name, "_voltage_positive")
     qsoft = Symbol(name, "_reactive_positive")
     JuMP.register(model, vsoft, 1, z -> _smooth_positive(z, voltage_epsilon); autodiff=true)
@@ -88,11 +110,49 @@ function _smooth_droop_expression!(model, name, control, voltage, parameters,
     high = Expr(:call, vsoft, Expr(:call, :-,
         Expr(:call, :-, voltage, parameters.v_ref), parameters.deadband_high))
     raw = JuMP.add_nonlinear_expression(model, Expr(:call, :+, control.q_at_deadband,
-        Expr(:call, :/, Expr(:call, :-, low, high), parameters.slope)))
-    qmin, qmax = control.capability.q_min, control.capability.q_max
+        Expr(:call, :/, _fixed_zero_deadband(parameters.deadband_low, parameters.deadband_high) ?
+            Expr(:call, :-, parameters.v_ref, voltage) : Expr(:call, :-, low, high), parameters.slope)))
+    qmin, qmax = isnothing(q_bounds) ? (control.capability.q_min, control.capability.q_max) : q_bounds
     return Expr(:call, :+, qmin, Expr(:call, :-,
         Expr(:call, qsoft, Expr(:call, :-, raw, qmin)),
         Expr(:call, qsoft, Expr(:call, :-, raw, qmax))))
+end
+
+function _reactive_bound_expressions!(model, case, pg)
+    lo=Any[];hi=Any[]
+    for (i,g) in enumerate(case.generators)
+        if !g.available || isnothing(g.s_rated)
+            push!(lo,g.q_min);push!(hi,g.q_max)
+        else
+            S=g.s_rated
+            set_lower_bound(pg[i],max(g.p_min,-S))
+            set_upper_bound(pg[i],min(g.p_max,S))
+            # max guards infeasible intermediate iterates; feasible headroom is exact.
+            h=@NLexpression(model,sqrt(max(S^2-pg[i]^2,1e-24)))
+            push!(lo,@NLexpression(model,max(g.q_min,-h)))
+            push!(hi,@NLexpression(model,min(g.q_max,h)))
+        end
+    end
+    lo,hi
+end
+function _add_generator_circles!(model,case,pg,qg;reactive_assignments=nothing)
+    implied=Set{Int}(e.generator_id for e in _reactive_droop_entries(case,reactive_assignments)
+        if e.control.capability.q_min<=0<=e.control.capability.q_max)
+    for group in _active_avr_groups(case,reactive_assignments)
+        length(group)==1 && push!(implied,only(group).generator_id)
+    end
+    # Clipped Q plus |P|<=S algebraically enforces the circle. Repeating the
+    # active circle as another row makes the saturation Jacobian rank deficient.
+    get!(model.ext,:implied_apparent_power_generator_ids,Int[])
+    for (i,g) in enumerate(case.generators)
+        g.available && !isnothing(g.s_rated) || continue
+        S=g.s_rated
+        if g.id in implied && g.q_min<=0<=g.q_max
+            push!(model.ext[:implied_apparent_power_generator_ids],g.id)
+        else
+            @NLconstraint(model,pg[i]^2+qg[i]^2<=S^2)
+        end
+    end
 end
 
 function _set_bound!(variable, lower, upper)
@@ -140,6 +200,10 @@ function _build_acopf_model(
     droop_q_bounds::Symbol = :explicit,
     droop_q_formulation::Symbol = :explicit,
     reactive_assignments = nothing,
+    power_balance_slacks::Bool = false,
+    sparse_balance::Bool = false,
+    load_relief = nothing,
+    avr_target_variables = Dict(),
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -174,15 +238,11 @@ function _build_acopf_model(
             "reactive_assignments currently require droop_q_formulation=:explicit"))
     end
     model = isnothing(shared_model) ? Model(optimizer_factory) : shared_model
+    haskey(model.ext,:power_balance_slacks) ||
+        (model.ext[:power_balance_slacks]=VariableRef[])
     silent && set_silent(model)
     bus_indices = _bus_indices(network)
-    droop_entries = if isnothing(reactive_assignments)
-        [(generator_id=a.generator_id, control_id=a.control_id,
-            location=a.location, control=case.controls[a.control_id]) for a in case.attachments]
-    else
-        [(generator_id=a.generator_id, control_id=k, location=a.location, control=a.mode)
-            for (k, a) in enumerate(reactive_assignments) if a.mode isa VoltVarDroop]
-    end
+    droop_entries = _reactive_droop_entries(case,reactive_assignments)
     attachment_by_generator = Dict(a.generator_id => a for a in droop_entries)
     vm = @variable(model, [1:nbus], base_name = scenario_prefix * "vm")
     va = @variable(model, [1:nbus], base_name = scenario_prefix * "va")
@@ -234,6 +294,7 @@ function _build_acopf_model(
     model.ext[:droop_q_formulation] = droop_q_formulation
     model.ext[:reduced_droop_q_generator_ids] = reduced_q_generator_ids
 
+    qlo,qhi=_reactive_bound_expressions!(model,case,pg)
     if !isnothing(reactive_assignments)
         generator_by_id = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
         for assignment in reactive_assignments
@@ -248,38 +309,27 @@ function _build_acopf_model(
             indices = [generator_by_id[a.generator_id] for a in group]
             generators = case.generators[indices]
             j = bus_indices[first(group).location.bus_id]
-            target = first(group).mode.voltage_setpoint
-            q_min = sum(g.q_min for g in generators)
-            q_max = sum(g.q_max for g in generators)
+            target = get(avr_target_variables,first(group).generator_id,first(group).mode.voltage_setpoint)
+            q_min = @NLexpression(model,sum(qlo[i] for i in indices))
+            q_max = @NLexpression(model,sum(qhi[i] for i in indices))
             group_q = sum(qg[i] for i in indices)
-            lower = @variable(model, lower_bound=0,
-                base_name=scenario_prefix * "avr_lower_release[$k]")
-            upper = @variable(model, lower_bound=0,
-                base_name=scenario_prefix * "avr_upper_release[$k]")
-            lower_slack = @variable(model, lower_bound=0,
-                base_name=scenario_prefix * "avr_lower_q_slack[$k]")
-            upper_slack = @variable(model, lower_bound=0,
-                base_name=scenario_prefix * "avr_upper_q_slack[$k]")
-            @constraint(model, vm[j] - target == lower - upper)
-            @constraint(model, lower_slack == group_q - q_min)
-            @constraint(model, upper_slack == q_max - group_q)
-            anchor_i, anchor_g = first(indices), first(generators)
-            for (i, generator) in zip(indices[2:end], generators[2:end])
-                @constraint(model, (qg[i] - generator.q_min) *
-                    (anchor_g.q_max - anchor_g.q_min) ==
-                    (qg[anchor_i] - anchor_g.q_min) *
-                    (generator.q_max - generator.q_min))
+            # Projection onto effective Q capability is equivalent to ideal AVR:
+            # interior Q implies V=target; saturation permits correctly signed release.
+            # Scaling conditions the numerical equation, not a physical AVR droop.
+            gain=max(sum(g.q_max-g.q_min for g in generators),1e-6)/.02
+            width=max(voltage_epsilon^2*gain,1e-12)
+            op=Symbol(scenario_prefix,"avr_projection_",k)
+            JuMP.register(model,op,1,z->_smooth_positive(z,width);autodiff=true)
+            request=@NLexpression(model,group_q-gain*(vm[j]-target))
+            clip=Expr(:call,:+,q_min,Expr(:call,:-,
+                Expr(:call,op,Expr(:call,:-,request,q_min)),
+                Expr(:call,op,Expr(:call,:-,request,q_max))))
+            JuMP.add_nonlinear_constraint(model,Expr(:call,Symbol("=="),group_q,clip))
+            anchor_i=first(indices)
+            for i in indices[2:end]
+                @NLconstraint(model,(qg[i]-qlo[i])*(qhi[anchor_i]-qlo[anchor_i]) ==
+                    (qg[anchor_i]-qlo[anchor_i])*(qhi[i]-qlo[i]))
             end
-            @NLconstraint(model, lower_slack * lower == voltage_epsilon^2)
-            @NLconstraint(model, upper_slack * upper == voltage_epsilon^2)
-            start_margin = min(voltage_epsilon^2, (q_max - q_min) / 4)
-            qstart = sum(isnothing(initial_state) ? g.initial_q : initial_state.qg[i]
-                for (i, g) in zip(indices, generators))
-            qstart = clamp(qstart, q_min + start_margin, q_max - start_margin)
-            set_start_value(lower_slack, qstart - q_min)
-            set_start_value(upper_slack, q_max - qstart)
-            set_start_value(lower, voltage_epsilon^2 / (qstart - q_min))
-            set_start_value(upper, voltage_epsilon^2 / (q_max - qstart))
         end
     end
 
@@ -294,8 +344,8 @@ function _build_acopf_model(
         control = attachment.control
         _set_bound!(
             pg[generator_index],
-            max(generator.p_min, control.capability.p_min),
-            min(generator.p_max, control.capability.p_max),
+            max(generator.p_min, control.capability.p_min,isnothing(generator.s_rated) ? -Inf : -generator.s_rated),
+            min(generator.p_max, control.capability.p_max,isnothing(generator.s_rated) ? Inf : generator.s_rated),
         )
         function_name = Symbol(scenario_prefix, "droop_response_", attachment.control_id)
         control_reactive_epsilon = reactive_smoothing_epsilon(
@@ -304,7 +354,7 @@ function _build_acopf_model(
             absolute_epsilon = reactive_epsilon,
         )
         parameters = get(droop_parameter_variables, attachment.control_id, nothing)
-        if isnothing(parameters)
+        if isnothing(parameters) && isnothing(generator.s_rated)
             JuMP.register(
                 model,
                 function_name,
@@ -318,11 +368,21 @@ function _build_acopf_model(
                 autodiff = true,
             )
         end
-        droop_expression = if isnothing(parameters)
+        droop_expression = if isnothing(parameters) && isnothing(generator.s_rated)
             Expr(:call, function_name, vm[location_index])
         else
+            pars=isnothing(parameters) ? (;slope=control.slope,v_ref=control.schedule.v_ref,
+                deadband_low=control.schedule.v_ref-control.schedule.v_db_low,
+                deadband_high=control.schedule.v_db_high-control.schedule.v_ref) : parameters
+            bounds=if isnothing(generator.s_rated)
+                nothing
+            else
+                h=@NLexpression(model,sqrt(max(generator.s_rated^2-pg[generator_index]^2,1e-24)))
+                (@NLexpression(model,max(control.capability.q_min,-h)),
+                 @NLexpression(model,min(control.capability.q_max,h)))
+            end
             _smooth_droop_expression!(model, function_name, control,
-                vm[location_index], parameters, voltage_epsilon, control_reactive_epsilon)
+                vm[location_index], pars, voltage_epsilon, control_reactive_epsilon;q_bounds=bounds)
         end
         if droop_q_formulation == :reduced
             qg[generator_index] = JuMP.add_nonlinear_expression(model, droop_expression)
@@ -336,18 +396,23 @@ function _build_acopf_model(
         end
     end
 
+    _add_generator_circles!(model,case,pg,qg;reactive_assignments)
     generator_indices = [bus_indices[g.bus_id] for g in case.generators]
     generators_at_bus = [Int[] for _ in 1:nbus]
     for (i, bus_index) in enumerate(generator_indices)
         push!(generators_at_bus[bus_index], i)
     end
-    load_p = zeros(Float64, nbus)
-    load_q = zeros(Float64, nbus)
-    for load in case.loads
+    load_p = Any[0.0 for _ in 1:nbus]
+    load_q = Any[0.0 for _ in 1:nbus]
+    for (load_index,load) in enumerate(case.loads)
         bus_index = get(bus_indices, load.bus_id, 0)
         bus_index > 0 || throw(ArgumentError("load references an unknown bus"))
         load_p[bus_index] += load.p
         load_q[bus_index] += load.q
+        if !isnothing(load_relief)
+            load_p[bus_index] -= load_relief.p[load_index]
+            load_q[bus_index] -= load_relief.q[load_index]
+        end
     end
     taps = Dict{Int,VariableRef}()
     shunts = Dict{Int,VariableRef}()
@@ -360,32 +425,49 @@ function _build_acopf_model(
         susceptance_matrix = imag.(Y)
 
         for i in 1:nbus
+            # Omit exact-zero admittances before constructing the expression tree.
+            # JuMP's legacy nonlinear graph otherwise retains dense dependencies.
+            # Preserve legacy droop warm-start trajectories used by CCOpt.
+            neighbors = sparse_balance || (isempty(case.controls) && isnothing(reactive_assignments)) ?
+                [j for j in 1:nbus if !iszero(Y[i, j])] : collect(1:nbus)
             p_generation = sum(pg[k] for k in generators_at_bus[i]; init = 0.0)
             q_generation = sum(qg[k] for k in generators_at_bus[i]; init = 0.0)
             selected = [b for b in network.banks if haskey(shunts,b.id) && bus_indices[b.bus_id]==i]
             variable_g = sum((only(b.step_conductances)/only(b.step_susceptances))*shunts[b.id] for b in selected; init=0.)
             variable_b = sum(shunts[b.id] for b in selected; init=0.)
+            ppos = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"p_balance_pos[$i]") : 0.0
+            pneg = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"p_balance_neg[$i]") : 0.0
+            qpos = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"q_balance_pos[$i]") : 0.0
+            qneg = power_balance_slacks ? @variable(model,lower_bound=0,
+                base_name=scenario_prefix*"q_balance_neg[$i]") : 0.0
+            power_balance_slacks && append!(model.ext[:power_balance_slacks],
+                (ppos,pneg,qpos,qneg))
             @NLconstraint(
                 model,
-                p_generation - load_p[i] - variable_g*vm[i]^2 ==
+                p_generation - load_p[i] - variable_g*vm[i]^2 + ppos-pneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
-                             susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
+                             susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in neighbors
                 ),
             )
             @NLconstraint(
                 model,
-                q_generation - load_q[i] + variable_b*vm[i]^2 ==
+                q_generation - load_q[i] + variable_b*vm[i]^2 + qpos-qneg ==
                 vm[i] * sum(
                     vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
-                             susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
+                             susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in neighbors
                 ),
             )
         end
 
         _add_branch_thermal_limits!(model, network, vm, va)
     else
-        taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,tap_controls,shunt_controls;normalize_controls)
+        taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,
+            load_p,load_q,tap_controls,shunt_controls;normalize_controls,
+            power_balance_slacks,scenario_prefix)
     end
 
     # Keep the legacy explicit formulation's nonlinear constraint ordering.
@@ -426,6 +508,7 @@ function solve_opf(
     initial_state::Union{Nothing,ACState} = nothing,
     optimizer_attributes::AbstractDict = Dict{String,Any}(),
     reactive_assignments = nothing,
+    sparse_balance::Bool = false,
 )
     validate_case(case)
     isnothing(reactive_assignments) || validate_reactive_assignments(case, reactive_assignments)
@@ -442,6 +525,7 @@ function solve_opf(
         optimizer_factory = optimizer_factory,
         initial_state = initial_state,
         reactive_assignments = reactive_assignments,
+        sparse_balance = sparse_balance,
     )
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)

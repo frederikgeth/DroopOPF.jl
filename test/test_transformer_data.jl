@@ -6,11 +6,17 @@ using JSON
     b = c.network.branches[1]
     @test b.tap_ratio == 1.05
     @test b.phase_shift ≈ pi / 18
+    @test b.kind == :transformer
     @test c.network.branches[2].tap_ratio == 1
     @test c.network.branches[2].phase_shift == 0
+    @test c.network.branches[2].kind == :line
     old = Branch{Float64}(9, 1, 2, .01, .1, 0., 2., true)
     @test (old.tap_ratio, old.phase_shift) == (1., 0.)
     @test Branch(9, 1, 2; resistance=.01, reactance=.1, thermal_limit=2.).tap_ratio == 1
+    @test Branch(9, 1, 2; resistance=.01, reactance=.1,
+        thermal_limit=2., kind=:transformer).kind == :transformer
+    @test_throws ArgumentError Branch(9, 1, 2; resistance=.01, reactance=.1,
+        thermal_limit=2., kind=:unknown)
     for value in (0., -1., Inf, NaN)
         @test_throws ArgumentError Branch(1,1,2; resistance=.01, reactance=.1,
             thermal_limit=2., tap_ratio=value)
@@ -52,7 +58,7 @@ using JSON
         study = Study(c; contingencies=[outage], participation=Dict(1=>1.))
         write_study(path,study)
         doc = JSON.parsefile(path)
-        @test doc["schema_version"] == 6
+        @test doc["schema_version"] == 10
         restored = read_study(path)
         @test restored.case.network.branches == c.network.branches
         @test scenario_case(restored.case,restored.contingencies[1]).network.branches == overlay.network.branches

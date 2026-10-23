@@ -16,8 +16,8 @@ end
 
 function _complementarity_residual(variables)
     maximum(abs, vcat(
-        value.(variables.voltage_lower) .* value.(variables.voltage_lower_complement),
-        value.(variables.voltage_upper) .* value.(variables.voltage_upper_complement),
+        [value(x) * value(variables.voltage_lower_complement[k]) for (k,x) in variables.voltage_lower],
+        [value(x) * value(variables.voltage_upper_complement[k]) for (k,x) in variables.voltage_upper],
         value.(variables.q_lower_slack) .* value.(variables.q_lower_multiplier),
         value.(variables.q_upper_slack) .* value.(variables.q_upper_multiplier),
         [value(s) * value(m) for (s, m) in variables.avr_pairs]); init=0.0)
@@ -28,6 +28,8 @@ end
 The iteration count is the cumulative inner MadNLP count exposed by CCOpt. The
 package does not currently expose a separate outer-homotopy iteration count.
 These are final relaxed-NLP metrics, not an original-MPCC stationarity proof.
+When CCOpt delegates a model without complementarity constraints to MadNLP,
+the pair count is zero and relaxation and CCOpt-only timing fields are `nothing`.
 """
 function ccopt_diagnostics(model::Model)
     backend = unsafe_backend(model)
@@ -35,25 +37,27 @@ function ccopt_diagnostics(model::Model)
         throw(ArgumentError("model is not backed by CCOpt"))
     isnothing(backend.stats) && throw(ArgumentError("CCOpt model has not been solved"))
     stats,solver=backend.stats,backend.solver
-    sigma=solver.rnlp.σ
+    relaxed=solver isa CCOpt.RelaxationSolver
+    sigma=relaxed ? solver.rnlp.σ : Float64[]
     Dict{String,Any}(
         "backend"=>"CCOpt",
+        "algorithm"=>relaxed ? "complementarity relaxation" : "MadNLP ordinary NLP fallback",
         "status"=>string(stats.status),
         "inner_iterations"=>stats.iter,
         "outer_iterations"=>nothing,
         "outer_iterations_available"=>false,
         "primal_feasibility"=>stats.primal_feas,
         "dual_feasibility"=>stats.dual_feas,
-        "complementarity_feasibility"=>stats.inf_pr_cc,
+        "complementarity_feasibility"=>relaxed ? stats.inf_pr_cc : 0.0,
         "relaxation_min"=>isempty(sigma) ? nothing : minimum(sigma),
         "relaxation_max"=>isempty(sigma) ? nothing : maximum(sigma),
         "complementarity_pairs"=>length(sigma),
-        "solve_time_seconds"=>stats.counters.solve_time,
+        "solve_time_seconds"=>relaxed ? stats.counters.solve_time : nothing,
         "solver_time_seconds"=>stats.counters.solver_time,
         "total_time_seconds"=>stats.counters.total_time,
         "variables"=>num_variables(model),
         "constraints"=>num_constraints(model;count_variable_in_set_constraints=true),
-        "stationarity_scope"=>"final relaxed NLP; not an original-MPCC stationarity certificate",
+        "stationarity_scope"=>relaxed ? "final relaxed NLP; not an original-MPCC stationarity certificate" : "ordinary NLP; no complementarity constraints",
     )
 end
 
@@ -79,13 +83,20 @@ function ccopt_encoding_audit(model::Model)
         low=_ccopt_audit_value(entry.deadband_low);high=_ccopt_audit_value(entry.deadband_high)
         lower_direct=max(vref-low-v,0.);upper_direct=max(v-vref-high,0.)
         raw_direct=entry.q_at_deadband+(lower_direct-upper_direct)/slope
-        physical=clamp(raw_direct,entry.q_min,entry.q_max)
-        lower_aux=value(variables.voltage_lower[k]);upper_aux=value(variables.voltage_upper[k])
+        lo,hi=entry.q_min,entry.q_max
+        if hasproperty(entry,:s_rated) && !isnothing(entry.s_rated)
+            h=sqrt(max(entry.s_rated^2-value(variables.pg[entry.generator_index])^2,0.))
+            lo=max(lo,-h);hi=min(hi,h)
+        end
+        physical=clamp(raw_direct,lo,hi)
+        lower_aux=haskey(variables.voltage_lower,k) ? value(variables.voltage_lower[k]) : lower_direct
+        upper_aux=haskey(variables.voltage_upper,k) ? value(variables.voltage_upper[k]) : upper_direct
         raw_aux=value(variables.raw_q[k])
-        projection_aux=clamp(raw_aux,entry.q_min,entry.q_max)
+        projection_aux=clamp(raw_aux,lo,hi)
         push!(rows,Dict{String,Any}(
             "generator_id"=>entry.generator_id,"control_id"=>entry.control_id,
             "regulated_bus_id"=>entry.bus_id,"voltage_pu"=>v,
+            "voltage_hinges_eliminated"=>!haskey(variables.voltage_lower,k),
             "lower_hinge_error_pu"=>abs(lower_aux-lower_direct),
             "upper_hinge_error_pu"=>abs(upper_aux-upper_direct),
             "raw_droop_error_pu"=>abs(raw_aux-raw_direct),
@@ -115,6 +126,8 @@ function _add_complementarity_ac_physics!(
     tap_controls = nothing,
     shunt_controls = nothing;
     normalize_controls::Bool = false,
+    power_balance_slacks::Bool = false,
+    scenario_prefix::String = "",
 )
     network = case.network
     bus_indices = _bus_indices(network)
@@ -134,7 +147,7 @@ function _add_complementarity_ac_physics!(
     if !isnothing(tap_controls)
         return _add_tap_network!(model, case, vm, va, pg, qg,
             generators_at_bus, load_p, load_q, tap_controls, shunt_controls;
-            normalize_controls)
+            normalize_controls,power_balance_slacks,scenario_prefix)
     end
 
     Y = _admittance_matrix(network)
@@ -151,9 +164,19 @@ function _add_complementarity_ac_physics!(
         variable_g = sum((only(b.step_conductances) / only(b.step_susceptances)) *
             shunts[b.id] for b in selected; init = 0.0)
         variable_b = sum(shunts[b.id] for b in selected; init = 0.0)
+        ppos=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"p_balance_pos[$i]") : 0.0
+        pneg=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"p_balance_neg[$i]") : 0.0
+        qpos=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"q_balance_pos[$i]") : 0.0
+        qneg=power_balance_slacks ? @variable(model,lower_bound=0,
+            base_name=scenario_prefix*"q_balance_neg[$i]") : 0.0
+        power_balance_slacks && append!(model.ext[:power_balance_slacks],
+            (ppos,pneg,qpos,qneg))
         @NLconstraint(
             model,
-            p_generation - load_p[i] - variable_g * vm[i]^2 ==
+            p_generation - load_p[i] - variable_g * vm[i]^2 + ppos-pneg ==
             vm[i] * sum(
                 vm[j] * (conductance_matrix[i, j] * cos(va[i] - va[j]) +
                          susceptance_matrix[i, j] * sin(va[i] - va[j])) for j in 1:nbus
@@ -161,7 +184,7 @@ function _add_complementarity_ac_physics!(
         )
         @NLconstraint(
             model,
-            q_generation - load_q[i] + variable_b * vm[i]^2 ==
+            q_generation - load_q[i] + variable_b * vm[i]^2 + qpos-qneg ==
             vm[i] * sum(
                 vm[j] * (conductance_matrix[i, j] * sin(va[i] - va[j]) -
                          susceptance_matrix[i, j] * cos(va[i] - va[j])) for j in 1:nbus
@@ -178,9 +201,9 @@ end
 
 Each voltage hinge is represented as ``z >= 0 ⟂ z - a >= 0``. Reactive
 clipping is the KKT system of projection of the raw droop value onto the
-reactive capability interval. The four complementarity pairs per attachment
-therefore encode deadband, proportional, and saturated operation without a
-smooth approximation.
+reactive capability interval. Positive-width deadbands use four pairs per
+attachment. Constant zero-width deadbands use the affine raw response directly
+and only the two reactive projection pairs, avoiding redundant voltage hinges.
 """
 function _build_complementarity_opf_model(
     case::Case;
@@ -194,6 +217,7 @@ function _build_complementarity_opf_model(
     normalize_controls::Bool = false,
     droop_parameter_variables::AbstractDict = Dict(),
     reactive_assignments = nothing,
+    power_balance_slacks::Bool = false,
 )
     if !isnothing(reactive_assignments)
         validate_reactive_assignments(case, reactive_assignments)
@@ -219,6 +243,8 @@ function _build_complementarity_opf_model(
     end
 
     model = isnothing(shared_model) ? Model(CCOpt.Optimizer) : shared_model
+    haskey(model.ext,:power_balance_slacks) ||
+        (model.ext[:power_balance_slacks]=VariableRef[])
     # This must be called before adding complementarity constraints so JuMP can
     # route them to CCOpt's MOI wrapper.
     isnothing(shared_model) && MathOptComplements.Bridges.add_all_bridges(model)
@@ -246,8 +272,11 @@ function _build_complementarity_opf_model(
         end
     end
 
+    qlo,qhi=_reactive_bound_expressions!(model,case,pg)
+    _add_generator_circles!(model,case,pg,qg;reactive_assignments)
     taps, shunts = _add_complementarity_ac_physics!(model, case, vm, va, pg, qg,
-        tap_controls, shunt_controls; normalize_controls)
+        tap_controls, shunt_controls; normalize_controls,power_balance_slacks,
+        scenario_prefix)
 
     generator_indices = Dict(generator.id => i for (i, generator) in enumerate(case.generators))
     if !isnothing(reactive_assignments)
@@ -266,8 +295,8 @@ function _build_complementarity_opf_model(
             generators = case.generators[indices]
             j = bus_indices[first(group).location.bus_id]
             target = first(group).mode.voltage_setpoint
-            q_min = sum(g.q_min for g in generators)
-            q_max = sum(g.q_max for g in generators)
+            q_min = @NLexpression(model,sum(qlo[i] for i in indices))
+            q_max = @NLexpression(model,sum(qhi[i] for i in indices))
             group_q = sum(qg[i] for i in indices)
             # V - Vset = lower release - upper release.
             # Aggregate lower Q permits V >= Vset; aggregate upper Q permits V <= Vset.
@@ -276,20 +305,20 @@ function _build_complementarity_opf_model(
             lower_slack = @variable(model, lower_bound=0)
             upper_slack = @variable(model, lower_bound=0)
             @constraint(model, vm[j] - target == lower - upper)
-            @constraint(model, lower_slack == group_q - q_min)
-            @constraint(model, upper_slack == q_max - group_q)
+            @NLconstraint(model, lower_slack == group_q - q_min)
+            @NLconstraint(model, upper_slack == q_max - group_q)
             anchor_i, anchor_g = first(indices), first(generators)
             for (i, generator) in zip(indices[2:end], generators[2:end])
-                @constraint(model, (qg[i] - generator.q_min) *
-                    (anchor_g.q_max - anchor_g.q_min) ==
-                    (qg[anchor_i] - anchor_g.q_min) *
-                    (generator.q_max - generator.q_min))
+                @NLconstraint(model, (qg[i]-qlo[i])*(qhi[anchor_i]-qlo[anchor_i]) ==
+                    (qg[anchor_i]-qlo[anchor_i])*(qhi[i]-qlo[i]))
             end
             @constraint(model, [lower_slack, lower] in _COMPLEMENTARITY_MOI.Complements(2))
             @constraint(model, [upper_slack, upper] in _COMPLEMENTARITY_MOI.Complements(2))
             vstart = isnothing(initial_state) ? target : initial_state.vm[j]
             qstart = sum(isnothing(initial_state) ? g.initial_q : initial_state.qg[i]
                 for (i, g) in zip(indices, generators))
+            q_min=sum(reactive_limits(g,start_value(pg[i]))[1] for (i,g) in zip(indices,generators))
+            q_max=sum(reactive_limits(g,start_value(pg[i]))[2] for (i,g) in zip(indices,generators))
             qstart = clamp(qstart, q_min, q_max)
             set_start_value(vm[j], vstart)
             set_start_value(lower, max(vstart - target, 0.0))
@@ -308,18 +337,18 @@ function _build_complementarity_opf_model(
         location_index = bus_indices[attachment.location.bus_id]
         _set_bound!(
             pg[generator_index],
-            max(generator.p_min, control.capability.p_min),
-            min(generator.p_max, control.capability.p_max),
+            max(generator.p_min, control.capability.p_min,isnothing(generator.s_rated) ? -Inf : -generator.s_rated),
+            min(generator.p_max, control.capability.p_max,isnothing(generator.s_rated) ? Inf : generator.s_rated),
         )
         push!(active_attachments, (attachment, generator_index, location_index))
     end
 
     ncontrol = length(active_attachments)
     audit_metadata=Any[]
-    voltage_lower = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower")
-    voltage_lower_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_lower_complement")
-    voltage_upper = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper")
-    voltage_upper_complement = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "voltage_upper_complement")
+    voltage_lower = Dict{Int,VariableRef}()
+    voltage_lower_complement = Dict{Int,VariableRef}()
+    voltage_upper = Dict{Int,VariableRef}()
+    voltage_upper_complement = Dict{Int,VariableRef}()
     raw_q = @variable(model, [1:ncontrol], base_name = scenario_prefix * "raw_q")
     q_lower_slack = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_slack")
     q_lower_multiplier = @variable(model, [1:ncontrol], lower_bound = 0, base_name = scenario_prefix * "q_lower_multiplier")
@@ -355,7 +384,7 @@ function _build_complementarity_opf_model(
         v_db_high = v_ref + deadband_high
         push!(audit_metadata,(generator_id=generator.id,control_id=attachment.control_id,
             bus_id=attachment.location.bus_id,generator_index=generator_index,
-            bus_index=location_index,q_min=q_min,q_max=q_max,
+            bus_index=location_index,q_min=q_min,q_max=q_max,s_rated=generator.s_rated,
             q_at_deadband=control.q_at_deadband,slope=slope,v_ref=v_ref,
             deadband_low=deadband_low,deadband_high=deadband_high))
 
@@ -367,49 +396,64 @@ function _build_complementarity_opf_model(
         q_start = clamp(raw_q_start, q_min, q_max)
         set_start_value(vm[location_index], voltage_start)
         set_start_value(qg[generator_index], q_start)
-        set_start_value(voltage_lower[k], voltage_lower_start)
-        set_start_value(voltage_lower_complement[k],
-            max(voltage_start - initial.v_ref + initial.deadband_low, 0.0))
-        set_start_value(voltage_upper[k], voltage_upper_start)
-        set_start_value(voltage_upper_complement[k],
-            max(initial.v_ref + initial.deadband_high - voltage_start, 0.0))
         set_start_value(raw_q[k], raw_q_start)
         set_start_value(q_lower_slack[k], q_start - q_min)
         set_start_value(q_upper_slack[k], q_max - q_start)
         set_start_value(q_lower_multiplier[k], max(q_start - raw_q_start, 0.0))
         set_start_value(q_upper_multiplier[k], max(raw_q_start - q_start, 0.0))
 
-        # max(v_db_low - V, 0)
-        @constraint(
-            model,
-            voltage_lower_complement[k] - voltage_lower[k] +
-            v_db_low - vm[location_index] == 0,
-        )
-        @constraint(
-            model,
-            [voltage_lower[k], voltage_lower_complement[k]] in
-            _COMPLEMENTARITY_MOI.Complements(2),
-        )
-        # max(V - v_db_high, 0)
-        @constraint(
-            model,
-            voltage_upper_complement[k] - voltage_upper[k] +
-            vm[location_index] - v_db_high == 0,
-        )
-        @constraint(
-            model,
-            [voltage_upper[k], voltage_upper_complement[k]] in
-            _COMPLEMENTARITY_MOI.Complements(2),
-        )
+        if _fixed_zero_deadband(deadband_low, deadband_high)
+            # max(x,0)-max(-x,0)=x: retain only the Q projection pairs.
+            @NLconstraint(model, raw_q[k] == control.q_at_deadband +
+                (v_ref - vm[location_index]) / slope)
+        else
+            voltage_lower[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_lower_$k")
+            voltage_lower_complement[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_lower_complement_$k")
+            voltage_upper[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_upper_$k")
+            voltage_upper_complement[k] = @variable(model, lower_bound=0, base_name=scenario_prefix * "voltage_upper_complement_$k")
+            set_start_value(voltage_lower[k], voltage_lower_start)
+            set_start_value(voltage_lower_complement[k],
+                max(voltage_start - initial.v_ref + initial.deadband_low, 0.0))
+            set_start_value(voltage_upper[k], voltage_upper_start)
+            set_start_value(voltage_upper_complement[k],
+                max(initial.v_ref + initial.deadband_high - voltage_start, 0.0))
+            # max(v_db_low - V, 0)
+            @constraint(
+                model,
+                voltage_lower_complement[k] - voltage_lower[k] +
+                v_db_low - vm[location_index] == 0,
+            )
+            @constraint(
+                model,
+                [voltage_lower[k], voltage_lower_complement[k]] in
+                _COMPLEMENTARITY_MOI.Complements(2),
+            )
+            # max(V - v_db_high, 0)
+            @constraint(
+                model,
+                voltage_upper_complement[k] - voltage_upper[k] +
+                vm[location_index] - v_db_high == 0,
+            )
+            @constraint(
+                model,
+                [voltage_upper[k], voltage_upper_complement[k]] in
+                _COMPLEMENTARITY_MOI.Complements(2),
+            )
 
-        @NLconstraint(
-            model,
-            raw_q[k] == control.q_at_deadband +
-                        (voltage_lower[k] - voltage_upper[k]) / slope,
-        )
+            @NLconstraint(
+                model,
+                raw_q[k] == control.q_at_deadband +
+                            (voltage_lower[k] - voltage_upper[k]) / slope,
+            )
+        end
         # Projection of raw_q onto [q_min, q_max].
-        @constraint(model, q_lower_slack[k] == qg[generator_index] - q_min)
-        @constraint(model, q_upper_slack[k] == q_max - qg[generator_index])
+        if !isnothing(generator.s_rated)
+            h=@NLexpression(model,sqrt(max(generator.s_rated^2-pg[generator_index]^2,1e-24)))
+            q_min=@NLexpression(model,max(control.capability.q_min,-h))
+            q_max=@NLexpression(model,min(control.capability.q_max,h))
+        end
+        @NLconstraint(model, q_lower_slack[k] == qg[generator_index] - q_min)
+        @NLconstraint(model, q_upper_slack[k] == q_max - qg[generator_index])
         @constraint(
             model,
             qg[generator_index] - raw_q[k] -

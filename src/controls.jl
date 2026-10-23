@@ -33,6 +33,46 @@ without changing the physical assignment.
 """
 abstract type ReactiveControlMode end
 
+"""Explicit continuous tap policy. Omitted branches remain fixed at supplied ratios."""
+struct TapControl
+    branch_id::Int
+    lower::Float64
+    upper::Float64
+    initial::Union{Nothing,Float64}
+    nominal::Union{Nothing,Float64}
+    function TapControl(id::Integer; lower::Real, upper::Real, initial=nothing, nominal=nothing)
+        id > 0 || throw(ArgumentError("branch ID must be positive"))
+        isfinite(lower) && isfinite(upper) && 0 < lower <= upper ||
+            throw(ArgumentError("tap bounds must be finite, positive and ordered"))
+        isnothing(initial) || (isfinite(initial) && lower <= initial <= upper) ||
+            throw(ArgumentError("initial tap must lie within bounds"))
+        isnothing(nominal) || (isfinite(nominal) && nominal > 0) ||
+            throw(ArgumentError("nominal tap must be finite and positive"))
+        new(Int(id), Float64(lower), Float64(upper),
+            isnothing(initial) ? nothing : Float64(initial),
+            isnothing(nominal) ? nothing : Float64(nominal))
+    end
+end
+
+"""Select a simple bank for continuous susceptance optimization."""
+struct ShuntControl
+    bank_id::Int
+    lower::Union{Nothing,Float64}
+    upper::Union{Nothing,Float64}
+    initial::Union{Nothing,Float64}
+    nominal::Union{Nothing,Float64}
+    function ShuntControl(id::Integer; lower=nothing, upper=nothing, initial=nothing, nominal=nothing)
+        id > 0 || throw(ArgumentError("bank ID must be positive"))
+        all(x -> isnothing(x) || (x isa Real && isfinite(x)),
+            (lower, upper, initial, nominal)) ||
+            throw(ArgumentError("shunt settings must be finite"))
+        isnothing(lower) || isnothing(upper) || lower <= upper ||
+            throw(ArgumentError("reversed shunt bounds"))
+        new(Int(id), map(x -> isnothing(x) ? nothing : Float64(x),
+            (lower, upper, initial, nominal))...)
+    end
+end
+
 """Generator Q is bounded only by its declared capability."""
 struct FreeQ <: ReactiveControlMode end
 
@@ -147,12 +187,15 @@ struct VoltVarDroop{T<:Real} <: ReactiveControlMode
         # slope is ΔV / ΔQ in pu voltage per unit reactive output.
         v_at_qmax = schedule.v_db_low - slope * (q_max - q_at_deadband)
         v_at_qmin = schedule.v_db_high + slope * (q_at_deadband - q_min)
-        v_at_qmax < schedule.v_db_low < schedule.v_db_high < v_at_qmin ||
+        v_at_qmax < schedule.v_db_low <= schedule.v_db_high < v_at_qmin ||
             throw(ArgumentError("droop and deadband must produce ordered curve breakpoints"))
 
+        no_deadband = schedule.v_db_low == schedule.v_db_high
         curve = PiecewiseLinearCurve(
-            [v_at_qmax, schedule.v_db_low, schedule.v_db_high, v_at_qmin],
-            [q_max, q_at_deadband, q_at_deadband, q_min];
+            no_deadband ? [v_at_qmax, schedule.v_db_low, v_at_qmin] :
+                [v_at_qmax, schedule.v_db_low, schedule.v_db_high, v_at_qmin],
+            no_deadband ? [q_max, q_at_deadband, q_min] :
+                [q_max, q_at_deadband, q_at_deadband, q_min];
             extrapolation = :clamp,
         )
         new{T}(schedule, slope, q_at_deadband, capability, curve)

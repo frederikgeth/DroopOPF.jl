@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/release-*"]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
 
   deploy:
     name: Deploy Documenter site
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:

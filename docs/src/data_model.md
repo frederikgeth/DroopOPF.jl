@@ -81,7 +81,8 @@ for that call; omitted generators have bounded, free Q. `FixedQ` adds a Q
 schedule equality and the independent validator reports `:fixed_q` when its
 error exceeds `power_tolerance`. Unavailable generators retain zero output.
 AVR is supported by both the smooth and CCOpt base-case entry points.
-Study JSON v6 and SCOPF result JSON v2 store optional assignments explicitly.
+Study JSON v8 and SCOPF result JSON v4 store optional assignments explicitly,
+along with M9 equipment controls, timing, movement budgets, and scenario settings.
 Readers preserve `nothing` for older documents, which retains legacy attachment
 semantics. Restored assignments are revalidated and SCOPF validation rejects a
 study/result assignment mismatch. Joint design accepts the same optional
@@ -92,33 +93,6 @@ When assignments contain only FreeQ/FixedQ, there are no complementarity
 constraints and CCOpt delegates to MadNLP; these runs are not independent
 third-solver evidence. Explicit VoltVarDroop assignments retain the exact
 complementarity encoding.
-
-Exact AVR holds the regulated voltage at its setpoint when Q is interior.
-At the upper Q limit it permits voltage below the setpoint; at the lower Q
-limit it permits voltage above the setpoint. The encoding uses two nonnegative
-voltage-release variables complementary to the respective Q-limit slacks.
-The independent validator checks these physical regimes directly and reports
-`:avr`, using `avr_voltage_tolerance` (default `1e-5`) for voltage and
-`limit_tolerance` for Q-limit proximity. Unavailable generators do not regulate.
-AVRs at the same regulated location must declare the same setpoint. Available
-generators form one aggregate regulator: their normalized Q positions
-`(Q-Qmin)/(Qmax-Qmin)` are equal, so output is shared in proportion to each
-unit's Q range and the aggregate Q limits govern voltage release. Outages
-automatically regroup the surviving units. The independent validator reports
-`:avr_sharing` for inconsistent allocations. `:remote_bus` regulates the named
-network bus and `:generator_terminal` must name the generator's own bus. A
-`:branch_terminal` location must provide `branch_id` and `side`; it regulates
-that endpoint's bus voltage and is disabled in a scenario where its monitoring
-branch is unavailable. Remote and branch-terminal behavior is covered by
-small-case regressions. The retained IEEE-118/300 qualification uses
-generator-terminal AVR only and must not be generalized to remote or
-branch-terminal public-case performance.
-Smooth AVR uses the same two Q-slack/voltage-release pairs with
-`slack * release == smooth_voltage_epsilon^2`. Thus Ipopt and MadNLP follow a
-central path approaching the exact CCOpt graph rather than replacing AVR with
-an arbitrary high-gain droop curve. At finite smoothing, Q remains slightly
-inside its limits; the default `1e-4` voltage smoothing keeps the tested
-small-case deviation within the independent AVR tolerances.
 
 ## Attachments
 
@@ -137,13 +111,16 @@ system-level control semantics in later milestones.
 
 ## M5.1 transformer data contract
 
-`Branch` accepts `tap_ratio=1` and `phase_shift=0`. The complex tap is on the
+`Branch` accepts explicit `kind=:line` or `kind=:transformer`, plus
+`tap_ratio=1` and `phase_shift=0`. The complex tap is on the
 declared from side: `a = tap_ratio * cis(phase_shift)`. Ratio is dimensionless,
 finite and strictly positive; phase is finite and in radians. Existing keyword
 and typed positional constructors retain unity/zero defaults. Network/case
 conversion, control attachment and contingency copies preserve both settings.
 
-MATPOWER `TAP=0` becomes unity; `SHIFT` is converted once from degrees to radians.
+MATPOWER `TAP=0` becomes unity and marks a line; a supplied `TAP` (including
+unity) or `SHIFT` marks a transformer. `SHIFT` is converted once from degrees
+to radians.
 No physical tap bounds or legal positions are inferred from those fields.
 M6.1 imports nonzero bus `GS`/`BS` as aggregate fixed shunts (see below).
 
@@ -152,6 +129,12 @@ introduced v3 with an explicit fixed-shunt list; M6.2 writes v4 with banks. The 
 line-only v1 studies to unity/zero and rejects contradictory transformer metadata
 labelled v1. Unchanged result/report document kinds retain schema v1. Older
 readers reject v2, rather than silently losing transformer physics.
+
+Study schema v9 introduced the explicit line/transformer kind; current v10 also
+identifies limit-aware automatic active response. Supported older uncoupled or
+corrective studies reload with `kind=:line` when kind metadata is absent.
+Historical coupled preventive studies require original-source replay rather than
+silent migration to a different active-response policy.
 
 M5.2–M5.4 support fixed ratios and fixed phase shifts in AC evaluation,
 OPF, SCOPF and existing bounded droop design. Unavailable branches contribute
@@ -289,7 +272,9 @@ MATPOWER GS/BS remains fixed admittance and does not infer bank identities or st
 
 Study schema v4 requires `network.banks` and preserves all metadata. Schema v5
 adds optional reactive-control assignments; schema v6 adds `branch_id` to a
-branch-terminal location. Readers
+branch-terminal location; schema v7 adds selected continuous equipment and its
+SCOPF timing policy; schema v8 adds optional corrective movement-limit maps.
+Readers
 migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas.
 Existing branch/generator contingencies preserve supplied bank states. M6 uses
 fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization
@@ -322,8 +307,10 @@ relaxations, without discrete-position recovery or switching-count interpretatio
 separately checks bounds and fixed settings. A failed solve can have no state or
 ratios; physical validation is then unavailable and overall validity is false.
 
-The public entry point accepts a base `Case`; a `Study` is rejected until M9 adds
-scenario policy coupling. The current implementation uses the smooth encoding
+The dedicated base-case entry point accepts a `Case`. M9.1 also accepts the same
+controls on `Study`, with explicit scenario policy coupling through
+`SCOPFControlPolicy`; see [SCOPF](scopf.md#equipment-and-reactive-control-timing-m91).
+The current implementation uses the smooth encoding
 with Ipopt by default and supports the existing optimizer-factory interface.
 See [M7.1 evidence](equipment_optimization.md) for sweeps and comparisons.
 

@@ -8,6 +8,7 @@ struct Generator{T<:Real}
     q_max::T
     initial_p::T
     initial_q::T
+    s_rated::Union{Nothing,T}
 
     function Generator{T}(
         id::Integer,
@@ -19,6 +20,7 @@ struct Generator{T<:Real}
         q_max::T,
         initial_p::T,
         initial_q::T,
+        s_rated::Union{Nothing,T} = nothing,
     ) where {T<:Real}
         id > 0 || throw(ArgumentError("generator id must be positive"))
         bus_id > 0 || throw(ArgumentError("generator bus_id must be positive"))
@@ -29,8 +31,11 @@ struct Generator{T<:Real}
         q_min <= initial_q <= q_max ||
             throw(ArgumentError("initial_q must lie within reactive-power limits"))
         p_min <= p_max || throw(ArgumentError("p_min must not exceed p_max"))
-        q_min < q_max || throw(ArgumentError("q_min must be less than q_max"))
-        new{T}(Int(id), Int(bus_id), available, p_min, p_max, q_min, q_max, initial_p, initial_q)
+        q_min <= q_max ||
+            throw(ArgumentError("q_min must not exceed q_max"))
+        isnothing(s_rated) || (isfinite(s_rated) && s_rated > 0) ||
+            throw(ArgumentError("s_rated must be positive and finite, or nothing"))
+        new{T}(Int(id), Int(bus_id), available, p_min, p_max, q_min, q_max, initial_p, initial_q, s_rated)
     end
 end
 
@@ -42,12 +47,14 @@ function Generator(
     p_max,
     q_min,
     q_max,
+    s_rated = nothing,
     initial_p = p_min,
     initial_q = zero(promote_type(typeof(q_min), typeof(q_max))),
 )
     T = promote_type(
         typeof(p_min), typeof(p_max), typeof(q_min), typeof(q_max),
         typeof(initial_p), typeof(initial_q),
+        isnothing(s_rated) ? typeof(p_min) : typeof(s_rated),
     )
     return Generator{T}(
         id,
@@ -59,6 +66,7 @@ function Generator(
         T(q_max),
         T(initial_p),
         T(initial_q),
+        isnothing(s_rated) ? nothing : T(s_rated),
     )
 end
 
@@ -157,6 +165,7 @@ function Case(
         Generator{T}(
             g.id, g.bus_id, g.available, T(g.p_min), T(g.p_max), T(g.q_min),
             T(g.q_max), T(g.initial_p), T(g.initial_q),
+            isnothing(g.s_rated) ? nothing : T(g.s_rated),
         ) for g in generators
     ]
     cs = VoltVarDroop{T}[
@@ -176,7 +185,7 @@ function Case(
                 Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in network.buses],
                 Branch{T}[Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance),
                     T(br.reactance), T(br.charging), T(br.thermal_limit), br.available,
-                    T(br.tap_ratio), T(br.phase_shift))
+                    T(br.tap_ratio), T(br.phase_shift), br.kind)
                     for br in network.branches],
                 FixedShunt{T}[FixedShunt{T}(s.id, s.bus_id, T(s.conductance),
                     T(s.susceptance), s.available) for s in network.shunts],
@@ -321,5 +330,40 @@ function droop_response(case::Case, generator_id::Integer, voltage::Real; p::Rea
     attachment_index === nothing &&
         throw(ArgumentError("generator has no volt-var control attachment"))
     attachment = case.attachments[attachment_index]
-    return droop_response(case.controls[attachment.control_id], voltage; p = p)
+    g=case.generators[gen];lo,hi=reactive_limits(g,p)
+    return clamp(droop_response(case.controls[attachment.control_id], voltage; p=p),lo,hi)
+end
+
+"""Effective generator reactive interval at active output `p`, in system-base pu.
+The circle supplements, rather than replaces, the supplied rectangular bounds.
+"""
+function reactive_limits(g::Generator, p::Real)
+    isnothing(g.s_rated) && return (g.q_min, g.q_max)
+    h=sqrt(max(g.s_rated^2-p^2,zero(p)))
+    (max(g.q_min,-h),min(g.q_max,h))
+end
+
+# Explicit modes retain stable legacy IDs only when attached to the same unit.
+function _reactive_droop_entries(case, assignments)
+    isnothing(assignments) && return [(generator_id=a.generator_id,control_id=a.control_id,
+        location=a.location,control=case.controls[a.control_id]) for a in case.attachments]
+    ids=Dict(a.generator_id=>a.control_id for a in case.attachments)
+    [(generator_id=a.generator_id,control_id=get(ids,a.generator_id,-k),
+        location=a.location,control=a.mode) for (k,a) in enumerate(assignments) if a.mode isa VoltVarDroop]
+end
+function _check_mixed_design(case,assignments,controls)
+    isnothing(assignments) && return
+    entries=_reactive_droop_entries(case,assignments)
+    for c in controls
+        e=findfirst(e->e.control_id==c.control_id,entries)
+        !isnothing(e) && _json_data(entries[e].control)==_json_data(case.controls[c.control_id]) ||
+            throw(ArgumentError("designed control must match an explicit droop assignment"))
+    end
+end
+function _settings_assignments(case,assignments,settings)
+    isnothing(assignments) && return nothing
+    ids=Dict(a.generator_id=>a.control_id for a in case.attachments)
+    ReactiveControlAssignment[a.mode isa VoltVarDroop && haskey(ids,a.generator_id) &&
+        haskey(settings,ids[a.generator_id]) ? ReactiveControlAssignment(a.generator_id,
+        _control_with_settings(a.mode,settings[ids[a.generator_id]]),a.location) : a for a in assignments]
 end

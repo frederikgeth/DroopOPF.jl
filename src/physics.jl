@@ -168,7 +168,8 @@ function droop_residual(case::Case, state::ACState)
         control = case.controls[attachment.control_id]
         bus_index = get(bus_indices, attachment.location.bus_id, 0)
         bus_index > 0 || throw(ArgumentError("control location references an unknown bus"))
-        expected_q = droop_response(control, state.vm[bus_index]; p = state.pg[generator_index])
+        expected_q = clamp(droop_response(control, state.vm[bus_index]; p = state.pg[generator_index]),
+            reactive_limits(generator,state.pg[generator_index])...)
         push!(residual, state.qg[generator_index] - expected_q)
     end
     return residual

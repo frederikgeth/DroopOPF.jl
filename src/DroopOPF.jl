@@ -5,19 +5,30 @@ include("controls.jl")
 include("network.jl")
 include("domain.jl")
 include("contingencies.jl")
+include("contingency_catalog.jl")
 include("physics.jl")
 include("matpower.jl")
+include("psse.jl")
+export PSSERecord, PSSERawData, PSSEImport, parse_psse_raw, import_psse_case, load_psse_case
 include("jump.jl")
 include("complementarity.jl")
 include("scopf.jl")
 include("validation.jl")
 include("scopf_validation.jl")
+include("contingency_assessment.jl")
+include("islanding.jl")
+include("contingency_filtering.jl")
+include("droop_screening.jl")
+include("contingency_pipeline.jl")
+include("scopf_stages.jl")
 include("multistart.jl")
 include("diagnostics.jl")
 include("scopf_io.jl")
+include("contingency_campaign.jl")
 include("benchmarking.jl")
 include("plotting.jl")
 include("scopf_plotting.jl")
+include("scopf_evaluation_plotting.jl")
 include("droop_sweep.jl")
 include("droop_optimization.jl")
 include("droop_design_multistart.jl")
@@ -25,6 +36,28 @@ include("droop_design_plotting.jl")
 include("tap_optimization.jl")
 include("shunt_optimization.jl")
 include("joint_design.jl")
+include("feasibility.jl")
+include("global_feasibility.jl")
+include("feasibility_lp.jl")
+include("droop_security.jl")
+include("multi_period.jl")
+include("multi_period_security.jl")
+include("mixed_controls.jl")
+export mixed_reactive_controls
+export write_multi_period_security, read_multi_period_security
+export MultiPeriodSecurityResult, optimize_multi_period_security, validate_multi_period_security
+include("psse_validation.jl")
+export validate_psse_saved_solution, check_psse_file, write_psse_validation_report
+export MultiPeriodStudy, MultiPeriodResult, optimize_multi_period, validate_multi_period
+export FeasibilityProblem, FeasibilityWitness, FeasibilityResult, DroopQualification
+export feasibility_fingerprint, validate_feasibility_witness, check_feasibility
+export verify_feasibility_result, write_feasibility_result, read_feasibility_result
+export qualify_droop_replacement, require_qualified_replacement, write_droop_qualification
+export build_global_feasibility_model, seed_global_feasibility!, solve_global_feasibility
+export certify_feasibility_lp
+export verified_feasibility_voltage_bounds
+export SCOPFDroopDesignResult, DroopSecurityIteration, DroopSecurityResult
+export optimize_droop_security, write_droop_security
 export DroopControl, JointDesignResult, optimize_joint_design, with_joint_settings
 export validate_joint_design, exact_droop_audit, joint_design_metrics, write_joint_design, read_joint_design
 export ShuntControl, ShuntOPFResult, optimize_shunts, with_shunt_settings
@@ -33,9 +66,23 @@ export TapControl, TapOPFResult, optimize_taps, with_tap_settings, validate_tap_
 export write_tap_design, read_tap_design, tap_design_metrics
 
 export write_study, read_study, write_scopf_result, read_scopf_result, write_scopf_report
+export write_scopf_stage_assessment
 export write_scopf_multistart, write_scopf_diagnostics
-export Contingency, Study, scenario_case, SCOPFResult, solve_scopf
+export write_contingency_catalog, write_contingency_ranking, write_contingency_pipeline
+export default_participation
+export Contingency, Study, SCOPFControlPolicy, scenario_case, SCOPFResult, solve_scopf
+export ContingencyCatalogEntry, ContingencyCatalog, ContingencyRank
+export ContingencyAssessment, ContingencyScreeningScore
+export contingency_catalog, eligible_contingencies, excluded_contingencies, rank_contingencies
+export evaluate_contingency_catalog, contingency_screening_scores
+export IslandSelection, IslandedContingencyAssessment
+export islanded_scenario_case, evaluate_islanding_contingency
+export ContingencyFilterDecision, filter_contingencies
+export ContingencyPipelineRank, ContingencyPipelineAssessment, ContingencyPipelineResult
+export assess_contingency_pipeline
+export run_contingency_campaign, validate_contingency_filter
 export evaluate_contingencies, solve_scopf_continuation, SCOPFReport
+export SCOPFStageAssessment, assess_scopf_response_stages, assemble_scopf_response_stages
 export SCOPFMultiStartRun, SCOPFMultiStartResult, solve_scopf_multistart
 export DroopBreakpointDiagnostic, SCOPFFinding, SCOPFDiagnostics, scopf_diagnostics
 export SCOPFBenchmarkSample, SCOPFBenchmarkReport, benchmark_scopf, write_scopf_benchmark
@@ -44,6 +91,7 @@ export RegulatedLocation, VoltageSchedule, ReactiveCapability, VoltVarDroop, q_r
 export ReactiveControlMode, FreeQ, FixedQ, AVR, ReactiveControlAssignment
 export reactive_control_assignments, validate_reactive_assignments
 export droop_response, droop_curve
+export reactive_limits
 export Generator, GeneratorControlAttachment, Case, validate_case
 export load_matpower_case, attach_controls
 export Bus, Branch, Load, FixedShunt, ShuntBank, ACNetwork, ACState, shunt_powers
@@ -61,6 +109,9 @@ export solver_operating_points, write_droop_plot, write_solver_comparison_plot
 export scopf_operating_points, write_scopf_droop_plot, write_scopf_voltage_plot
 export write_scopf_branch_loading_plot, write_scopf_dispatch_plot
 export write_scopf_residual_plot, write_scopf_validation_plots
+export write_scopf_input_plot, write_scopf_network_plot, write_scopf_margin_plot
+export write_scopf_response_delta_plot, write_scopf_validation_matrix_plot
+export write_scopf_evaluation_report
 export DroopSlopeSweepPoint, DroopSlopeSweep, sweep_droop_slope, best_droop_slope
 export write_droop_slope_sweep, read_droop_slope_sweep, write_droop_slope_sweep_plot
 export DroopSettings, DroopDesignResult, with_droop_settings

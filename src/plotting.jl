@@ -10,6 +10,10 @@ end
 
 function droop_regime(control::VoltVarDroop, voltage::Real)
     breakpoints = control.curve.breakpoints
+    if control.schedule.v_db_low == control.schedule.v_db_high
+        return voltage <= first(breakpoints) ? :saturation_qmax :
+            voltage >= last(breakpoints) ? :saturation_qmin : :proportional
+    end
     if voltage <= breakpoints[1]
         return :saturation_qmax
     elseif voltage < breakpoints[2]

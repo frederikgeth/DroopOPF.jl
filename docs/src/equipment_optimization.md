@@ -22,7 +22,7 @@ The dedicated `optimize_taps` and `optimize_shunts` APIs accept the same
 design, omit `optimizer_factory` in exact mode and pass CCOpt settings through
 `optimizer_attributes`.
 
-The numerical tables and figures below are generated from retained evidence. Reproduce the solve and plot workflows in [Examples](examples.md), then run `python3 examples/build_m7_gallery.py`. Input studies, versioned designs, detailed reports and regression logs remain under `artifacts/m7_1`, `artifacts/m7_2` and `artifacts/m7_3`.
+The numerical tables and figures below are generated from retained evidence. Reproduce the solve and plot workflows in [Examples](research.md), then run `python3 examples/build_m7_gallery.py`. Input studies, versioned designs, detailed reports and regression logs remain under `artifacts/m7_1`, `artifacts/m7_2` and `artifacts/m7_3`.
 
 ## M7.1 — Transformer taps
 
@@ -34,16 +34,16 @@ Fixed-bound and standalone equivalence, a 41-point tap sweep and one/two-free-ta
 | tap 11 free | 1.994948e-05 | 1.0023 | 2.870759e-13 | 0.002113501 |
 | taps 11 and 22 free | 1.993398e-05 | 1.001548 | 5.830753e-14 | 0.002108155 |
 
-![Tap sweep](assets/m7_1/tap_sweep.png)
-[Download tap sweep as PDF](assets/m7_1/tap_sweep.pdf)
+![Tap sweep](research.md)
+[Download tap sweep as PDF](research.md)
 
-![Operating points](assets/m7_1/operating_points.png)
-[Download operating points as PDF](assets/m7_1/operating_points.pdf)
+![Operating points](research.md)
+[Download operating points as PDF](research.md)
 
-![Tap settings](assets/m7_1/tap_settings.png)
-[Download tap settings as PDF](assets/m7_1/tap_settings.pdf)
+![Tap settings](research.md)
+[Download tap settings as PDF](research.md)
 
-[Machine-readable evidence](assets/m7_1/evidence.json)
+[Machine-readable evidence](research.md)
 
 ## M7.2 — Simple capacitor/reactor banks
 
@@ -58,19 +58,19 @@ Each bank has one step type. A fractional count scales G and B together. Taps an
 | reactor | one free | 2.935434e-05 | 1.236122e-12 | 0.002287783 | 0.002376528 |
 | reactor | both free | 2.557165e-05 | 6.664602e-11 | 0.002289591 | 0.001898015 |
 
-![Susceptance sweep](assets/m7_2/susceptance_sweep.png)
-[Download susceptance sweep as PDF](assets/m7_2/susceptance_sweep.pdf)
+![Susceptance sweep](research.md)
+[Download susceptance sweep as PDF](research.md)
 
-![Bank envelopes](assets/m7_2/bank_envelopes.png)
-[Download bank envelopes as PDF](assets/m7_2/bank_envelopes.pdf)
+![Bank envelopes](research.md)
+[Download bank envelopes as PDF](research.md)
 
-![Operating points](assets/m7_2/operating_points.png)
-[Download operating points as PDF](assets/m7_2/operating_points.pdf)
+![Operating points](research.md)
+[Download operating points as PDF](research.md)
 
-![Active losses](assets/m7_2/active_losses.png)
-[Download active losses as PDF](assets/m7_2/active_losses.pdf)
+![Active losses](research.md)
+[Download active losses as PDF](research.md)
 
-[Machine-readable evidence](assets/m7_2/evidence.json)
+[Machine-readable evidence](research.md)
 
 ## M7.3 — Joint equipment and droop design
 
@@ -113,22 +113,22 @@ Each comparison below changes only droop freedom. Variation across these four be
 
 Some starts may reach different valid local solutions. Similar objectives with different settings indicate weak parameter identification on this case. Multi-start evidence is not a global-optimality certificate.
 
-![Objectives](assets/m7_3/objectives.png)
-[Download objectives as PDF](assets/m7_3/objectives.pdf)
+![Objectives](research.md)
+[Download objectives as PDF](research.md)
 
-![Settings](assets/m7_3/settings.png)
-[Download settings as PDF](assets/m7_3/settings.pdf)
+![Settings](research.md)
+[Download settings as PDF](research.md)
 
-![Operating points](assets/m7_3/operating_points.png)
-[Download operating points as PDF](assets/m7_3/operating_points.pdf)
+![Operating points](research.md)
+[Download operating points as PDF](research.md)
 
-![Multistart](assets/m7_3/multistart.png)
-[Download multistart as PDF](assets/m7_3/multistart.pdf)
+![Multistart](research.md)
+[Download multistart as PDF](research.md)
 
-![Matched benefits](assets/m7_3/matched_benefits.png)
-[Download matched benefits as PDF](assets/m7_3/matched_benefits.pdf)
+![Matched benefits](research.md)
+[Download matched benefits as PDF](research.md)
 
-[Machine-readable evidence](assets/m7_3/evidence.json)
+[Machine-readable evidence](research.md)
 
 ## Acceptance and next scope
 
