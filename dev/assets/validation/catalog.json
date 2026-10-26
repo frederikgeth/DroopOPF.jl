@@ -1,0 +1,841 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-26",
+  "title": "DroopOPF validation and study evidence",
+  "sharing": "Curated summaries only; full private archives, network inputs and solver logs are not bundled. No upload or publication is performed by generation.",
+  "label_meanings": {
+    "M": "Capability milestone: what the library implements.",
+    "S": "Study campaign: numerical qualification under a declared contract.",
+    "P": "Development priority/workstream: broader goals that may remain open despite accepted studies."
+  },
+  "acceptance": "Native solver status, independent physical replay, operating limits, control policy and catalogue coverage are separate gates. A numerical failure is unresolved unless separate evidence establishes a necessary exclusion under that exact contract.",
+  "records": [
+    {
+      "id": "M1",
+      "title": "AC OPF with fixed volt-var curves",
+      "meaning": "Solve base AC dispatch with supplied reactive-response curves.",
+      "status": "Implemented; declared small-case evidence",
+      "scope": "Balanced steady-state AC cases with attached generator volt-var controls and fixed equipment.",
+      "method": "Compare smooth and exact response encodings, reconstruct the exact curve and independently replay bus balances and operating limits.",
+      "findings": [
+        {
+          "check": "Model",
+          "result": "Base AC OPF, MATPOWER adapter, exact/smooth saturated volt-var response."
+        },
+        {
+          "check": "Acceptance",
+          "result": "Independent equilibrium replay and deliberate-corruption tests."
+        },
+        {
+          "check": "Evidence type",
+          "result": "Implementation and small-case numerical validation; not a large-network study."
+        }
+      ],
+      "boundary": "No dynamic, global-optimality or arbitrary-network convergence claim.",
+      "documentation": [
+        "getting_started.md",
+        "validation.md",
+        "solvers.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/validation.md",
+          "sha256": "6bf9c9a258bd7cca838a7c2bea3dd177a65c4a8930052c05d6872f9e2c9b27d4",
+          "availability": "repository"
+        }
+      ]
+    },
+    {
+      "id": "M2",
+      "title": "Security-constrained AC OPF",
+      "meaning": "Couple base and outage equilibria with an explicit active-response policy.",
+      "status": "Implemented; declared small-case evidence",
+      "scope": "Base dispatch plus declared branch/generator outages; preventive and corrective steady-state policies.",
+      "method": "Check empty-catalogue equivalence, unavailable devices, response coupling, security-induced dispatch changes and independent scenario replay.",
+      "findings": [
+        {
+          "check": "Scenario contract",
+          "result": "Outage overlays preserve source input and deactivate failed equipment."
+        },
+        {
+          "check": "Coupling",
+          "result": "Base and outage dispatch share the declared response policy; not independent OPFs."
+        },
+        {
+          "check": "Regression",
+          "result": "Empty contingency sets reproduce base OPF; invalid policies and perturbations are rejected."
+        }
+      ],
+      "boundary": "Connected-catalogue acceptance is distinct from general island balancing or transient security.",
+      "documentation": [
+        "scopf.md",
+        "validation.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/scopf.md",
+          "sha256": "2dfc307ebe466925932fb95bfd4ca3d4b23c9e107c597482865bd38b0b72aae9",
+          "availability": "repository"
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Bounded droop design",
+      "meaning": "Optimize declared droop parameters shared across training scenarios.",
+      "status": "Implemented; declared bounded-family evidence",
+      "scope": "Saturated volt-var slope, voltage reference and independently bounded lower/upper deadband widths.",
+      "method": "Compare bounded optimization with a small sweep; fixed bounds reproduce SCOPF. Replay reconstructed exact curves and evaluate held-out scenarios.",
+      "findings": [
+        {
+          "check": "Design",
+          "result": "Shared bounded slope/reference/deadband parameters in the supported volt-var family."
+        },
+        {
+          "check": "Equivalence",
+          "result": "Fixing selected parameters reproduces the underlying SCOPF problem."
+        },
+        {
+          "check": "Generalization",
+          "result": "Held-out checks have their own acceptance gate."
+        }
+      ],
+      "boundary": "Arbitrary free-knot PWL topology, uniqueness and global optimality are outside this scope.",
+      "documentation": [
+        "droop_optimization.md",
+        "droop_security.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/droop_optimization.md",
+          "sha256": "1db6fbafb60788388a9ec88395300327cbd265d1b2857049e002a9d38970514d",
+          "availability": "repository"
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "title": "Robustness and benchmark gate",
+      "meaning": "Measure repeated-start behavior, diagnostics and small public-case reproducibility.",
+      "status": "Implemented; bounded robustness evidence",
+      "scope": "Named state/design starts, breakpoint distances, operating margins and pinned small public benchmark cases.",
+      "method": "Retain all attempts and compare objective/parameter spread; separate solver, replay and policy failures; record actual model and resource measurements.",
+      "findings": [
+        {
+          "check": "Repeated starts",
+          "result": "Inputs, outputs, validation and objective/parameter spread are retained."
+        },
+        {
+          "check": "Diagnostics",
+          "result": "Near-breakpoint controls, binding limits and critical scenarios are identified."
+        },
+        {
+          "check": "Benchmarks",
+          "result": "Two pinned PGLib cases exercise adapter, solver, serialization and replay."
+        }
+      ],
+      "boundary": "The original small-case gate does not establish large-system scaling or a universal solver ranking.",
+      "documentation": [
+        "robustness.md",
+        "solvers.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/robustness.md",
+          "sha256": "ddda2c0a6e76fc99b03e7bbb249ecc72223dc2dad32332b2505336bfb8d31415",
+          "availability": "repository"
+        }
+      ]
+    },
+    {
+      "id": "M5",
+      "title": "Transformer reference physics",
+      "meaning": "Represent fixed transformer ratios, phase shifts, availability and terminal ratings.",
+      "status": "Implemented; declared equipment-physics evidence",
+      "scope": "Fixed-ratio and fixed-phase AC transformer models, import/schema identity and OPF/SCOPF integration.",
+      "method": "Compare the optimizer admittance primitive with independent internal-current reconstruction, analytical sweeps and outage/serialization checks.",
+      "findings": [
+        {
+          "check": "Physics",
+          "result": "Both-terminal currents/powers, phase shifts, ratings and availability."
+        },
+        {
+          "check": "Integration",
+          "result": "Fixed transformers participate in OPF, SCOPF and bounded droop design."
+        },
+        {
+          "check": "Historical checkpoint",
+          "result": "440/440 regression assertions at the M5 checkpoint; not a newly rerun count."
+        }
+      ],
+      "boundary": "Tap optimization and automatic transformer AVR belong to later milestones.",
+      "documentation": [
+        "data_model.md",
+        "validation.md"
+      ],
+      "slices": [
+        {
+          "id": "M5.1",
+          "meaning": "Data, import and schema migration"
+        },
+        {
+          "id": "M5.2",
+          "meaning": "Fixed-ratio physics"
+        },
+        {
+          "id": "M5.3",
+          "meaning": "Phase shift, availability and terminal ratings"
+        },
+        {
+          "id": "M5.4",
+          "meaning": "OPF/SCOPF and droop-design integration"
+        }
+      ],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "M6",
+      "title": "Shunt reference physics",
+      "meaning": "Represent fixed shunts and supplied legal bank states.",
+      "status": "Implemented; declared equipment-physics evidence",
+      "scope": "Bus conductance/susceptance, MATPOWER GS/BS and supplied capacitor/reactor bank counts.",
+      "method": "Independently check signs, V-squared power accounting, legal fixed states, availability and study round trips.",
+      "findings": [
+        {
+          "check": "Physics",
+          "result": "Positive conductance consumes active power; reactive power follows the declared susceptance sign and V-squared scaling."
+        },
+        {
+          "check": "Bank states",
+          "result": "Supplied immutable legal count states are modeled; this does not optimize switching."
+        },
+        {
+          "check": "Historical checkpoint",
+          "result": "691/691 regression assertions at the M6 checkpoint; not a newly rerun count."
+        }
+      ],
+      "boundary": "Fixed heterogeneous banks are supported; general heterogeneous-bank optimization is separate.",
+      "documentation": [
+        "data_model.md",
+        "equipment_optimization.md"
+      ],
+      "slices": [
+        {
+          "id": "M6.1",
+          "meaning": "Fixed admittance and import"
+        },
+        {
+          "id": "M6.2",
+          "meaning": "Supplied bank states"
+        },
+        {
+          "id": "M6.3",
+          "meaning": "OPF/SCOPF and droop-design integration"
+        }
+      ],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "M7",
+      "title": "Continuous equipment and joint droop optimization",
+      "meaning": "Choose selected continuous taps, simple-bank susceptance and bounded droop parameters.",
+      "status": "Implemented; synthetic base-case comparisons",
+      "scope": "Synthetic three-bus base operation; tap, shunt and droop freedom compared under the same dispatch-deviation objective.",
+      "method": "Fixed-bound equivalence, independent current replay, tap/bank sweeps and an eight-configuration two-start joint-design comparison.",
+      "findings": [
+        {
+          "check": "M7.1 fixed / one tap / two taps",
+          "result": "AC residuals 2.43e-15 / 2.87e-13 / 5.83e-14 pu."
+        },
+        {
+          "check": "M7.2",
+          "result": "31-point capacitor/reactor sweeps and one/two-free-bank comparisons."
+        },
+        {
+          "check": "M7.3",
+          "result": "Eight fixed/free combinations, two starts each; all 16 reported starts physically valid."
+        },
+        {
+          "check": "Acceptance",
+          "result": "AC 1e-6 pu; exact droop 1e-5 pu; continuous settings independently reconstructed."
+        },
+        {
+          "check": "Fresh CCOpt equipment comparison, 26 October",
+          "result": "Two starts each for Ipopt/MadNLP/CCOpt: 6/6 native and independent physical acceptances. Droop parameters fixed; this is an equipment-design comparison, separate from the historical joint grid. Recorded before the MadNLP 0.10.3 dependency update; its original environment is retained."
+        }
+      ],
+      "boundary": "Continuous local solutions; no discrete implementability, security or large-system scaling claim. The objective is dispatch deviation, not loss.",
+      "documentation": [
+        "equipment_optimization.md"
+      ],
+      "slices": [
+        {
+          "id": "M7.1",
+          "meaning": "Continuous tap-ratio optimization"
+        },
+        {
+          "id": "M7.2",
+          "meaning": "Continuous simple-bank susceptance"
+        },
+        {
+          "id": "M7.3",
+          "meaning": "Joint tap/shunt/droop design"
+        }
+      ],
+      "figures": [
+        "tap_sweep"
+      ],
+      "sources": [
+        {
+          "path": "docs/src/equipment_optimization.md",
+          "sha256": "35218d735075e338de93d79435ac2d94e1e64be35cf70bc84e53a9a50502e72d",
+          "availability": "repository"
+        },
+        {
+          "path": "docs/src/assets/validation/summary.json",
+          "sha256": "b25b878463d1872059e3bee468d159ef65d2561ac760b5f32861f6489d5a3dde",
+          "availability": "repository"
+        },
+        {
+          "path": "release/ccopt_case_study_20261026/REPORT.md",
+          "sha256": "22fd08d5fb43312fe7213ce2904420b7b220072ee9ae9dff0115f280e8d64e0f",
+          "availability": "private package"
+        }
+      ]
+    },
+    {
+      "id": "M8",
+      "title": "Steady-state transformer AVR",
+      "meaning": "Model an automatic transformer voltage-regulation equilibrium with limits.",
+      "status": "Implemented; bounded static-control tests",
+      "scope": "Transformer AVR targets/deadbands and limited ratio equilibrium, distinct from freely optimized ratios.",
+      "method": "Validate the selected regulation mode, saturation behavior, unmet targets and physical reconstruction; preserve explicit control assignments.",
+      "findings": [
+        {
+          "check": "Control meaning",
+          "result": "An AVR-controlled tap follows a regulation equilibrium rather than unconstrained loss optimization."
+        },
+        {
+          "check": "Limits",
+          "result": "Saturation and unmet target conditions remain visible."
+        },
+        {
+          "check": "Timing",
+          "result": "Static equilibrium does not infer delay, dwell, hunting, reached position or action count."
+        }
+      ],
+      "boundary": "Transformer AVR is distinct from the generator AVR added to later mixed-control studies; dynamic/discrete control qualification is separate.",
+      "documentation": [
+        "data_model.md",
+        "scopf.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "M9",
+      "title": "Equipment-aware SCOPF",
+      "meaning": "Coordinate preventive equipment, automatic response and bounded corrective recourse.",
+      "status": "Implemented; declared synthetic policy evidence",
+      "scope": "Shared preventive controls, scenario-specific corrective continuous controls and explicit timing/movement assumptions.",
+      "method": "Check policy sharing, immediate/settled stages and bounded movement against independent scenario replay; zero movement reproduces the preventive policy.",
+      "findings": [
+        {
+          "check": "Preventive policy",
+          "result": "Selected common settings are shared over declared scenarios."
+        },
+        {
+          "check": "Corrective policy",
+          "result": "Only selected equipment can move, within absolute and movement bounds."
+        },
+        {
+          "check": "Stages",
+          "result": "Immediate and settled states are paired static assessments, not a transient trajectory."
+        }
+      ],
+      "boundary": "Any campaign must state actual devices, information sharing, movement budgets and assumed timing; no unlimited corrective adjustment is implied.",
+      "documentation": [
+        "scopf.md",
+        "equipment_optimization.md"
+      ],
+      "slices": [
+        {
+          "id": "M9.1",
+          "meaning": "Equipment policy layer and preventive sharing"
+        },
+        {
+          "id": "M9.2",
+          "meaning": "Corrective recourse and movement budgets"
+        },
+        {
+          "id": "M9.3",
+          "meaning": "Paired immediate/settled response stages"
+        }
+      ],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "title": "Contingency assessment and comparative evidence",
+      "meaning": "Assess catalogues, compare control modes and close bounded physics/reproducibility gates.",
+      "status": "Declared scope complete; general qualification remains separate",
+      "scope": "Assessment/ranking/screening workflows plus sourced equipment physics, matched synthetic comparisons and reproducibility/performance closeout.",
+      "method": "Retain negative controls and failed attempts; distinguish equation-reference checks, matched comparisons and software regression from network security certification.",
+      "findings": [
+        {
+          "check": "M10.1",
+          "result": "414 sourced equation-reference checks, three snapshots and eight applicable negative controls."
+        },
+        {
+          "check": "M10.2",
+          "result": "54 feasible comparison groups; fixed-Q 105% comparator has a certified negative result. Original all-feasible gate failed."
+        },
+        {
+          "check": "M10.3",
+          "result": "3,042/3,042 historical regression assertions, 126 saved-state replays and 32 profile runs."
+        },
+        {
+          "check": "Assessment engine",
+          "result": "Catalogues, exact evaluation, ranking and resumable campaigns are implemented."
+        }
+      ],
+      "boundary": "Equation-reference transcription is not an external-solver benchmark; transformer AVR and broader public comparisons are outside the matched synthetic scope.",
+      "documentation": [
+        "scopf.md",
+        "droop_security.md",
+        "research.md"
+      ],
+      "slices": [
+        {
+          "id": "M10.1",
+          "meaning": "Sourced equipment-physics references"
+        },
+        {
+          "id": "M10.2",
+          "meaning": "Matched design/control comparisons"
+        },
+        {
+          "id": "M10.3",
+          "meaning": "Reproducibility and performance closeout"
+        }
+      ],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/m10_audit.md",
+          "sha256": "96c2ef988e9b5125db0fea50d65e79677f14cd2e0df134e6ff8afabb830f60e4",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "title": "Convergence and scale study",
+      "meaning": "Test base-operation droop/equipment optimization across control families and demand samples.",
+      "status": "Historical declared scope closed; new deadband sensitivity separate",
+      "scope": "ARPA-E 14/500-bus variants, Pmin=0, symmetric Q, zero deadband, continuous equipment, five demands 90/95/100/105/110% and OPF-derived starts.",
+      "method": "Compare independent design-at-demand with one nominal design frozen across demands; keep primary scores, retries, native status and physical replay separate.",
+      "findings": [
+        {
+          "check": "14-bus free-droop matrix",
+          "result": "360/360 direct attempts; 120/120 solver/model/demand combinations accepted."
+        },
+        {
+          "check": "500-bus free-droop matrix",
+          "result": "308/360 direct attempts; 120/120 combinations accepted after recovery."
+        },
+        {
+          "check": "Known-witness serial profile",
+          "result": "14 buses: 48/48 direct; 500 buses: 42/48 direct and 48/48 after recovery."
+        },
+        {
+          "check": "Fresh deadband extension",
+          "result": "0/0.005/0.01 pu half-width campaign is separate and in progress; historical closure is unchanged."
+        }
+      ],
+      "boundary": "No original-Q-limit frozen-equipment, unseen-demand, dynamic or security closure follows. Known-witness performance is not an unseen-start success rate.",
+      "documentation": [
+        "release_scope.md",
+        "solvers.md",
+        "research.md"
+      ],
+      "slices": [
+        {
+          "id": "S1.1",
+          "meaning": "Mathematical contract"
+        },
+        {
+          "id": "S1.2",
+          "meaning": "Numerical and physical diagnostics"
+        },
+        {
+          "id": "S1.3",
+          "meaning": "Control-family isolation"
+        },
+        {
+          "id": "S1.4",
+          "meaning": "Conditioning"
+        },
+        {
+          "id": "S1.5",
+          "meaning": "Initialization and solver comparison"
+        },
+        {
+          "id": "S1.6",
+          "meaning": "Larger-network scaling"
+        }
+      ],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/s1_closeout.md",
+          "sha256": "675718bda1515747fbcafee23de143ef8d883769bb31d37df3b82629984962dc",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "Shared security-design study",
+      "meaning": "Design one controller across training demands/outages and test it on held-out demands.",
+      "status": "14-bus declared scope closed; original 500-bus campaign paused",
+      "scope": "Historical Pmax-proportional response and explicit S2 equipment/operating contracts. Zero-deadband 14-bus shared design has five training and four held-out demands.",
+      "method": "Require native design convergence, exact AC/controller replay, sharing/response policy checks and explicit catalogue coverage; retain separate emergency/relief lanes.",
+      "findings": [
+        {
+          "check": "14 buses",
+          "result": "Ipopt, MadNLP and CCOpt each qualify five training and four held-out demands over 24 connected outages."
+        },
+        {
+          "check": "14-bus replay",
+          "result": "675 connected-state records plus 27 conditional island projections; zero recorded discrepancies."
+        },
+        {
+          "check": "14-bus local nominal loss",
+          "result": "Ipopt 0.886179073 MW; MadNLP 0.886179533 MW; CCOpt 0.886178982 MW."
+        },
+        {
+          "check": "500 buses",
+          "result": "Original campaign paused; normal-limit, emergency/relief and later P2 results retain separate policies."
+        },
+        {
+          "check": "Fresh deadband extension",
+          "result": "In progress under a separately declared normal-limit/full-load sensitivity; does not resume original S2."
+        }
+      ],
+      "boundary": "No general islanding, continuous-demand, global-optimality or full 500-bus S2 closure. Later P2 success does not rewrite S2 history.",
+      "documentation": [
+        "release_scope.md",
+        "droop_security.md",
+        "research.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/s2_14bus.md",
+          "sha256": "7dff605b7d9e3de611c111842ab4007a60efe0c21e4a2fd4592980182cf8da31",
+          "availability": "private archive"
+        },
+        {
+          "path": "docs/src/release_scope.md",
+          "sha256": "c334271977904b99f9922929d4eb739773f7c5f08cb2240625503ea3f102f52c",
+          "availability": "repository"
+        }
+      ]
+    },
+    {
+      "id": "P0",
+      "title": "Proof-of-concept foundation",
+      "meaning": "Establish the smallest executable model-to-independent-validation workflow.",
+      "status": "Implemented; declared proof-of-concept scope",
+      "scope": "Package/CI, typed domain, MATPOWER import, base AC OPF, exact/smooth curves, one contingency and independent reports.",
+      "method": "Exercise a complete small-case workflow and reject corrupted states rather than using solver status as the physical acceptance test.",
+      "findings": [
+        {
+          "check": "P0-01–04",
+          "result": "Package/CI, types, input validation and MATPOWER adapter."
+        },
+        {
+          "check": "P0-05–09",
+          "result": "AC OPF, independent residuals, exact/smooth curves and reactive sharing."
+        },
+        {
+          "check": "P0-10–12",
+          "result": "One contingency, independent equilibrium validation and reports/examples."
+        }
+      ],
+      "boundary": "Foundation scope overlaps M1/M2 evidence; these are not independent repetitions to add to campaign totals.",
+      "documentation": [
+        "getting_started.md",
+        "validation.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "title": "Useful research-prototype workflow",
+      "meaning": "Make studies repeatable, diagnosable and serializable.",
+      "status": "Implemented; declared small-case workflow evidence",
+      "scope": "Multiple contingencies, preventive/corrective modes, smoothing continuation, exact replay, serialization, named starts, public regression and measurements.",
+      "method": "Preserve inputs, every solver outcome, independent validation, objective/parameter spread and environment/model-resource measurements.",
+      "findings": [
+        {
+          "check": "P1-01–05",
+          "result": "Multiple outages, policy modes, epsilon continuation, exact/smooth replay and versioned serialization."
+        },
+        {
+          "check": "P1-06",
+          "result": "Named M2 state and M3 parameter starts retain outputs and spread."
+        },
+        {
+          "check": "P1-07",
+          "result": "Two pinned PGLib-OPF v23.07 cases exercise the full adapter/solve/replay path."
+        },
+        {
+          "check": "P1-08",
+          "result": "Environment, actual JuMP dimensions, timing, allocations, objective and validity recorded."
+        }
+      ],
+      "boundary": "This is a workflow priority, not a distinct network benchmark or proof of universal numerical robustness.",
+      "documentation": [
+        "validation.md",
+        "robustness.md",
+        "solvers.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "ROADMAP.md",
+          "sha256": "7f653a70aa1570deb896df06e46493e8e1130d5653f15385eca2eb209dddb34e",
+          "availability": "private archive"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "Scaling and qualification",
+      "meaning": "Improve larger security studies while retaining complete final AC qualification.",
+      "status": "Broader P2 open; latest declared connected-catalogue design qualified",
+      "scope": "Sparse models, ranking/filter diagnostics, bounded scenario addition, initialization, backends and fixed-candidate exhaustive assessment. Current mixed 500-bus lane uses limit-aware response. The selected joint model uses Ipopt.",
+      "method": "Use bounded joint masters and full candidate scans; distinguish necessary exclusions from numerical failures. Reoptimize common controls for recovery, freeze the candidate, then replay all accepted results.",
+      "findings": [
+        {
+          "check": "Latest candidate",
+          "result": "joint-five; Ipopt; feasibility objective, five one-hour demands 90/100/105/100/90%."
+        },
+        {
+          "check": "Connected coverage",
+          "result": "389/389 accepted five-period outage trajectories; no remaining numerical failures in that catalogue."
+        },
+        {
+          "check": "Replay accounting",
+          "result": "390 selected result files and 3,910 replayed state instances including repeated bases."
+        },
+        {
+          "check": "Operating policy",
+          "result": "Full load, normal voltage/Rate-A, limit-aware active response; 15 AVR / 36 droop and assumed S=Pmax/0.95 circles."
+        },
+        {
+          "check": "Equipment",
+          "result": "131 continuous taps, supplied ±5%, movement ≤0.025 supplied ratio; 11 continuous banks, legal envelopes and ≤two sections; assumed 120-second settled stage."
+        },
+        {
+          "check": "Base loss energy",
+          "result": "121.62343825 MWh over five hours; not a certified minimum."
+        },
+        {
+          "check": "Open gates",
+          "result": "General predictive skipping, full-catalogue resource/loss optimality, dynamics/discrete validation and large coupled memory limits."
+        }
+      ],
+      "boundary": "All-connected-outage acceptance is not general islanding/transient security or overall P2 closure. Exact-S2 proportional filters cannot be applied to production limit-aware response. Equivalent full-catalogue CCOpt qualification is not established by this Ipopt evidence.",
+      "documentation": [
+        "release_scope.md",
+        "mixed_avr_droop.md",
+        "droop_security.md"
+      ],
+      "slices": [
+        {
+          "id": "P2-01",
+          "meaning": "Ranking diagnostics"
+        },
+        {
+          "id": "P2-02",
+          "meaning": "Bounded screening qualification; default off"
+        },
+        {
+          "id": "P2-03",
+          "meaning": "Sparse/resumable throughput"
+        },
+        {
+          "id": "P2-04",
+          "meaning": "Scenario addition and exhaustive final audit"
+        },
+        {
+          "id": "P2-05",
+          "meaning": "Numerical initialization policies"
+        },
+        {
+          "id": "P2-06",
+          "meaning": "Bounded threaded assessment"
+        },
+        {
+          "id": "P2-07",
+          "meaning": "MadNLP compatibility"
+        },
+        {
+          "id": "P2-08",
+          "meaning": "Conditional ExaModels work; not implemented"
+        },
+        {
+          "id": "P2-09",
+          "meaning": "Exact-S2 benchmark and bounded qualification"
+        },
+        {
+          "id": "P2-10",
+          "meaning": "Conditional decomposition; not implemented"
+        }
+      ],
+      "figures": [
+        "joint_replay",
+        "avr_schedule"
+      ],
+      "sources": [
+        {
+          "path": "docs/src/assets/validation/summary.json",
+          "sha256": "b25b878463d1872059e3bee468d159ef65d2561ac760b5f32861f6489d5a3dde",
+          "availability": "repository"
+        },
+        {
+          "path": "docs/src/release_scope.md",
+          "sha256": "c334271977904b99f9922929d4eb739773f7c5f08cb2240625503ea3f102f52c",
+          "availability": "repository"
+        },
+        {
+          "path": "artifacts/p2_targeted_relaxations_20261023/joint-five/result.json",
+          "sha256": "8d0bc3d70e485d23838a7a48f70fcff29879418885ea8448a5e0f1fd46d836c1",
+          "availability": "private campaign"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "Extended model scope",
+      "meaning": "Add multi-period, data-adapter and mixed-control capabilities as qualified slices.",
+      "status": "Selected slices implemented; broader extensions open",
+      "scope": "Deterministic period dispatch/shared curves and ramps, RAW import/saved-state checks, mixed AVR/droop and declared capability circles.",
+      "method": "Qualify each extension under its own input, information, capability and replay contract; retain native RAW export gaps and unverified equipment assumptions.",
+      "findings": [
+        {
+          "check": "Initial multi-period slice",
+          "result": "Five hourly 3/14/500-bus comparisons; 30 base-operation states independently replayed; fixed equipment."
+        },
+        {
+          "check": "RAW support",
+          "result": "Strict AC conversion for supported v33/v34/v36 schemas; native v36 export qualification pending."
+        },
+        {
+          "check": "Saved-state check",
+          "result": "Replay VM/VA/PG/QG without optimization or state repair; default saved-export tolerance 0.01 MW/MVAr per bus, distinct from solver acceptance. Missing ratings remain thermally unassessed; an import placeholder is not an equipment rating."
+        },
+        {
+          "check": "Mixed controls",
+          "result": "Later outage recourse and AVR schedules have campaign-specific evidence under P2."
+        },
+        {
+          "check": "Deferred",
+          "result": "Storage, detailed GFL/GFM, dynamics and general discrete equipment scheduling."
+        }
+      ],
+      "boundary": "The initial base-operation profiles do not establish N−1 or transient security. Apparent ratings and ramp rates are explicit study assumptions.",
+      "documentation": [
+        "multi_period.md",
+        "psse.md",
+        "mixed_avr_droop.md"
+      ],
+      "slices": [],
+      "figures": [],
+      "sources": [
+        {
+          "path": "docs/src/multi_period.md",
+          "sha256": "7705e8223d152a016224516546e57780553f7f6061cc57af7c65e231ec3c6035",
+          "availability": "repository"
+        },
+        {
+          "path": "docs/src/psse.md",
+          "sha256": "e00238b90f368cc66888405684bf00b0b8e973febdf46ed1627a310fc4c45ec6",
+          "availability": "repository"
+        }
+      ]
+    }
+  ],
+  "figures": [
+    {
+      "id": "tap_sweep",
+      "title": "M7.1 continuous tap sweep",
+      "asset": "tap_sweep.png",
+      "caption": "Historical synthetic three-bus dispatch-deviation sweep. Fixed / one-free / two-free taps have maximum AC residuals 2.43e-15 / 2.87e-13 / 5.83e-14 pu. No global or large-network claim.",
+      "sha256": "ffaf4711e2b12b561726c582a26f2bfb949a2c26977ae62bdcacc8cc3fda8406"
+    },
+    {
+      "id": "joint_replay",
+      "title": "P2 selected joint-model independent replay",
+      "asset": "joint_replay.png",
+      "caption": "Five periods, base plus outages 21/36/562: 20 selected joint-model states. Each point is a period maximum. This residual plot does not display all 389 catalogue trajectories; limits and policy checks are separate.",
+      "sha256": "8975daf4b90b5e1f311ae8dae7510a376cfd9baa8a891f9460260539b71aaa26"
+    },
+    {
+      "id": "avr_schedule",
+      "title": "P2 preventive AVR schedule",
+      "asset": "avr_schedule.png",
+      "caption": "Fifteen AVR targets frozen across outages within a period. Maximum hourly movement 0.00052050 pu, within 0.01 pu/hour; nominal ±0.02 pu clipped to normal bounds. Static setpoints, not excitation dynamics.",
+      "sha256": "660f343e56bfb40e4b8c919f65626220ae5b09acc9ffab2905660e4c00f9c28d"
+    }
+  ]
+}
