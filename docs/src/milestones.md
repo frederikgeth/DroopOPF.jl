@@ -1,43 +1,40 @@
-# Milestone and evidence index
+# Milestones and validation
 
-Implementation, numerical qualification and research closure are separate statuses.
-The [release scope](release_scope.md) records the current supported boundaries.
-Original campaign policies remain attached to their results; later success does
-not rewrite an earlier failure or migrate historical S2 results to P2 semantics.
+Choose a label to see its report, validation tables or available figures. **M** labels describe library capabilities; **S** labels describe study campaigns; **P** labels describe development priorities. They overlap and are not independent experiments to add together.
 
-| Milestone | Documentation / evidence | Status and boundary |
-|---|---|---|
-| M1–M4: OPF, SCOPF, droop design and robustness | [SCOPF](scopf.md), [droop design](droop_optimization.md), [robustness](robustness.md) | Historical implementation milestones completed within their declared small-case scope |
-| M5–M6: transformer and shunt models | [Data model](data_model.md) | Implemented static equipment models; original numerical evidence archived |
-| M7: continuous equipment and joint droop design | [Equipment studies](equipment_optimization.md), [selected figures](validation_evidence.md) | Synthetic base-case comparisons; continuous settings, local solutions |
-| M8–M9: equipment control and coordinated security design | [Data model](data_model.md), [SCOPF](scopf.md) | Steady-state control models and declared security policies; discrete actions and dynamics remain separate |
-| M10: contingency assessment and comparative evidence | [Assessment workflow](scopf.md), [security design](droop_security.md) | Complete for declared assessment/comparison scope; not general network security certification |
-| S1: convergence and scale | [Release scope](release_scope.md), archived S1 closeout | Closed within declared sampled 14/500-bus base-operation scope |
-| S2: shared security design | [Release scope](release_scope.md), archived S2 reports | Declared 14-bus scope closed; original 500-bus campaign paused |
-| P1: research workflow | [Validation](validation.md), [robustness](robustness.md) | Implementation and declared small-case workflow evidence retained |
-| P2: scaling and qualification | [Mixed controls](mixed_avr_droop.md), [latest reference report](validation_evidence.md) | Latest mixed 500-bus design passes all 389 connected outages at five periods; broader P2 remains open |
-| P3: extended models | [Multi-period](multi_period.md), [PSS/E](psse.md), [mixed controls](mixed_avr_droop.md) | Implemented slices; native RAW v36 export qualification, storage, detailed GFL/GFM and dynamics remain open |
+Implementation, numerical acceptance and research closure are separate. Historical results retain their original policies and dates.
 
-## Evidence structure
+## Capability milestones
 
-Each submilestone should identify its scope and assumptions, model equations,
-runnable example, machine-readable results, readable report and specified
-figures/tables. Acceptance separates native solver termination, physical replay,
-operating limits and control-policy compliance. A numerical failure is unresolved
-unless separate evidence establishes infeasibility under the stated contract.
+| ID | What it does | Status / scope | Report | Tables | Figures |
+| --- | --- | --- | --- | --- | --- |
+| M1 | Solve base AC dispatch with supplied reactive-response curves. | Implemented; declared small-case evidence | [Report](@ref evidence-m1-report) | [Tables](@ref evidence-m1-tables) | — |
+| M2 | Couple base and outage equilibria with an explicit active-response policy. | Implemented; declared small-case evidence | [Report](@ref evidence-m2-report) | [Tables](@ref evidence-m2-tables) | — |
+| M3 | Optimize declared droop parameters shared across training scenarios. | Implemented; declared bounded-family evidence | [Report](@ref evidence-m3-report) | [Tables](@ref evidence-m3-tables) | — |
+| M4 | Measure repeated-start behavior, diagnostics and small public-case reproducibility. | Implemented; bounded robustness evidence | [Report](@ref evidence-m4-report) | [Tables](@ref evidence-m4-tables) | — |
+| M5 | Represent fixed transformer ratios, phase shifts, availability and terminal ratings. | Implemented; declared equipment-physics evidence | [Report](@ref evidence-m5-report) | [Tables](@ref evidence-m5-tables) | — |
+| M6 | Represent fixed shunts and supplied legal bank states. | Implemented; declared equipment-physics evidence | [Report](@ref evidence-m6-report) | [Tables](@ref evidence-m6-tables) | — |
+| M7 | Choose selected continuous taps, simple-bank susceptance and bounded droop parameters. | Implemented; synthetic base-case comparisons | [Report](@ref evidence-m7-report) | [Tables](@ref evidence-m7-tables) | [Figures](@ref evidence-m7-figures) |
+| M8 | Model an automatic transformer voltage-regulation equilibrium with limits. | Implemented; bounded static-control tests | [Report](@ref evidence-m8-report) | [Tables](@ref evidence-m8-tables) | — |
+| M9 | Coordinate preventive equipment, automatic response and bounded corrective recourse. | Implemented; declared synthetic policy evidence | [Report](@ref evidence-m9-report) | [Tables](@ref evidence-m9-tables) | — |
+| M10 | Assess catalogues, compare control modes and close bounded physics/reproducibility gates. | Declared scope complete; general qualification remains separate | [Report](@ref evidence-m10-report) | [Tables](@ref evidence-m10-tables) | — |
 
-Sealed campaigns additionally record input/source hashes and output manifests.
-Historical layouts vary; not every early milestone has the same folder template.
-The [research archive guide](research.md) explains how to recover full records.
+## Study campaigns
 
-For future reports, record the date, source revision, input identity, network and
-contingency coverage, objective, control sharing, movement/timing assumptions,
-acceptance tolerances, rejected attempts, independent replay and remaining gates.
-Keep new campaigns separate when any physical or information policy changes.
+| ID | What it does | Status / scope | Report | Tables | Figures |
+| --- | --- | --- | --- | --- | --- |
+| S1 | Test base-operation droop/equipment optimization across control families and demand samples. | Historical declared scope closed; new deadband sensitivity separate | [Report](@ref evidence-s1-report) | [Tables](@ref evidence-s1-tables) | — |
+| S2 | Design one controller across training demands/outages and test it on held-out demands. | 14-bus declared scope closed; original 500-bus campaign paused | [Report](@ref evidence-s2-report) | [Tables](@ref evidence-s2-tables) | — |
 
-## Documentation maintenance
+## Development priorities
 
-Update this index and the release scope when qualification changes. Keep historical
-outcomes labelled by campaign; link current summaries to compact evidence with
-provenance. Package CI and documentation builds establish software integrity,
-not renewed acceptance of every archived large-network experiment.
+| ID | What it does | Status / scope | Report | Tables | Figures |
+| --- | --- | --- | --- | --- | --- |
+| P0 | Establish the smallest executable model-to-independent-validation workflow. | Implemented; declared proof-of-concept scope | [Report](@ref evidence-p0-report) | [Tables](@ref evidence-p0-tables) | — |
+| P1 | Make studies repeatable, diagnosable and serializable. | Implemented; declared small-case workflow evidence | [Report](@ref evidence-p1-report) | [Tables](@ref evidence-p1-tables) | — |
+| P2 | Improve larger security studies while retaining complete final AC qualification. | Broader P2 open; latest declared connected-catalogue design qualified | [Report](@ref evidence-p2-report) | [Tables](@ref evidence-p2-tables) | [Figures](@ref evidence-p2-figures) |
+| P3 | Add multi-period, data-adapter and mixed-control capabilities as qualified slices. | Selected slices implemented; broader extensions open | [Report](@ref evidence-p3-report) | [Tables](@ref evidence-p3-tables) | — |
+
+## Sharing and provenance
+
+Use the [reports](validation_reports.md), [tables](validation_tables.md) and [figure gallery](validation_figures.md) separately. The [evidence register](validation_evidence.md) records source identities and the portable sharing format. Full research archives remain private; a dash means no figure is bundled for that label. Historical figure sets remain private.

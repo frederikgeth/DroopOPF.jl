@@ -1,93 +1,51 @@
-# Selected validation references
+# Validation evidence register
 
-These compact references illustrate numerical verification of the implemented
-steady-state equations and declared study policies. They are not field validation,
-a guarantee for arbitrary networks, or certification of dynamic behavior.
-Full research archives remain local. No large network inputs or solver logs are
-included here.
+The [milestone index](milestones.md) is the clean entry point. Read [reports](validation_reports.md), [tables](validation_tables.md) or [figures](validation_figures.md) independently.
 
-## Transformer optimization: a small, interpretable check
+## What can be shared
 
-![Synthetic three-bus tap sweep](assets/validation/tap_sweep.png)
+Curated summaries only; full private archives, network inputs and solver logs are not bundled. No upload or publication is performed by generation.
 
-This historical M7.1 sweep compares fixed and optimized continuous taps on a
-synthetic three-bus system, with phase shifts, shunts and droops fixed. The objective
-is dispatch deviation, not loss minimization. The fixed / one-free / two-free tap
-solutions have maximum AC residuals of 2.43e-15 / 2.87e-13 / 5.83e-14 pu.
-See the [equipment report tables](equipment_optimization.md) for settings,
-objectives, acceptance tolerances and limitations. The figure is copied unchanged
-from the archived report; its source path and SHA-256 are in the summary below.
-A sweep supports this bounded comparison, not global optimality in larger models.
+The portable HTML bundle has `index.html`, `reports.html`, `tables.html`, `figures.html`, `provenance.html`, the curated JSON catalogue, three selected figures and a SHA-256 manifest. It works offline. Share the complete ZIP so relative links and images stay together. The full research archives, network inputs, solver logs and unfinished campaign payloads are excluded.
 
-## Independent replay of the recovered 500-bus joint model
-
-![Julia and Python physical residuals](assets/validation/joint_replay.png)
-
-Each point is the largest residual among the base and outages 21, 36 and 562 at
-that period. There are 20 states in this selected joint model. Julia and independent
-Python replay evaluate the saved solution; the plot does not represent every
-state in the subsequent full catalogue. Its small residuals demonstrate numerical
-agreement with the equations. Acceptance also checks voltage, thermal and
-capability limits, AVR behavior, response and equipment policy; those checks cannot
-be replaced by a residual plot.
-
-## Preventive AVR schedule
-
-![Five-period AVR schedule](assets/validation/avr_schedule.png)
-
-The schedule is optimized jointly with dispatch and shared droop curves, then
-frozen across outages within each period. Fifteen generators use AVR and 36 use
-generic volt-var droop. Maximum hourly target movement is 0.00052050 pu, below
-the declared 0.01 pu/hour budget. Targets stay within nominal +/-0.02 pu clipped
-to normal voltage bounds. These are steady-state operating setpoints, not a
-simulation of excitation dynamics.
-
-## Compact campaign report — 23 October 2026
-
-| Check | Recorded result |
-|---|---|
-| Candidate / objective | `joint-five`; feasibility |
-| Network / profile | 500 buses; five one-hour periods at 90/100/105/100/90% demand |
-| Connected outage coverage | 389/389 accepted five-period trajectories |
-| Remaining numerical failures | None in this connected catalogue |
-| Final Julia replay | 390 selected result files; 3,910 state instances including repeated bases |
-| Independent Python audit | Selected trajectories and frozen-policy identity passed |
-| Load service / operating limits | Full load; no DR or shedding; normal voltage and original Rate A |
-| Active response | Limit-aware capability-range participation with saturation redistribution |
-| Capability | Existing P/Q boxes intersected with assumed S=Pmax/0.95 circles |
-| Corrective equipment | 131 continuous taps, supplied +/-5% absolute bounds, <=0.025 supplied-ratio movement; 11 continuous banks within legal envelopes and <=two sections |
-| Timing | Assumed 120-second settled sensitivity; not verified manufacturer timing |
-| Physical/control limit relaxation | None |
-| Five-hour base loss energy | 121.62343825 MWh; not a certified minimum-loss result |
-
-The preceding candidate left outages 21, 36 and 562 numerically unresolved.
-Reoptimizing preventive dispatch, shared curves and AVR targets recovered them;
-it did not establish that their previous residuals proved physical infeasibility.
-Rejected expanded masters and failed attempts remain in the full local report.
-Islanding, dynamic security, discrete implementation, detailed GFL/GFM behavior
-and full-catalogue resource/loss optimality are outside this qualification.
-Original S2 remains paused and broader P2 is not closed.
-
-## Provenance and reproduction
-
-[Download the compact evidence summary](assets/validation/summary.json).
-It includes the plotted residuals and AVR targets, coverage counts, and SHA-256
-identities of the source report, result, replay records and sealed manifest.
-Source campaign: `artifacts/p2_targeted_relaxations_20261023`.
-The hashes identify local originals; they do not substitute for publishing those
-originals or enable full independent reproduction from this small summary alone.
-
-Regenerate the two new plots from the bundled summary, with Python and matplotlib:
+Build or refresh the documentation and local bundle:
 
 ```sh
-python3 tools/release/plot_validation_references.py
+python3 tools/docs/build_validation_hub.py --bundle release/validation-share-20261026
+python3 tools/docs/build_validation_hub.py --check
 ```
 
-The M7 image is an unchanged historical figure. Full campaign reproduction needs
-the [locally archived inputs and evidence](research.md), appropriate solver
-versions and computational resources. These documentation plots do not rerun
-optimization or change any sealed result.
+The command creates a local reviewable bundle; it does not upload, email or publish it. Full originals remain available through the [private archive restoration workflow](research.md). Hashes identify originals but do not make those private files publicly reproducible.
 
-Software validation is separate: v0.10.0-rc1 passed 3,596 assertions on Julia
-1.10/Linux, 1.12/Linux and 1.12/macOS, plus documentation and clean-install checks.
-Those are release-time records, not newly executed campaign results.
+## Source identities
+
+The catalogue is dated 2026-10-26. [Download the catalogue](assets/validation/catalog.json) for full SHA-256 values and machine-readable definitions, findings and figure captions. [The P2 compact summary](assets/validation/summary.json) also records the selected result, replay and sealed-manifest identities.
+
+| Label | Source locator | Availability | SHA-256 prefix |
+| --- | --- | --- | --- |
+| M1 | `docs/src/validation.md` | repository | `6bf9c9a258bd7cca…` |
+| M2 | `docs/src/scopf.md` | repository | `2dfc307ebe466925…` |
+| M3 | `docs/src/droop_optimization.md` | repository | `1db6fbafb6078838…` |
+| M4 | `docs/src/robustness.md` | repository | `ddda2c0a6e76fc99…` |
+| M5 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| M6 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| M7 | `docs/src/equipment_optimization.md` | repository | `35218d735075e338…` |
+| M7 | `docs/src/assets/validation/summary.json` | repository | `b25b878463d18720…` |
+| M7 | `release/ccopt_case_study_20261026/REPORT.md` | private package | `22fd08d5fb43312f…` |
+| M8 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| M9 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| M10 | `docs/src/m10_audit.md` | private archive | `96c2ef988e9b5125…` |
+| S1 | `docs/src/s1_closeout.md` | private archive | `675718bda1515747…` |
+| S2 | `docs/src/s2_14bus.md` | private archive | `7dff605b7d9e3de6…` |
+| S2 | `docs/src/release_scope.md` | repository | `c334271977904b99…` |
+| P0 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| P1 | `ROADMAP.md` | private archive | `7f653a70aa1570de…` |
+| P2 | `docs/src/assets/validation/summary.json` | repository | `b25b878463d18720…` |
+| P2 | `docs/src/release_scope.md` | repository | `c334271977904b99…` |
+| P2 | `artifacts/p2_targeted_relaxations_20261023/joint-five/result.json` | private campaign | `8d0bc3d70e485d23…` |
+| P3 | `docs/src/multi_period.md` | repository | `7705e8223d152a01…` |
+| P3 | `docs/src/psse.md` | repository | `e00238b90f368cc6…` |
+
+## Maintenance
+
+Update `docs/src/assets/validation/catalog.json` when evidence changes, retain the source identity and campaign policy, then regenerate these pages. New physical/control policies require a new campaign record. Preserve failed attempts and distinguish an implementation milestone from study closure. Current deadband results remain separate from historical S1/S2 closure until the new campaign is finalized.
