@@ -50,6 +50,8 @@ large campaign scripts require the optional evidence inputs described below.
 
 ## Documentation and evidence
 
+- [Validation hub: M1–M10, S1/S2 and P0–P3](docs/src/milestones.md)
+- [Reports](docs/src/validation_reports.md) · [Tables](docs/src/validation_tables.md) · [Figures](docs/src/validation_figures.md)
 - [Getting started](docs/src/getting_started.md)
 - [SCOPF policies](docs/src/scopf.md)
 - [Multi-period operation](docs/src/multi_period.md)

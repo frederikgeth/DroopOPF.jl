@@ -47,7 +47,9 @@ python3 tools/release/restore_campaign.py /path/to/research-v0.10.0-rc1 \
 The command verifies the archive SHA-256 and every selected file before making
 the restored directory available. It refuses an existing destination.
 
-A small, curated [validation reference gallery](validation_evidence.md) is bundled
-with the documentation. It contains selected summaries and figures, not full
-research archives, network inputs or solver logs. The historical roadmap is
-archived; the public [milestone index](milestones.md) provides current navigation.
+The curated [validation hub](milestones.md) defines each milestone and study,
+with separate [reports](validation_reports.md), [tables](validation_tables.md)
+and [figures](validation_figures.md). The [sharing guide](validation_evidence.md)
+describes an offline HTML bundle. These contain selected summaries and figures,
+not full research archives, network inputs or solver logs. The historical roadmap
+is archived; current navigation preserves its original campaign boundaries.
