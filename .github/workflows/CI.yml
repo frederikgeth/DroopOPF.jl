@@ -42,3 +42,60 @@ jobs:
         run: julia --project=. -e 'using Pkg; Pkg.test()'
       - name: Independent smoke example
         run: julia --project=. examples/release_smoke.jl
+
+  powerio:
+    name: PowerIO integration Julia ${{ matrix.julia-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ['1.10', '1.12']
+    env:
+      JULIA_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 1
+      DROOPOPF_POWERIO_TEST_PROFILE: released
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+      - uses: julia-actions/cache@v2
+      - name: Instantiate separate PowerIO environment
+        run: julia --project=test/powerio -e 'using Pkg; Pkg.develop(path="."); Pkg.add(PackageSpec(name="PowerIO", version="0.11.7")); Pkg.instantiate()'
+      - name: Run PowerIO import and export integration tests
+        run: julia --project=test/powerio test/powerio/runtests.jl
+
+  powerio-corrected:
+    name: Corrected PowerIO validation Julia ${{ matrix.julia-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ['1.10', '1.12']
+    env:
+      JULIA_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 1
+      DROOPOPF_POWERIO_TEST_PROFILE: corrected
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out pinned upstream validation source
+        uses: actions/checkout@v4
+        with:
+          repository: eigenergy/powerio
+          ref: d104aa5b47fa436b0eb8cf833c2c32ab43b2f704
+          path: _powerio_validation_source
+          persist-credentials: false
+      - name: Apply test-only upstream corrections
+        working-directory: _powerio_validation_source
+        run: git apply --check ../test/powerio/support/powerio-0.11.7-qualification.patch && git apply ../test/powerio/support/powerio-0.11.7-qualification.patch
+      - name: Build validation library
+        working-directory: _powerio_validation_source
+        run: cargo build --locked -p powerio-capi
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+      - uses: julia-actions/cache@v2
+      - name: Instantiate separate PowerIO environment
+        run: julia --project=test/powerio -e 'using Pkg; Pkg.develop(path="."); Pkg.add(PackageSpec(name="PowerIO", version="0.11.7")); Pkg.instantiate()'
+      - name: Require corrected transformer and frequency success paths
+        run: POWERIO_CAPI="$PWD/_powerio_validation_source/target/debug/libpowerio_capi.so" julia --project=test/powerio test/powerio/runtests.jl

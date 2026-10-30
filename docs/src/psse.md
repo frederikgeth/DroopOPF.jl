@@ -1,5 +1,9 @@
 # PSS/E RAW data parser
 
+The [common case import and export API](case_io.md) also supports an optional
+PowerIO pathway and canonical exports. This page documents the native parser
+and its existing saved-state validation API.
+
 Historical `artifacts/` paths on this page identify local campaign records, not
 files bundled with the release. See [archive access](research.md) and the
 [current qualification index](milestones.md).
