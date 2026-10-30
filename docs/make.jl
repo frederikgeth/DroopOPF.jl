@@ -18,6 +18,7 @@ makedocs(
         "Index" => "index.md",
         "Getting Started" => "getting_started.md",
         "Data Model" => "data_model.md",
+        "Case import and export" => "case_io.md",
         "PSS/E" => "psse.md",
         "Solvers" => "solvers.md",
         "Validation" => "validation.md",
