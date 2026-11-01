@@ -92,6 +92,8 @@ if get(ENV, "DOCUMENTER_DEPLOY", "false") == "true"
     deploydocs(
         repo = "github.com/frederikgeth/DroopOPF.jl.git",
         devbranch = "main",
+        # Stable is an explicitly promoted documentation snapshot.
+        versions = ["stable" => "docs-2026-11-01", "v#.#", "dev" => "dev"],
         push_preview = true,
     )
 end
