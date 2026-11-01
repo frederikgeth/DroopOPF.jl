@@ -1,34 +1,27 @@
-# v0.10.0-rc1 — compact software and reproducible research
+# v0.10.0-rc1 — library capabilities
 
-This release candidate separates installable software from historical research
-outputs. The source tree retains the library, all small-network tests, example
-drivers and operational documentation. Large results, study figures and full
-benchmark inputs are preserved in separate checksum-verified local archives. Those archives are
-not included among the public release assets.
-
-The release includes limit-aware active response, shared reactive design,
+The library provides limit-aware active response, shared reactive droop design,
 multi-period mixed AVR/droop security models, apparent-power constraints,
-reserve/feasibility objective policies, and the PSS/E RAW adapter and saved-state
-checker. Existing solver dependencies and numerical semantics are retained.
+reserve and feasibility objectives, and PSS/E RAW import with saved-state checks.
 
-The latest five-period mixed 500-bus study qualifies all 389 connected outages
-under its stated normal-limit, full-load P2 policy. It required control redesign
-and numerical recovery, without physical-limit relaxation. This does not close
-full resource/loss optimization or certify dynamics, islanding or discrete
-controls. Native PSS/E 36 exporter qualification remains pending.
+Shared multi-controller droop design supports the default smooth NLP and the
+exact complementarity formulation. Pass `encoding=:complementarity` to select
+CCOpt; its current exact builder uses attached droop controls. Independently
+validate the returned settings and scenario states before accepting a design.
 
 ## Compatibility
 
-The current active-response default is limit-aware saturation redistribution.
-Historical proportional-response contracts remain explicit for replay. New
-serialized study fields and reactive capability settings should be interpreted
-with the saved policy, not silently migrated. See the operational documentation
-and optional research records for precise contracts.
+The default active response redistributes movement after generators saturate.
+Serialized studies retain their declared response and control policies; saved
+proportional-response contracts are not silently migrated. Physical operating
+limits and acceptance tolerances are unchanged.
 
-## Packaging
+The models assess steady-state operation. They do not establish transient
+stability, discrete equipment switching, or general islanding security. PSS/E
+36 support remains schema-based pending native exporter qualification.
 
-Generated artifacts, local manifests, caches and build outputs are excluded.
-Git history is not rewritten; use the source archive for a small download.
-The package remains installed from GitHub or a source archive, not newly
-registered in Julia General by this release. No numerical campaign is launched
-by installation. See `release-validation.json` for actual release checks.
+## Installation and documentation
+
+Install from GitHub or a source archive. Installation does not launch studies.
+See the README and teaching documentation for worked examples, supported scope,
+solver configuration, and validation requirements.
