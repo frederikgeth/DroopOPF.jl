@@ -35,6 +35,10 @@ jobs:
           Pkg.instantiate()
       - name: Build documentation
         run: julia --color=yes --project=docs docs/make.jl
+      - name: Check public pages, labels, links and figures
+        run: |
+          python3 -m unittest discover -s tools/docs -p 'test_public_docs.py'
+          python3 tools/docs/check_teaching_docs.py docs/build
 
   deploy:
     name: Deploy Documenter site

@@ -59,7 +59,7 @@ fields (including costs and angle-difference limits) remain outside this adapter
 Fixed ratios and phase shifts are supported by AC evaluation and OPF/SCOPF.
 
 `RATE_A == 0` is treated as an unavailable thermal limit and represented by a
-large finite limit so that the M1 model remains numerically well-defined.
+large finite limit so that the base OPF model remains numerically well-defined.
 """
 function load_matpower_case(
     path::AbstractString;
@@ -158,7 +158,7 @@ function load_matpower_case(
     )
 end
 
-"""Return a copy of `case` with the supplied M1 generator controls attached."""
+"""Return a copy of `case` with the supplied base OPF generator controls attached."""
 function attach_controls(
     case::Case,
     controls::AbstractVector{<:VoltVarDroop},

@@ -1,53 +1,64 @@
-# Getting started
+# Installation and learning paths
 
-```@meta
-CurrentModule = DroopOPF
-```
+## Install Julia and the package
 
-## Installation
-
-DroopOPF.jl currently installs from GitHub:
+Use Julia 1.10 or newer. A Julia session shows a `julia>` prompt; the following is
+**Julia code**, entered there or saved in a `.jl` script:
 
 ```julia
 import Pkg
-Pkg.add(url = "https://github.com/frederikgeth/DroopOPF.jl.git", rev = "v0.10.0-rc1")
+Pkg.activate("droopopf-tutorial"; shared=true)
+Pkg.add(url="https://github.com/frederikgeth/DroopOPF.jl.git", rev="v0.10.0-rc1")
+using DroopOPF
 ```
 
-For a checkout, instantiate the project from the repository root:
+The named environment keeps the tutorial's dependencies together. The revision
+pins the documented prerelease; use a specific revision for reproducible studies.
+Package installation requires network access. Ipopt and the other declared Julia
+dependencies are installed with the package; teaching examples require no additional input files.
+
+If you already have a checkout, run this **shell command** from its root:
 
 ```sh
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 ```
 
-Julia `1.10` or newer is supported by the package project.
+Then start `julia --project=.` for an interactive session in that environment.
+`Pkg.instantiate()` installs the dependencies described by the project/manifest;
+it does not run an optimization campaign.
 
-## Solve a case
+## Choose a path
 
-Create a `Case` from an `ACNetwork`, `Load`s, `Generator`s, `VoltVarDroop`
-controls, and `GeneratorControlAttachment`s. A complete runnable two-bus
-example is available at
-[`examples/m1_regime_case_study.jl`](https://github.com/frederikgeth/DroopOPF.jl/blob/v0.10.0-rc1/examples/m1_regime_case_study.jl).
+| Background or task | Suggested sequence |
+|---|---|
+| New to power-system optimization | [Concepts](concepts.md) → [first OPF](first_opf.md) → [Volt/VAR](volt_var.md) → [AC model](ac_model.md) |
+| Familiar with AC OPF; new to autonomous controls | [Volt/VAR](volt_var.md) → [reactive modes](concepts.md#Four-reactive-modes) → [study workflows](study_workflows.md) |
+| Ready for controller design | [First OPF](first_opf.md) → [droop optimization](droop_optimization.md) → [droop security](droop_security.md) |
+| Importing a saved operating point | [Units and signs](notation.md) → [PSS/E](psse.md) → [validation](validation.md) |
+| Investigating an unsuccessful solve | [Validation](validation.md) → [solvers](solvers.md) → [feasibility](feasibility_gate.md) → [robustness](robustness.md) |
 
-```julia
-using DroopOPF
+The [first OPF](first_opf.md) constructs every object explicitly; it contains no
+pre-existing `case` variable or hidden input file. Copy its blocks in order into
+one Julia session.
 
-# `case` is a fully assembled DroopOPF.Case.
-result = solve_opf(case; smooth_epsilon = 1.0e-3)
-report = equilibrium_report(case, result)
-println(markdown_report(report))
+## Check your installation
+
+For a checkout, this shell command loads a bundled synthetic two-bus MATPOWER
+fixture, solves it and independently checks its equilibrium:
+
+```sh
+julia --project=. examples/release_smoke.jl
 ```
 
-The result contains the solved `ACState`, objective, solver statuses, and the
-smoothing parameters used by the model.
+That smoke case uses the control assignments provided by its importer. The teaching
+case instead explicitly attaches a Volt/VAR curve so you can see its role.
 
-## Inspect operating points
+## Symbols, units and scope
 
-```julia
-points = droop_operating_points(case, result.state)
-for point in points
-    println(point.generator_id, ": ", point.regime,
-            " V=", point.voltage, " Q=", point.reactive_power)
-end
+Before transferring equipment data, read [notation and units](notation.md).
+Power fields use the case system base, branch phase angles use radians, and
+Volt/VAR slopes use **voltage change per reactive-power change**. A droop slope
+is not a reactive-power-per-voltage gain.
 
-write_droop_plot("droop_operating_points.svg", case, result.state)
-```
+Next: [understand what the optimizer chooses](concepts.md), or go directly to
+[the complete worked example](first_opf.md).

@@ -1,9 +1,19 @@
-# M3 droop optimization
+# Choosing a shared droop design
 
-M3 begins with a deliberately small, auditable problem: vary one positive
-volt-var slope over a bounded candidate set and solve the complete M2
+Begin with a deliberately small, auditable problem: vary one positive
+volt-var slope over a bounded candidate set and solve the complete fixed-curve
 security-constrained AC OPF for every setting. This establishes the reference
 surface that in-model optimization must reproduce.
+
+Before the reference API, read [the curve tutorial](volt_var.md) and
+[response versus design](concepts.md). Fixed-curve OPF finds the intersection
+of a supplied curve with the network. Parameter design also moves selected curves
+inside explicit bounds. Candidate slopes below use voltage-per-reactive-power units.
+
+![Exact curve, deadband and saturation, illustrating the physical parameters selected by design.](assets/teaching/volt_var_curve.svg)
+
+*Figure 1. A selected slope or reference changes the curve; voltage/output points
+remain constrained by AC balance. This illustration is not an optimized result.*
 
 ## Contract
 
@@ -37,26 +47,25 @@ write_droop_slope_sweep("m3_slope_sweep.json", sweep)
 write_droop_slope_sweep_plot("m3_slope_tradeoff.svg", sweep)
 ```
 
-`best_droop_slope` selects the valid sampled point with the smallest M2 dispatch
+`best_droop_slope` selects the valid sampled point with the smallest fixed-curve SCOPF dispatch
 objective. It is a parameter-search result, not a global optimality certificate.
 The AC model is nonconvex, and the current objective may be weakly sensitive to
 the droop setting, so voltage and loading diagnostics should be reviewed with
 the objective.
 
-Historical figure: M3 fixed-slope security trade-off. See [archived research evidence](research.md).
 
-## M2 reproduction gate
+## Fixed-curve reproduction check
 
 When the selected slope equals the slope already stored in the study, the sweep
-reconstructs the same M2 problem. The test suite requires that reference point
-to reproduce the independently valid M2 objective. This prevents the M3 search
+reconstructs the same fixed-curve SCOPF problem. The test suite requires that reference point
+to reproduce the independently valid fixed-curve SCOPF objective. This prevents the droop design search
 layer from silently changing contingency policy or physical semantics.
 
 ## Bounded in-model design
 
 `optimize_droop_parameters` promotes selected physical settings to variables
 shared across the base case and every training contingency. Bounds omitted by
-the caller fix that setting at its M2 value. Available settings are:
+the caller fix that setting at its fixed-curve SCOPF value. Available settings are:
 
 - positive slope;
 - positive voltage reference;
@@ -67,7 +76,7 @@ the standard saturated `VoltVarDroop` family. Both widths may also be fixed at
 zero while slope and reference remain free; this uses the specialized affine
 raw response described in [Solvers](solvers.md). Variable-width bounds that
 permit collapse to zero remain rejected. The active/reactive dispatch
-objective remains the M2 objective; no hidden design penalty is introduced.
+objective remains the fixed-curve SCOPF objective; no hidden design penalty is introduced.
 
 ```julia
 design = optimize_droop_parameters(
@@ -89,12 +98,14 @@ alone.
 ## Solver scope
 
 Bounded parameter design is a smooth nonlinear program supported by Ipopt and
-MadNLP. For the M2/M3 regression fixture, MadNLP is warm-started from validated
-M2 states; an unseeded solve can select an infeasible local point. The two
+MadNLP. For the fixed-curve SCOPF/droop design regression fixture, MadNLP is warm-started from validated
+fixed-curve SCOPF states; an unseeded solve can select an infeasible local point. The two
 smooth solvers are required to agree on the validated objective, not on the
 parameter vector, because multiple settings can be nearly equivalent.
 
-CCOpt is intentionally not accepted as an `optimize_droop_parameters` optimizer.
+The single-controller `optimize_droop_parameters(study, control_id; ...)`
+overload rejects `CCOpt.Optimizer`. The vector `DroopControl` overload instead
+accepts `encoding=:complementarity`; see [solver compatibility](solvers.md).
 Once a design is reconstructed as a fixed exact curve, CCOpt can independently
 re-solve it through `solve_scopf(optimized; encoding=:complementarity)`. The
 solver-independent `validate_droop_design` exact replay remains the primary
@@ -114,7 +125,7 @@ held_out = evaluate_held_out_contingencies(
 held_out.report.valid
 ```
 
-The returned study, result, and report retain the normal M2 data and validation
+The returned study, result, and report retain the normal fixed-curve SCOPF data and validation
 contracts. `write_droop_design` and `read_droop_design` provide a versioned JSON
 round trip for the optimized settings and training result.
 
@@ -136,24 +147,22 @@ write_droop_design_comparison_plot(
 ```
 
 The function intentionally covers only the domain-specific curve comparison.
-The workflow composes it with the existing M2 scenario plots rather than
+The workflow composes it with the existing fixed-curve SCOPF scenario plots rather than
 introducing a separate plotting framework or dependency.
 
-Historical figure: M3 reference and optimized droop design. See [archived research evidence](research.md).
 
 The comparison distinguishes training points from the held-out line-33 point
 and explicitly records that the optimized G9 control has no operating point
 when G9 is unavailable. The held-out result is also passed through the normal
-M2 residual-to-tolerance visualization; the horizontal threshold at one remains
+fixed-curve SCOPF residual-to-tolerance visualization; the horizontal threshold at one remains
 the numerical acceptance boundary.
 
-Historical figure: M3 held-out residual validation. See [archived research evidence](research.md).
 
-## Acceptance gates
+## Validation checks
 
-M3 requires all of the following:
+Useful design checks include:
 
-1. fixed bounds at the reference reproduce the M2 objective;
+1. fixed bounds at the reference reproduce the fixed-curve SCOPF objective;
 2. slope-only optimization agrees with the minimum of the fixed-slope sweep;
 3. generalized bounded settings satisfy every training scenario;
 4. reconstructed exact curves pass independent replay;
@@ -162,7 +171,7 @@ M3 requires all of the following:
 
 ## Scope limit
 
-M3 optimizes the identifiable physical parameters of the standard saturated
+droop design optimizes the identifiable physical parameters of the standard saturated
 volt-var family. Reactive capability and reactive output at deadband remain
 fixed. Arbitrary free-knot PWL topology optimization is intentionally deferred:
 without a separate regularization and identifiability contract it can overfit a
@@ -172,4 +181,4 @@ small contingency set while producing non-unique, hard-to-interpret curves.
 
 The vector `DroopControl` interface and iterative contingency-addition driver
 are documented in [Droop security design](droop_security.md). They share the
-ordinary SCOPF builder and retain M9 equipment policies.
+ordinary SCOPF builder and retain equipment policy equipment policies.

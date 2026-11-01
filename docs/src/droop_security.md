@@ -1,9 +1,5 @@
 # Droop design with contingency addition
 
-Historical `artifacts/` paths on this page identify local campaign records, not
-files bundled with the release. See [archive access](research.md) and the
-[current qualification index](milestones.md).
-
 ## Physical and acceptance contract
 
 The design variables are selected controllers' positive slopes (pu voltage per
@@ -16,12 +12,27 @@ AC states; an outaged generator has zero P/Q and no active controller equation.
 Active response follows the Study participation/redispatch policy. Selected
 taps and shunts retain their preventive/corrective bounds and movement budgets.
 
-The smooth design NLP uses the existing SCOPF builder. Independent validation
+The default smooth design NLP uses the existing SCOPF builder. Pass
+`encoding=:complementarity` to `optimize_droop_parameters(study, controls; ...)`
+for a CCOpt design with the exact deadband and saturation graph. Omit
+`optimizer_factory` in exact mode and supply CCOpt options through
+`optimizer_attributes`. Slopes, references and declared deadband bounds remain
+shared across scenarios in either encoding. Exact shared-parameter design
+currently uses the case's attached droop controls; explicit
+`reactive_assignments` remain supported by the smooth design path and are
+rejected by this exact builder. Independent validation
 reconstructs exact physical curves and checks the design bounds, AC physics,
 outage availability and inter-scenario coupling. Fixed design bounds must
 reproduce fixed-curve SCOPF; no contingencies must reproduce base-case design.
 Multiple local optima may exist: objective agreement is an experimental check,
 not a global-optimality assertion.
+
+The small exact shared-design regression in `test/test_droop_security.jl`
+uses an initial barrier of 1e-6, a 1e-14 proportional relaxation floor,
+native tolerance 1e-11 and zero bound relaxation. Its two-controller,
+one-generator-outage fixture has nonzero fixed deadbands and passes the
+unchanged independent physical gate. These are recorded numerical settings;
+the test does not establish convergence from arbitrary starts or at 500 buses.
 
 Contingency addition starts from a declared subset, solves a shared design,
 recomputes screening at the new base/settings, assesses required outages, and
@@ -32,7 +43,22 @@ entries remain explicit exclusions from the joint design and prevent a full
 network N-1 claim. Iteration limits, failed masters and unresolved training
 outages remain unsuccessful outcomes.
 
-For controller j, with slope m_j, reference v_j and half-widths d_j^- and d_j^+,
+## Read the shared design
+
+![Shared control parameters and distinct scenario equilibria.](assets/teaching/security_states.svg)
+
+*Figure 1. Training scenarios share a curve parameter vector. Final omitted
+outages must be checked again at the retained design and frozen base policy.*
+
+The [Volt/VAR tutorial](volt_var.md) derives the exact law. In this page's notation,
+``j`` indexes controllers, ``c`` scenarios (``0`` is base), and ``g`` generators.
+``Q_{j,c}`` is the attached generator's output; ``V_{j,c}`` its measured voltage;
+``Q_j^0`` the supplied deadband output; ``Q_j^{min},Q_j^{max}`` the Q interval
+shown in the fixed-box formula. ``[z]_+=\max(z,0)`` and
+``\operatorname{clip}(z,L,U)=\min(U,\max(L,z))``. Here ``z`` is a real input and ``L,U`` lower/upper bounds in the same units.
+Rated generators instead
+use their effective P-dependent limits. For controller ``j``, with slope ``m_j``,
+reference ``v_j`` and nonnegative half-widths ``d_j^-`` and ``d_j^+``,
 the independently replayed response is
 
 ```math
@@ -41,7 +67,9 @@ Q_{j,c}=\operatorname{clip}\!\left(Q_j^0+
 \frac{[V_{j,c}-v_j-d_j^+]_+}{m_j},\ Q_j^{\min},Q_j^{\max}\right).
 ```
 
-All design parameters are shared over c. The base objective remains
+All design parameters are shared over ``c``. In the objective below,
+``P_{g,0},Q_{g,0}`` are base outputs and superscript ``initial`` denotes supplied
+reference outputs; the objective has weighted squared pu units. It remains
 
 ```math
 \min \sum_g \left[(P_{g,0}-P_g^{\mathrm{initial}})^2
@@ -72,7 +100,7 @@ write_droop_security("security.json", result)
 
 Use `optimize_droop_parameters(study, controls)` for the corresponding full
 training-set design. `validate_droop_design(study, design)` returns `valid`,
-`policy_valid`, and the ordinary independent `report`. The scalar M3 interface
+`policy_valid`, and the ordinary independent `report`. The scalar droop design interface
 remains available and now preserves equipment policy during reconstruction and
 held-out evaluation. Attached legacy droops and explicit reactive assignments
 cannot be combined in this design interface; unsupported combinations reject
@@ -94,8 +122,8 @@ can be sensitive to numerical representation. The public runner declares this
 option and bounded solver settings in its protocol. Time limits apply during
 optimization, not package loading or model construction.
 
-The plotting runner requires Matplotlib. Public exhaustive campaigns use the
-existing input-fingerprinted checkpoints; a changed case, source, policy or
+Optional plotting needs Matplotlib. Exhaustive assessments use
+input-fingerprinted checkpoints; a changed case, source, policy or
 solver budget requires a new directory. The subsequent design trace is retained
 round-by-round but is not automatically resumable. Fresh design runs must use
 fresh evidence directories if prior results are to be preserved.
@@ -104,7 +132,7 @@ To assess only branch contingencies (lines and transformers), retain the
 original runs and use separate directories:
 
 The branch-only catalog retains islanding branch outages in the exhaustive
-campaign and excludes generator outages entirely. The joint design still
+assessment and excludes generator outages entirely. The joint design still
 handles only connected outages. A successful eligible branch audit therefore
 does not imply full-network N-1 acceptance. `retained/` saves the valid master
 with the largest training set, then most independently accepted outages, then
@@ -118,31 +146,14 @@ checks that the original evidence files have not changed against the saved
 `verification/pre-branch-preservation.json` manifest (run it from the repository
 root).
 The optional `--prior` replay exports accepted branch witnesses from an earlier
-fixed-base campaign separately. It verifies matching study/base inputs and
+fixed-base assessment separately. It verifies matching study/base inputs and
 revalidates the saved states; it does not re-solve them or count them as new
 successful attempts.
 
-## Initial measured evidence
+## Interpret the coverage
 
-The three-bus reference accepted all five N-1 outages. Two shared slope variables
-converged in two design rounds: one line outage was added and all five outages
-were independently audited. Full enumeration and iterative objectives differed
-by approximately 2.1e-12. Cold-start rejection is retained separately from the
-declared proportional-region base initialization.
-
-The unchanged filter was then evaluated on 168 actual-droop outages across
-24 inputs. It missed five unresolved discovery outages and seven held-out
-outages (six lines and one transformer); all twelve missed states failed
-physical replay. This **does not qualify screening as a security certificate**.
-Held-out accepted states covered deadband, proportional response and Q-max
-saturation; no accepted Q-min saturation point occurred in this partition.
-The final exhaustive audit is therefore a required algorithmic acceptance gate.
-
-See `artifacts/droop_security/reference/report.md` and
-`artifacts/droop_security/filter/report.md` for saved inputs, numerical results,
-iteration figures, filter coverage, ranking-budget curves and control regimes.
-
-At half of each held-out input's evaluation budget, the diagnostic ranking
-found 7/15 unresolved line outages and 11/21 generator outages; it has not yet
-demonstrated useful prioritisation. See `artifacts/droop_security/report.md` for
-the complete evidence and remaining qualification gates.
+A retained candidate must pass native solver acceptance and independent AC,
+control and policy checks over the declared final catalogue. Report exclusions,
+failed solves and omitted outages explicitly. An unresolved numerical solve is
+not proof that the network is infeasible. A ranked or screened subset does not
+establish complete outage security.

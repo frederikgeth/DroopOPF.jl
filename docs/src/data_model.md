@@ -4,6 +4,18 @@
 CurrentModule = DroopOPF
 ```
 
+## Read the data as an electrical model
+
+Start with [the complete two-bus construction](first_opf.md), then
+[AC branch/shunt physics](ac_model.md). This page is the detailed constructor,
+control and serialization reference. [Notation and units](notation.md) defines
+system bases, current directions and mathematical aliases used below.
+
+![Electrical and measurement connections of a complete two-bus Case.](assets/teaching/two_bus.svg)
+
+*Figure 1. A `Case` combines network, devices and control attachments. The measured
+bus and the generator injection bus are separate pieces of data, even when equal.*
+
 ## Network and operating devices
 
 `Bus`, `Branch`, `Load`, and `ACNetwork` describe the balanced AC network in
@@ -82,7 +94,7 @@ schedule equality and the independent validator reports `:fixed_q` when its
 error exceeds `power_tolerance`. Unavailable generators retain zero output.
 AVR is supported by both the smooth and CCOpt base-case entry points.
 Study JSON v8 and SCOPF result JSON v4 store optional assignments explicitly,
-along with M9 equipment controls, timing, movement budgets, and scenario settings.
+along with equipment policy equipment controls, timing, movement budgets, and scenario settings.
 Readers preserve `nothing` for older documents, which retains legacy attachment
 semantics. Restored assignments are revalidated and SCOPF validation rejects a
 study/result assignment mismatch. Joint design accepts the same optional
@@ -97,7 +109,7 @@ complementarity encoding.
 ## Attachments
 
 `GeneratorControlAttachment` connects one generator to one control and gives
-the regulated location. M1 permits one static attachment per generator.
+the regulated location. The base OPF permits one static attachment per generator.
 
 ```julia
 attachment = GeneratorControlAttachment(
@@ -105,11 +117,10 @@ attachment = GeneratorControlAttachment(
 )
 ```
 
-This explicit attachment layer leaves room for plant-level, remote-bus, and
-system-level control semantics in later milestones.
+The attachment separates the injection bus from the regulated measurement location.
 
 
-## M5.1 transformer data contract
+## Transformer data contract
 
 `Branch` accepts explicit `kind=:line` or `kind=:transformer`, plus
 `tap_ratio=1` and `phase_shift=0`. The complex tap is on the
@@ -122,32 +133,36 @@ MATPOWER `TAP=0` becomes unity and marks a line; a supplied `TAP` (including
 unity) or `SHIFT` marks a transformer. `SHIFT` is converted once from degrees
 to radians.
 No physical tap bounds or legal positions are inferred from those fields.
-M6.1 imports nonzero bus `GS`/`BS` as aggregate fixed shunts (see below).
+The MATPOWER importer converts nonzero bus `GS`/`BS` as aggregate fixed shunts (see below).
 
-M5 introduced study schema v2 with both transformer settings required; M6.1
-introduced v3 with an explicit fixed-shunt list; M6.2 writes v4 with banks. The reader migrates
+Study schema v2 requires both transformer settings; v3 adds an explicit fixed-shunt
+list; v4 adds banks. The reader migrates
 line-only v1 studies to unity/zero and rejects contradictory transformer metadata
 labelled v1. Unchanged result/report document kinds retain schema v1. Older
 readers reject v2, rather than silently losing transformer physics.
 
-Study schema v9 introduced the explicit line/transformer kind; current v10 also
+Study schema v9 introduced the explicit line/transformer kind; schema v10 also
 identifies limit-aware automatic active response. Supported older uncoupled or
 corrective studies reload with `kind=:line` when kind metadata is absent.
 Historical coupled preventive studies require original-source replay rather than
 silent migration to a different active-response policy.
 
-M5.2–M5.4 support fixed ratios and fixed phase shifts in AC evaluation,
+The AC model supports fixed ratios and fixed phase shifts in AC evaluation,
 OPF, SCOPF and existing bounded droop design. Unavailable branches contribute
 no current while retaining supplied settings. Tap optimization, AVR and switched
-shunts belong to later milestones.
+shunts are documented below and in
+[mixed controls](mixed_avr_droop.md).
 
-Run `julia --project=. examples/m5_1_transformer_data.jl /tmp/m51-evidence`
-from the repository root to create study JSON, expected/actual numerical evidence,
-a Markdown report and an SVG showing the from-side convention. The synthetic
-fixture is not a measured operating point. No AC feasibility is claimed.
+## Fixed transformer electrical model
 
-
-## Fixed transformer electrical model (M5.2–M5.4)
+In this section `r` and `x` are series resistance/reactance; `j` is the imaginary
+unit; `b` is total charging susceptance; `tau` is positive tap ratio; `phi` is phase
+shift in radians; and `a` is the complex tap. `Vf`/`Vt` are endpoint voltage
+phasors, `Uf` is internal from-side voltage, `J` is series current, and `If`/`It`
+are currents into the branch. `Sf`/`St` are terminal complex powers.
+`Yff`, `Yft`, `Ytf`, `Ytt` are the branch's two-port admittance entries (first
+letter: current endpoint; second: voltage endpoint). `conj` denotes conjugation.
+The [pi schematic and derivation](ac_model.md) show their physical locations.
 
 For series admittance `y = 1/(r + j*x)`, total branch charging `b`, and
 from-side complex tap `a = tau * exp(j*phi)`, the optimizer assembles:
@@ -170,38 +185,11 @@ Both terminal powers are positive **into** the branch; their sum is net branch
 absorption. Charging is included once at each internal terminal, with the
 from-side contribution transformed by the tap.
 
-Hand-calculated current/power fixtures, scalar polar sweeps, individual terminal
-overload tests and intentionally corrupted settings check the two implementations.
-Synthetic OPF/SCOPF studies check exact droop residuals, scenario coupling,
-outages, JSON replay and preservation under bounded droop optimization. These
-are steady-state tests, not dynamic or global-optimality certificates.
+Validate the reconstructed network with both-terminal currents and exact control
+replay. Tap/shunt settings are steady-state inputs unless explicitly selected
+for bounded optimization; no three-winding dynamics are inferred.
 
-For the complete evidence bundle, run from the repository root:
-
-```sh
-PYTHON=/path/to/python-with-matplotlib julia --project=. examples/m5_transformer_workflow.jl /tmp/m5-evidence
-```
-
-The Python environment needs Matplotlib (tested with 3.9.4); it is a plotting-only
-dependency, not a Julia package dependency. The workflow writes numerical JSON,
-per-solver reports, ratio/phase reference plots, both-terminal loading panels,
-voltage profiles, exact-droop plots and residual plots. Failed runs remain in the
-JSON/report and cause a nonzero exit. Existing line-only M1–M4 tests remain part
-of the regression gate. No three-winding or separate magnetizing branch model
-is introduced. M6.1 adds MATPOWER aggregate fixed GS/BS; switched-bank data are
-a separate later capability.
-
-
-The M5 evidence declares proportional-regime initial states rather than flat
-deadband starts. The latter can stall even on a feasible study. For CCOpt, the
-example requests `ProportionalRelaxationUpdate(sigma_min=1e-12)`,
-`tol=acceptable_tol=1e-9` and `bound_relax_factor=0`;
-its default relaxation floor left exact-droop errors above the 1e-5 acceptance
-tolerance. These are example-specific solver settings, not equipment parameters
-or relaxed acceptance criteria. Diagnostic failures are retained with the evidence.
-
-
-## Fixed bus shunts (M6.1)
+## Fixed bus shunts
 
 `FixedShunt` is network equipment, separate from `Load` and branch charging:
 
@@ -213,7 +201,9 @@ network = ACNetwork([Bus(10; reference=true)], Branch[]; shunts=[shunt])
 IDs and bus references must be positive; IDs are unique within the shunt list.
 Admittance is finite and in per unit on the case base. Conductance G must be
 nonnegative; susceptance B may have either sign. Positive B is capacitive.
-Complex terminal consumption is `S = (G - j*B)*|V|²`: positive P consumes active
+Here `G`/`B` denote shunt conductance/susceptance, `V` is its bus-voltage phasor,
+`S` is complex consumption, and `j` is the imaginary unit. Complex terminal
+consumption is `S = (G - j*B)*|V|²`: positive P consumes active
 power, negative Q injects reactive power. Several distinct devices may share a
 bus and their contributions sum once. `available=false` contributes zero while
 preserving supplied data. An empty list preserves the previous network model.
@@ -236,20 +226,9 @@ nonempty shunts misleadingly labelled with an older schema. New writers use v4
 even when the list is empty, so old readers fail explicitly. Other document kinds
 keep their existing versions. Numeric promotion, case/control copies and existing
 branch/generator contingency overlays preserve fixed shunts. Dedicated shunt
-contingencies are not introduced in M6.1.
+contingencies are not part of this fixed-shunt representation.
 
-Run the evidence workflow with Python/Matplotlib available:
-
-```sh
-PYTHON=/path/to/python-with-matplotlib julia --project=. examples/m6_1_fixed_shunts.jl /tmp/m61-evidence
-```
-
-It generates a GS/BS conversion table, expected/computed P(V) and Q(V) curves,
-availability and round-trip checks, and deliberate omission/double-count/sign
-errors. A one-bus OPF checks safe use of the shared Ybus path. Switched-bank
-states (M6.2) and the complete OPF/SCOPF comparison bundle (M6.3) are implemented; see [archived M6 evidence](research.md).
-
-## Supplied switched-bank states (M6.2–M6.3)
+## Supplied switched-bank states
 
 ```julia
 bank = ShuntBank(201, 30;
@@ -276,11 +255,10 @@ branch-terminal location; schema v7 adds selected continuous equipment and its
 SCOPF timing policy; schema v8 adds optional corrective movement-limit maps.
 Readers
 migrate v1-v3 to empty banks and reject nonempty banks mislabeled as old schemas.
-Existing branch/generator contingencies preserve supplied bank states. M6 uses
-fixed states in OPF, preventive/corrective SCOPF and droop design. Optimization
-of equipment is M7; a bank state is not an automatic switching policy or trajectory.
+Existing branch/generator contingencies preserve supplied bank states. The model uses
+fixed states in OPF, preventive/corrective SCOPF and droop design. Selected equipment may be optimized separately; a bank state is not an automatic switching policy or trajectory.
 
-## Continuous transformer tap design (M7.1)
+## Continuous transformer tap design
 
 ```julia
 policy = [TapControl(11; lower=0.95, upper=1.05, nominal=1.0)]
@@ -307,14 +285,14 @@ relaxations, without discrete-position recovery or switching-count interpretatio
 separately checks bounds and fixed settings. A failed solve can have no state or
 ratios; physical validation is then unavailable and overall validity is false.
 
-The dedicated base-case entry point accepts a `Case`. M9.1 also accepts the same
+The dedicated base-case entry point accepts a `Case`. The equipment-aware SCOPF interface also accepts the same
 controls on `Study`, with explicit scenario policy coupling through
-`SCOPFControlPolicy`; see [SCOPF](scopf.md#equipment-and-reactive-control-timing-m91).
+`SCOPFControlPolicy`; see [SCOPF](scopf.md#Equipment-timing-and-movement-bounds).
 The current implementation uses the smooth encoding
 with Ipopt by default and supports the existing optimizer-factory interface.
-See [M7.1 evidence](equipment_optimization.md) for sweeps and comparisons.
+See [tap design evidence](equipment_optimization.md) for sweeps and comparisons.
 
-## Simple continuous shunt design (M7.2)
+## Simple continuous shunt design
 
 ```julia
 bank = ShuntBank(201, 30; step_susceptances=(0.02,),
@@ -329,7 +307,8 @@ write_shunt_design("shunt-design.json", result)
 reloaded = read_shunt_design("shunt-design.json")
 ```
 
-A reactor uses negative step B, e.g. −0.02 gives an interval [−0.06, 0]. G is tied
+A reactor uses negative step B, e.g. −0.02 gives an interval [−0.06, 0]. Here `B` is the aggregate susceptance and `Bstep` the susceptance per
+section, both in pu. Conductance `G` is tied
 to B through their common fractional count; here G=0.001(B/Bstep). Banks with
 multiple step types or zero step B are rejected when selected, as are unavailable
 or unknown banks and fixed-shunt IDs. Unselected heterogeneous banks remain fixed.
@@ -353,7 +332,7 @@ settings and policy; retain the input study alongside it for reproducible replay
 sweeps and plots. Heterogeneous optimization is post-scaling backlog; the gate
 requires evidence that simple banks, transformers and droops scale adequately first.
 
-## Joint equipment and droop design (M7.3)
+## Joint equipment and droop design
 
 ```julia
 result = optimize_joint_design(case;
@@ -371,12 +350,12 @@ reloaded = read_joint_design("joint-design.json")
 Omit a control list to keep that family fixed; select devices independently within
 each list. `DroopControl` additionally accepts `v_ref_bounds`,
 `deadband_low_bounds`, `deadband_high_bounds` and `initial::DroopSettings`. Missing
-bounds fix a parameter to its supplied value. Bounds preserve the M3 positive-slope,
+bounds fix a parameter to its supplied value. Bounds preserve the positive-slope,
 positive-reference and positive-total-deadband contract. No free-knot curve family
 is introduced. Multiple attached available droop controls may be selected.
 
 The objective is identical across fixed/free configurations. Reports distinguish
 solver success, parameter/equipment policy compliance and reconstructed physical
 validity. Ratios and bank settings remain continuous relaxations. See
-[M7 results and visualizations](equipment_optimization.md) for the complete grid,
+[equipment design results and visualizations](equipment_optimization.md) for the complete grid,
 multi-start variability, objective components and matched conditional benefits.

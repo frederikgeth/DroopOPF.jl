@@ -1,4 +1,4 @@
-"""Optimized M3 design and independent validation from one parameter start."""
+"""Optimized droop design design and independent validation from one parameter start."""
 struct DroopDesignMultiStartRun
     label::Symbol
     initial_settings::DroopSettings{Float64}
@@ -14,7 +14,7 @@ struct DroopParameterSpread
     deadband_high::Float64
 end
 
-"""M3 parameter multi-start comparison retaining every design attempt."""
+"""droop design parameter multi-start comparison retaining every design attempt."""
 struct DroopDesignMultiStartResult
     case_id::String
     control_id::Int
@@ -46,7 +46,7 @@ end
 """
     optimize_droop_multistart(study, control_id, starts; ...)
 
-Optimize the same bounded M3 design from every named `DroopSettings` start.
+Optimize the same bounded droop design design from every named `DroopSettings` start.
 All attempts and exact-curve validation reports are retained. When omitted,
 `reference_result` is solved once and shared by every design run.
 """
@@ -123,11 +123,11 @@ _json_data(run::DroopDesignMultiStartRun) = Dict(
 _json_data(result::DroopDesignMultiStartResult) = Dict(string(field) =>
     _json_data(getfield(result, field)) for field in fieldnames(typeof(result)))
 
-"""Write M3 parameter-start inputs, outcomes, and spreads to versioned JSON."""
+"""Write droop design parameter-start inputs, outcomes, and spreads to versioned JSON."""
 write_droop_design_multistart(path::AbstractString, result::DroopDesignMultiStartResult) =
     _write_scopf_json(path, "DroopOPF.DroopDesignMultiStartResult", result)
 
-"""Render M3 parameter multi-start results as Markdown."""
+"""Render droop design parameter multi-start results as Markdown."""
 function markdown_report(comparison::DroopDesignMultiStartResult)
     lines = ["# Droop-design multi-start report: $(comparison.case_id)", "",
         "- Control: $(comparison.control_id)",

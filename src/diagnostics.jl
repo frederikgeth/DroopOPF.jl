@@ -11,7 +11,7 @@ struct DroopBreakpointDiagnostic
     near_breakpoint::Bool
 end
 
-"""A machine-readable M4 finding tied to a scenario and optional network object."""
+"""A machine-readable robustness checks finding tied to a scenario and optional network object."""
 struct SCOPFFinding
     severity::Symbol
     code::Symbol
