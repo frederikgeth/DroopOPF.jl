@@ -27,6 +27,7 @@ class PublicBoundaryTests(unittest.TestCase):
     def test_private_working_files_are_rejected(self):
         for name in ['ARCHITECTURE.md', 'ROADMAP.md', 'AGENTS.md', 'RELEASE_NOTES_UNRELEASED.md',
                      'docs/src/research.md', 'docs/src/milestones.md', 'notes/open.md',
+                     'Volt_VAR_Research.docx', 'controller_agenda.txt', 'open_discussion.md',
                      'discussions/controller.md', 'experiments/pilot.jl',
                      'docs/src/assets/validation/catalog.json']:
             with self.subTest(name=name):

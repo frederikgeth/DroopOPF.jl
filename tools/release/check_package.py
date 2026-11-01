@@ -2,7 +2,7 @@
 import pathlib,re,sys,fnmatch
 root=pathlib.Path(__file__).resolve().parents[2]
 errors=[]
-private_names = ['ARCHITECTURE*', '*ROADMAP*', 'LLM_DEVELOPMENT.md',
+private_names = ['*research*', '*architecture*', '*roadmap*', '*agenda*', '*discussion*', 'LLM_DEVELOPMENT.md',
  'TRANSFORMER_SHUNT_PLAN.md', 'VOLT_VAR_AND_TEST_CASE_STUDY.md',
  'RELEASE_NOTES_UNRELEASED.md', 'AGENTS.md', 'research.md', 'agenda.md',
  'discussions.md', 'milestones.md', 'validation_evidence.md',
