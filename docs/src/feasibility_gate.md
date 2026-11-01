@@ -1,15 +1,11 @@
 # Feasibility before droop replacement
 
-Historical `artifacts/` paths on this page identify local campaign records, not
-files bundled with the release. See [archive access](research.md) and the
-[current qualification index](milestones.md).
-
 ```@meta
 CurrentModule = DroopOPF
 ```
 
 Use `qualify_droop_replacement` before accepting a proposed set of fixed droop
-curves for S1. It checks the calibration point, then the source and candidate
+curves for independent-demand study. It checks the calibration point, then the source and candidate
 models at every required demand factor. All candidate curves are present
 together. A point that passes each generator separately does not establish that
 the combined system is feasible.
@@ -63,7 +59,7 @@ qualification = qualify_droop_replacement(source_case, candidate_case;
 )
 write_droop_qualification("qualification.json", qualification)
 accepted_case = require_qualified_replacement(qualification)
-# Downstream S1 analysis uses accepted_case; this line is unreachable on failure.
+# Downstream independent-demand study analysis uses accepted_case; this line is unreachable on failure.
 ```
 
 The calibration checks are replay-only: a local solve cannot hide a droop curve
@@ -107,33 +103,12 @@ does not launch them. An inconclusive backend or unsupported equipment scope
 remains unresolved. Solver-reported global bounds alone do not qualify as
 independently verified certificates.
 
-## Current 14-bus reproduction
+## Independent cases versus a shared security policy
 
-Run `examples/s1_arpae14_feasibility_gate.jl` to qualify the corrected four-percent
-droops, with and without deadband, at 100% and 90% demand. The script uses fixed
-source taps/shunts for acceptance and preserves the saved source solutions. It
-also replays the existing free-equipment witnesses under their own contracts and
-checks that they cannot pass the fixed-equipment gate. Results, frozen inputs,
-witnesses and attempt records are written to
-`artifacts/s1_arpae14_feasibility_gate/`.
-
-The reproduced results are:
-
-| Model | 100% demand, fixed equipment | 90% demand, fixed equipment | 90% demand, saved free-equipment witness |
-|:--|:--|:--|:--|
-| Source AC OPF, no droop replacement | Feasible | Feasible | Not required |
-| Fixed 4% droops with deadband | Feasible | Unresolved | Feasible |
-| Fixed 4% droops without deadband | Feasible | Unresolved | Feasible |
-
-Both candidate replacements are blocked for the combined 100%/90% fixed-equipment
-scope. No global infeasibility certificate has been obtained for either 90%
-case. Free-equipment witnesses are rejected under the fixed-equipment contract.
-
-This precursor qualifies independent S1 equilibria. Separate scenario witnesses
-do not establish a common preventive dispatch or shared equipment setting for
-S2. A coupled SCOPF qualification requires the corresponding shared/corrective
-control policy and movement budgets; this implementation does not claim that
-certificate and the example starts no SCOPF runs.
+A witness for one demand does not establish a common preventive dispatch across
+outages or a shared equipment setting across several demands. Check each witness
+against its declared contract, then use the corresponding coupled SCOPF model
+when shared/corrective policy is required.
 
 ## API
 

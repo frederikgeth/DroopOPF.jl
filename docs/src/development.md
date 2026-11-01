@@ -29,16 +29,26 @@ The deployment workflow requires GitHub Pages to be enabled for the repository.
 Documenter uses the repository `GITHUB_TOKEN`, so no deploy key is needed for
 this same-repository deployment.
 
-## Milestone and qualification records
+## Maintain the teaching documentation
 
-Use the [milestone index](milestones.md) for navigation and the
-[release scope](release_scope.md) for current qualification boundaries.
-M1–M4 are historical implementation milestones; their original small-case
-scale-up decision is not the current status. Sparse models, scenario addition,
-parallel assessment and 14/500-bus studies now have bounded qualification.
-General safe predictive skipping and full coupled resource/loss optimization
-remain open. Original S2 remains paused; later P2 evidence is a separate campaign.
+Teaching pages introduce the electrical problem before the API and define each
+symbol locally, with the common [notation reference](notation.md) as an index.
+Use complete executed `@example` blocks for runnable tutorials; label partial
+reference snippets as fragments. Give diagrams descriptive alternative text and
+explain their assumptions in captions. Explain the assumptions of each illustrative calculation.
 
-See the [validation references](validation_evidence.md) for selected numerical
-results and figures, and [research evidence](research.md) for archived reports.
-Package tests check software regressions; they do not rerun the large campaigns.
+From the repository root, regenerate the nine deterministic SVG schematics and
+check the rendered documentation:
+
+```sh
+python3 tools/docs/build_teaching_figures.py
+julia --project=docs docs/make.jl
+python3 tools/docs/check_teaching_docs.py docs/build
+```
+
+The docs environment must first be instantiated with the local package developed
+into it. Its existing project/manifest describes the build dependencies. Review
+the built pages visually, including curves, circuit signs and equation tables.
+The link checker checks local targets/anchors and teaching-figure metadata; the
+Documenter build executes tutorial assertions. Neither substitutes for reviewing
+the physical meaning of a formula.

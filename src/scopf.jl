@@ -154,7 +154,7 @@ end
 """
     solve_scopf(study; smooth_epsilon=1e-4, optimizer_factory=Ipopt.Optimizer, ...)
 
-Solve the base and all listed contingencies jointly, minimizing the M1 base
+Solve the base and all listed contingencies jointly, minimizing the base OPF base
 schedule-deviation objective. Contingencies impose feasibility constraints and
 have no additional cost. The fixed droop graph applies in every available unit.
 `fixed_base_state` evaluates security of an existing equilibrium without changing it.

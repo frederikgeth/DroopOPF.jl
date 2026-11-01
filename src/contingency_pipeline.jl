@@ -115,7 +115,7 @@ end
 """
     assess_contingency_pipeline(case, base_state; ...)
 
-Run a coverage-checked M10 assessment pipeline. Every catalog entry receives
+Run a coverage-checked contingency assessment assessment pipeline. Every catalog entry receives
 exactly one route. `audit_screened_ids` names screened entries that must also
 receive exact evaluation. Set `screening_enabled=false` for an exact connected-
 outage baseline. Evaluation errors are retained unless

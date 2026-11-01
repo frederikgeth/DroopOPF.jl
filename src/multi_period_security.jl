@@ -47,7 +47,7 @@ end
 
 `response=:s2_proportional` preserves supplied weights without saturation;
 `:limit_aware` uses the production response model. `s2_emergency=true` explicitly
-selects S2's ±0.05 pu voltage extension, 1.1 thermal ratings, 1% per-load DR,
+selects legacy comparison's ±0.05 pu voltage extension, 1.1 thermal ratings, 1% per-load DR,
 10 MW shedding per outage, 10% combined relief, proportional reactive relief.
 Base cases always use original bounds/full load. Objectives are sequential:
 minimum total shedding, minimum total DR, then duration-weighted base loss. `objective_policy=:reserve_loss` inserts

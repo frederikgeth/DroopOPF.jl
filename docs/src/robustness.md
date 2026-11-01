@@ -1,10 +1,8 @@
-# M4 robustness and diagnostics
+# Robustness and diagnostics
 
-M4 asks a narrower question than scale-up: are the existing small-system M2
-and M3 workflows repeatable and diagnostically useful? The implemented
-milestone provides named SCOPF and M3 design-parameter multi-start experiments,
-structured operating diagnostics, public-case regressions, reproducible
-measurements, and an explicit scale-up decision.
+Use repeated starts to test whether a nonconvex solve returns comparable,
+independently valid operating points. Diagnose control breakpoints and binding
+limits separately from objective agreement.
 
 ## Multi-start comparison
 
@@ -34,8 +32,7 @@ validation report, valid-run set, objective range, and decision.
 ## Breakpoint and binding diagnostics
 
 `scopf_diagnostics(study, result)` recomputes validation and returns a separate
-`SCOPFDiagnostics` artifact. Keeping it separate avoids changing the stable M2
-`SCOPFReport` schema.
+`SCOPFDiagnostics` artifact. It is returned separately from the stable `SCOPFReport` schema.
 
 For each active generator control and scenario it records the regulated
 voltage, exact PWL regime, nearest breakpoint value and index, absolute voltage
@@ -48,7 +45,7 @@ independently recomputed margin across voltage, generator P/Q, and branch
 thermal limits. This minimum-margin rule is a screening heuristic; it is not a
 transient or voltage-stability ranking.
 
-## M3 design-parameter starts
+## droop design design-parameter starts
 
 `optimize_droop_multistart` varies actual starting values for slope, voltage
 reference, and both deadband widths inside the design NLP. Every named input,
@@ -57,45 +54,16 @@ classifies objective agreement and separately reports component-wise final
 parameter spread, since similar objective values do not prove that the design
 parameters are identifiable.
 
-```sh
-julia --project=. examples/m4_design_multistart.jl /tmp/droopopf-m4-design
-```
 
 The workflow writes `design_multistart.json` and `design_multistart.md`.
 
-## Reproducible workflow
+## Record performance reproducibly
 
-```sh
-julia --project=. examples/m4_robustness_workflow.jl /tmp/droopopf-m4
-```
+`benchmark_scopf` records package/solver identity, model dimensions, elapsed time,
+Julia allocations, objective, termination and validation. Measure compilation,
+model construction, optimization and replay separately where possible. Process
+peak memory is a lifetime high-water mark; it is not incremental model memory.
 
-The workflow compares cold, converged, low-voltage, and high-voltage starts and
-writes `multistart.json`, `multistart.md`, `diagnostics.json`, and
-`diagnostics.md`. It perturbs only initial guesses, not study data or tolerances.
-
-## Public regressions and measurements
-
-PGLib-OPF v23.07 case 3 and case 5 are pinned under `test/data/pglib` with
-machine-readable CC BY 4.0 provenance. Both run through the normal MATPOWER
-adapter, control attachment, solver, serialization, and independent validation
-path. `benchmark_scopf` records Julia/package/solver identity, structural case
-size, actual JuMP variable and constraint counts, elapsed time, Julia
-allocations, termination, objective, and validation status.
-Peak process RSS is recorded separately in bytes using `Sys.maxrss()`. The
-workflow runs each study in a fresh Julia process. RSS includes compilation,
-warm-up and validation; it is a lifetime high-water mark, not incremental solve
-memory or a quantity to subtract between samples.
-
-These are PGLib-derived droop regressions, not reproductions of the published
-economic OPF benchmarks. DroopOPF uses its schedule-deviation objective and adds
-one droop controller; the adapter does not enforce MATPOWER angle-difference
-bounds or use generator costs. The selected cases have no bus shunts or
-non-unity transformer taps. Source tables and these modeling differences must
-be distinguished when interpreting results.
-
-```sh
-julia --project=. examples/m4_benchmark_workflow.jl /tmp/droopopf-m4-benchmark
-```
-
-See the [M4 scale-up decision](research.md) for the measured evidence
-and the decision not to select a P2 scaling algorithm from tiny-case data.
+Keep all failed starts. Similar objective values can conceal different controller
+settings, and neither multi-start agreement nor a small test case proves global
+optimality or large-network scalability.
