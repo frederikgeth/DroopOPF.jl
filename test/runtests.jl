@@ -26,6 +26,7 @@ using DroopOPF
     include("test_p2_partitioned_nlp.jl")
     include("test_validation.jl")
     include("test_matpower.jl")
+    include("io/test_case_io.jl")
     include("test_psse.jl")
     include("test_psse_validation.jl")
     include("test_transformer_data.jl")

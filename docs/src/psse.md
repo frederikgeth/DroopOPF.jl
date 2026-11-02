@@ -1,5 +1,9 @@
 # PSS/E RAW data parser
 
+The [common case import and export API](case_io.md) also supports an optional
+PowerIO pathway and canonical exports. This page documents the native parser
+and its existing saved-state validation API.
+
 `parse_psse_raw` reads full-case bus/branch RAW revisions **33, 34 and 36**.
 `import_psse_case` converts the supported electrical subset into a DroopOPF
 `Case`, with source identities, supplied operating points and diagnostics.

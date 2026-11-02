@@ -230,7 +230,7 @@ function ACNetwork(
     append!(numbers, (typeof(br.resistance) for br in branches))
     append!(numbers, (typeof(s.conductance) for s in shunts))
     append!(numbers, (typeof(first(b.step_conductances)) for b in banks))
-    T = isempty(numbers) ? Float64 : promote_type(numbers...)
+    T = isempty(numbers) ? Float64 : reduce(promote_type, numbers)
     bs = Bus{T}[Bus{T}(b.id, T(b.v_min), T(b.v_max), b.reference) for b in buses]
     brs = Branch{T}[
         Branch{T}(br.id, br.from_bus, br.to_bus, T(br.resistance), T(br.reactance),

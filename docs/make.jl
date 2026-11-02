@@ -19,6 +19,7 @@ const PUBLIC_PAGES = [
         ],
         "Model and solve" => [
             "Data model reference" => "data_model.md",
+            "Case import and export" => "case_io.md",
             "PSS/E import and saved solutions" => "psse.md",
             "Solver formulations" => "solvers.md",
             "SCOPF policies and API" => "scopf.md",

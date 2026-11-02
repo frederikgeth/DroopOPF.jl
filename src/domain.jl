@@ -158,7 +158,8 @@ function Case(
         append!(numeric_types, (typeof(s.conductance) for s in network.shunts))
         append!(numeric_types, (typeof(first(b.step_conductances)) for b in network.banks))
     end
-    T = promote_type(numeric_types...)
+    # Avoid a thousands-argument recursive promotion on large imported cases.
+    T = reduce(promote_type, numeric_types)
     # The explicit conversion keeps the public case homogeneous and avoids
     # type instability when a case is assembled from integer literals.
     gs = Generator{T}[

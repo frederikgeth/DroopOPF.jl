@@ -1,0 +1,138 @@
+diff --git a/powerio-tx/src/format/mod.rs b/powerio-tx/src/format/mod.rs
+index 2f09e4a0..4d924e94 100644
+--- a/powerio-tx/src/format/mod.rs
++++ b/powerio-tx/src/format/mod.rs
+@@ -1494,13 +1494,17 @@ fn warn_psse_downgrade(
+ }
+
+ /// Warn when a non-default system frequency is emitted to a format with no frequency
+-/// field. PSS/E (`BASFRQ`) and pandapower (`f_hz`) carry it; MATPOWER,
+-/// PowerModels, egret, and PowerWorld have nowhere to put it, so a 50 Hz case
++/// field. PSS/E (`BASFRQ`), pandapower (`f_hz`) and the PowerIO PowerModels
++/// extension (`base_frequency`) carry it; MATPOWER, egret and PowerWorld do not,
++/// so a 50 Hz case
+ /// would parse again as the 60 Hz default. Report the loss instead.
+ fn warn_dropped_frequency(net: &BalancedNetwork, format: TargetFormat, conv: &mut TextEmission) {
+     let carries_frequency = matches!(
+         format,
+-        TargetFormat::Psse { .. } | TargetFormat::PsseRawx | TargetFormat::PandapowerJson
++        TargetFormat::Psse { .. }
++            | TargetFormat::PsseRawx
++            | TargetFormat::PandapowerJson
++            | TargetFormat::PowerModelsJson
+     );
+     if carries_frequency {
+         return;
+diff --git a/powerio-tx/src/format/powermodels.rs b/powerio-tx/src/format/powermodels.rs
+index d3e6834e..2ddd671b 100644
+--- a/powerio-tx/src/format/powermodels.rs
++++ b/powerio-tx/src/format/powermodels.rs
+@@ -137,6 +137,8 @@ pub fn write_powermodels_json(net: &BalancedNetwork) -> TextEmission {
+     let mut root = Map::new();
+     root.insert("name".into(), Value::String(net.name().clone()));
+     root.insert("baseMVA".into(), jnum(net.base_mva()));
++    // PowerIO metadata extension: PowerModels ignores unknown top-level keys.
++    root.insert("base_frequency".into(), jnum(net.base_frequency()));
+     root.insert("per_unit".into(), Value::Bool(true));
+     root.insert("source_type".into(), Value::String("matpower".into()));
+     root.insert("source_version".into(), Value::String("2".into()));
+@@ -472,6 +474,15 @@ pub(crate) fn parse_powermodels_json_source(
+             message: "missing, nonpositive, or non-finite numeric `baseMVA`".into(),
+         })?;
+     let per_unit = document.per_unit.unwrap_or(false);
++    let base_frequency = document
++        .base_frequency
++        .unwrap_or(crate::network::DEFAULT_BASE_FREQUENCY);
++    if !base_frequency.is_finite() || base_frequency <= 0.0 {
++        return Err(Error::FormatRead {
++            format: FMT,
++            message: "nonpositive or non-finite `base_frequency`".into(),
++        });
++    }
+     if document.multinetwork.unwrap_or(false) {
+         warnings.push(
+             &codes::READ_POWERMODELS_RECORD_DROPPED,
+@@ -490,7 +501,7 @@ pub(crate) fn parse_powermodels_json_source(
+     let net = BalancedNetwork::from_tables(BalancedNetworkTables {
+         name,
+         base_mva,
+-        base_frequency: crate::network::DEFAULT_BASE_FREQUENCY,
++        base_frequency,
+         geo: None,
+         case_metadata: crate::network::CaseMetadata::default(),
+         detailed_connectivity: None,
+@@ -548,6 +559,10 @@ pub(crate) fn parse_powermodels_json_source(
+ struct Document {
+     #[serde(rename = "baseMVA", default, deserialize_with = "lenient_f64")]
+     base_mva: Option<f64>,
++    // Optional PowerIO metadata, in Hz. Strict numeric decoding prevents an
++    // invalid stated value from silently becoming the 60 Hz default.
++    #[serde(default)]
++    base_frequency: Option<f64>,
+     #[serde(default, deserialize_with = "lenient_bool")]
+     per_unit: Option<bool>,
+     #[serde(default, deserialize_with = "lenient_bool")]
+diff --git a/powerio-tx/src/format/psse.rs b/powerio-tx/src/format/psse.rs
+index 71ae5dae..ef986536 100644
+--- a/powerio-tx/src/format/psse.rs
++++ b/powerio-tx/src/format/psse.rs
+@@ -4042,6 +4042,39 @@ fn convert_transformer_impedance(
+     }
+ }
+
++/// CZ 2 and 3 state impedance on the winding's nominal voltage base. The
++/// preceding conversion changes MVA base only; refer voltage to winding 1's
++/// bus base before moving winding 2's ratio into the branch impedance.
++fn two_winding_impedance_voltage_scale(
++    nominal_kv: f64,
++    bus_kv: f64,
++    cz: i64,
++    sbase: f64,
++    label: &str,
++    warnings: &mut Diagnostics,
++) -> f64 {
++    if !matches!(cz, 2 | 3) || !sbase.is_finite() || sbase <= 0.0 {
++        return 1.0;
++    }
++    // NOMV1 = 0 explicitly means the bus voltage base, including under CW 1.
++    if nominal_kv == 0.0 {
++        return 1.0;
++    }
++    if nominal_kv.is_finite() && nominal_kv > 0.0 && bus_kv.is_finite() && bus_kv > 0.0 {
++        let scale = (nominal_kv / bus_kv).powi(2);
++        if scale.is_finite() && scale > 0.0 {
++            return scale;
++        }
++    }
++    warnings.push(
++        &codes::READ_PSSE_VALUE_SUBSTITUTED,
++        format!(
++            "PSS/E transformer {label}: invalid nominal/bus voltage bases {nominal_kv}/{bus_kv}; omitted impedance voltage-base conversion"
++        ),
++    );
++    1.0
++}
++
+ /// The factor that carries a two winding transformer's magnetizing admittance
+ /// between PSS/E and the neutral branch.
+ ///
+@@ -5805,9 +5838,18 @@ fn read_transformer(
+         warnings,
+     );
+     let (tap, ratio2) = two_winding_tap(l1, l3, l4, from, to, cw, bus_base_kv, warnings)?;
++    let impedance_scale = two_winding_impedance_voltage_scale(
++        num_at(l3, 1, 0.0)?,
++        bus_base_kv.get(&from).copied().unwrap_or(0.0),
++        cz,
++        sbase,
++        &label,
++        warnings,
++    ) * ratio2
++        * ratio2;
+     // The impedance sits between the two winding ratios; the branch states it
+     // behind its one tap, on the winding 2 side of that ratio.
+-    let (r, x) = (r * ratio2 * ratio2, x * ratio2 * ratio2);
++    let (r, x) = (r * impedance_scale, x * impedance_scale);
+     let modern = raw_rev >= 34;
+     let (mut control, control_node) = read_transformer_control(
+         l3,
