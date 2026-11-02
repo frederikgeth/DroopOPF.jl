@@ -1,8 +1,4 @@
-# P3 multi-period droop design
-
-Historical `artifacts/` paths on this page identify local campaign records, not
-files bundled with the release. See [archive access](research.md) and the
-[current qualification index](milestones.md).
+# Chronological multi-period design
 
 The initial multi-period capability solves one deterministic sequence of AC
 operating periods in a single sparse nonlinear model. A single set of reactive
@@ -10,9 +6,14 @@ voltage-droop parameters is shared across all periods. Each period has its own
 active/reactive dispatch and voltage state. Equipment stays at the supplied
 fixed settings throughout the horizon.
 
-This is an initial implementation of P3-04. P2 remains open, and the original
-S2 campaign remains paused. Multi-period outage recourse, storage, commitment,
-equipment scheduling and dynamic trajectories are separate extensions.
+This API covers deterministic base-operation periods with fixed equipment.
+Storage, commitment and dynamic trajectories are outside this formulation.
+
+![Chronological base dispatch and alternative outage states, with shared curves.](assets/teaching/period_scenario_grid.svg)
+
+*Figure 1. The base-operation API models the upper row. Outage rows belong to the
+separate multi-period security extension. Horizontal arrows are preventive ramps,
+not dynamic response trajectories. See [the workflow tutorial](study_workflows.md).*
 
 ## Time and objective contract
 
@@ -37,6 +38,13 @@ pu/hour on the case power base. Between consecutive period starts:
 ```math
 -r_g^{down}\Delta t \le P_{g,t+1}-P_{g,t} \le r_g^{up}\Delta t.
 ```
+
+In this equation ``g`` is generator ID, ``t`` is chronological period index,
+``P_{g,t}`` is preventive active output in pu, ``r_g^{up},r_g^{down}`` are
+nonnegative ramp rates in pu/hour and ``\Delta t`` is the elapsed start-to-start
+interval in hours. The lower bound limits a decrease; the upper limits an increase.
+The global notation reference uses ``k`` for time to avoid confusing it with a
+branch's to-side endpoint ``t``.
 
 Omitted generators have no inter-period ramp restriction. Zero rates freeze
 active output across periods. These planned dispatch ramps do not replace the
@@ -65,55 +73,10 @@ all AC states, design bounds, ramp constraints, branch-angle constraints, period
 losses and the total energy objective must pass independently. Solver-reported
 local optima do not establish global optimality or design uniqueness.
 
-## Initial network campaign
-
-Run into a fresh output directory:
-
-```sh
-OPENBLAS_NUM_THREADS=1 julia --project=. examples/p3_multi_period.jl /fresh/output
-python3 -B examples/audit_p3_multi_period.py /fresh/output
-python3 examples/plot_p3_multi_period.py /fresh/output
-```
-
-The plotting command requires Matplotlib and NumPy. The Python audit replays
-complex-current AC physics separately from the Julia optimization implementation.
-Inputs, warm starts, policies, source hashes, native statuses and every state are
-saved by the example. It compares supplied fixed curves and shared designed
-curves under identical profiles and equipment settings.
-
-The 22 October 2026 campaign uses five one-hour periods:
-
-| Network | Ordered demand factors | Fixed curves, MWh | Shared design, MWh | Loss reduction |
-|---|---|---:|---:|---:|
-| Synthetic 3-bus | 90, 110, 95, 100, 90% | 2.74757 | 2.70002 | 1.73% |
-| ARPA-E S1 14-bus | 90, 100, 110, 100, 90% | 3.31966 | 2.84483 | 14.30% |
-| ARPA-E S1 500-bus | 90, 100, 105, 100, 90% | 158.09748 | 83.11411 | 47.43% |
-
-All six solves terminated `LOCALLY_SOLVED`; Julia validation and independent
-Python replay accepted all 30 period states. These are finite sampled profiles,
-not continuous demand-range or N−1 qualification. No emergency limits, demand
-response or shedding are used. Network data retain S1's Pmin=0 and symmetric-Q
-study assumptions.
-
-All taps and banks remain fixed at the S1 supplied reference settings. Banks
-retain continuous reference susceptance values; no discrete switching claim is
-made. Generator ramps are assumed at 25% of active capability range per hour;
-the synthetic generator 7 instead has zero movement to exercise coupling.
-They are sensitivity assumptions, not verified manufacturer ramp data.
-Droop slopes/references are shared across all five periods: the public cases
-use 2–8% voltage span across the full reactive capability and reference ±0.02 pu;
-the synthetic case uses 0.5–2 times supplied slopes and reference ±0.02 pu.
-Deadband widths remain supplied and fixed.
-
-Detailed evidence and three figures are retained in
-`artifacts/p3_multi_period_20261022_v2/REPORT.md`. The large percentage reduction
-is relative to the supplied fixed curves under the same ramp constraints; it
-is not a comparison with independently retuned hourly curves or a global bound.
-
 ## Mixed AVR and contingency recourse extension
 
 The base-operation API above retains its fixed-equipment scope. The separate
 `optimize_multi_period_security` API supports mixed AVR/droop controls, apparent
 capability circles, outage recourse, explicit Study equipment policies and optional
 preventive AVR scheduling. See [Mixed AVR and droop studies](mixed_avr_droop.md)
-for the model contract, declared S2 comparison settings and qualification limits.
+for the model contract, declared legacy comparison comparison settings and qualification limits.

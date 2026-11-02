@@ -6,25 +6,27 @@ struct SCOPFDroopDesignResult
     result::SCOPFResult
 end
 
-"""Optimize several shared droop curves using the normal smooth SCOPF builder.
+"""Optimize several shared droop curves using smooth or exact SCOPF builders.
 
 The Study equipment and active-response policies are preserved. Explicit mixed
 assignments may design matching attached droop controls. Initial states
 are numerical starts only; independently replay the returned exact curves.
 """
 function optimize_droop_parameters(study::Study, controls::AbstractVector{<:DroopControl};
-    smooth_epsilon::Real=1e-5, initial_states::AbstractDict=Dict(), kwargs...)
+    smooth_epsilon::Real=1e-5, initial_states::AbstractDict=Dict(),
+    encoding::Symbol=:smooth, kwargs...)
     study = _validated_study(study)
     _check_mixed_design(study.case,study.reactive_assignments,controls)
     length(unique(c.control_id for c in controls)) == length(controls) ||
         throw(ArgumentError("duplicate droop control IDs"))
     policies = Dict(c.control_id => _joint_droop_policy(study.case, c) for c in controls)
-    forbidden = (:encoding, :fixed_base_state, :_droop_parameter_builder,
+    encoding in (:smooth, :complementarity) || throw(ArgumentError("unknown droop design encoding"))
+    forbidden = (:fixed_base_state, :_droop_parameter_builder,
         :_phase1_power_balance, :_model_hook)
     any(k in keys(kwargs) for k in forbidden) &&
         throw(ArgumentError("design owns the encoding, base freedom and model hooks"))
-    get(kwargs, :optimizer_factory, Ipopt.Optimizer) === CCOpt.Optimizer &&
-        throw(ArgumentError("multi-controller SCOPF design currently uses smooth NLP solvers"))
+    encoding == :smooth && get(kwargs, :optimizer_factory, Ipopt.Optimizer) === CCOpt.Optimizer &&
+        throw(ArgumentError("CCOpt requires encoding=:complementarity for shared droop design"))
     parameters = Dict{Int,NamedTuple}()
     captured = Ref{Any}(nothing)
     function build_parameters(model)
@@ -38,7 +40,7 @@ function optimize_droop_parameters(study::Study, controls::AbstractVector{<:Droo
         end
         parameters
     end
-    result = solve_scopf(study; smooth_epsilon, initial_states,
+    result = solve_scopf(study; smooth_epsilon, initial_states, encoding,
         _droop_parameter_builder=build_parameters, kwargs...)
     settings = Dict{Int,DroopSettings{Float64}}()
     if has_values(captured[])
@@ -165,7 +167,8 @@ function optimize_droop_security(study::Study, controls::AbstractVector{<:DroopC
     max_rounds::Integer=5, batch_size::Integer=2, screening_enabled::Bool=true,
     filter_kwargs::NamedTuple=(;), solver_kwargs::NamedTuple=(;),
     evaluation_kwargs::NamedTuple=(;), validation_kwargs::NamedTuple=(;),
-    initial_states::AbstractDict=Dict(), on_iteration=identity)
+    initial_states::AbstractDict=Dict(), on_iteration=identity,
+    encoding::Symbol=:smooth)
     study = _validated_study(study)
     max_rounds > 0 && batch_size > 0 || throw(ArgumentError("round and batch limits must be positive"))
     canonical = contingency_catalog(study.case)
@@ -185,7 +188,7 @@ function optimize_droop_security(study::Study, controls::AbstractVector{<:DroopC
     audit_allowed = (:optimizer_factory,:optimizer_attributes,:silent)
     all(k in audit_allowed for k in keys(evaluation_kwargs)) ||
         throw(ArgumentError("evaluation overrides may only select solver, limits and logging"))
-    eval_options = merge((;smooth_epsilon=1e-5),solver_kwargs,evaluation_kwargs)
+    eval_options = merge((;smooth_epsilon=1e-5,encoding),solver_kwargs,evaluation_kwargs)
     audit_validation = (; (k=>v for (k,v) in pairs(validation_kwargs) if k != :setting_tolerance)...)
     forbidden = (:initial_states,:fixed_base_state,:fixed_base_tap_settings,
         :fixed_base_shunt_settings,:_phase1_power_balance,:_droop_parameter_builder,:_model_hook,:encoding)
@@ -200,7 +203,7 @@ function optimize_droop_security(study::Study, controls::AbstractVector{<:DroopC
     for round in 1:max_rounds
         master = _copy_study(study; contingencies=training)
         seconds = @elapsed design = optimize_droop_parameters(master,current_controls;
-            initial_states=starts,solver_kwargs...)
+            initial_states=starts,encoding,solver_kwargs...)
         validation = validate_droop_design(master,design;validation_kwargs...)
         assessments = ContingencyAssessment[]
         errors = Dict{Symbol,String}()

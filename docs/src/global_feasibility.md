@@ -1,12 +1,14 @@
 # Optional global feasibility escalation
 
-Historical `artifacts/` paths on this page identify local campaign records, not
-files bundled with the release. See [archive access](research.md) and the
-[current qualification index](milestones.md).
-
 ```@meta
 CurrentModule = DroopOPF
 ```
+
+A second-order cone (SOC) models a Euclidean-norm inequality; positive
+semidefinite (PSD) constraints model nonnegative quadratic forms. SOS2 means
+special ordered set of type 2: at most two adjacent interpolation weights may be
+nonzero, allowing an exact piecewise-linear (PWL) graph. Symbols for the
+certificate and lifted-voltage equations are defined below.
 
 Global analysis extends the existing three-outcome gate. It does not replace it.
 Only an independently checked AC point produces `feasible`; a replayable
@@ -46,6 +48,23 @@ original feasible point by silently selecting a droop region.
 Global search uses thermal-current bounds and shortest-path angle bounds to
 narrow rectangular voltage coordinates, with numerical outward padding. These
 numerical bounds are not themselves accepted as exact certificates.
+
+## Symbols and geometric meaning
+
+A linear program (**LP**) optimizes a linear function under linear constraints.
+This outer LP contains every original feasible AC point; excluding the outer
+set therefore excludes the original set. The reverse implication does not hold.
+In the certificate below, ``x`` is an LP decision vector, ``A`` its inequality
+coefficient matrix, ``b`` its right-hand-side vector, ``l,u`` finite componentwise
+bounds, ``y`` a nonnegative multiplier vector, and ``i`` a vector-coordinate index.
+``A^\mathsf T`` denotes transpose. Certificate margin ``m`` is a scalar, unrelated
+to the droop slope also written ``m`` on control pages.
+
+In the voltage lift later below, ``V`` is the complex bus-voltage vector,
+``W=VV^*`` its lifted outer-product matrix, ``*`` conjugate transpose, and ``z``
+a complex test vector. Positive semidefinite (**PSD**) means ``z^*Wz\ge0`` for
+every ``z``. This ``z`` is not branch impedance. The LP's real decision vector
+contains real and imaginary components of such voltage-product quantities.
 
 ## What makes an LP certificate independently checkable
 
@@ -110,16 +129,7 @@ lp = certify_feasibility_lp(problem; optimizer_factory=HiGHS.Optimizer,
 
 ## Optional solver environment
 
-The main package has no new solver dependencies. From the repository root:
-
-```sh
-julia --project=examples/global_feasibility_env -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
-julia --project=examples/global_feasibility_env examples/s1_arpae14_global_feasibility.jl
-julia --project=examples/global_feasibility_env examples/s1_arpae14_global_tightening.jl
-julia --project=examples/global_feasibility_env examples/global_feasibility_scale_probe.jl
-julia --project=examples/global_feasibility_env examples/s1_cycle_feasibility.jl
-julia --project=examples/global_feasibility_env examples/s1_cycle_global_search.jl
-```
+The optional solvers are installed separately from the main package.
 
 The optional environment uses HiGHS for LP search and SCIP for global search.
 SCIP supports spatial branch-and-cut for bounded MINLPs; this provides numerical
@@ -154,43 +164,13 @@ selected for tightening, and solver time. Model compilation/construction and
 independent proof replay have additional overhead. Solver bounds, candidate
 points, controls, scope fingerprints and failed attempts remain in the ledgers.
 
-## Current 14-bus evidence and 500-bus scale probe
+## Interpreting incomplete calculations
 
-At 90% demand with source taps/shunts fixed, both corrected droop variants remain
-unresolved after sparse relaxations, three rounds of verified bound tightening,
-and bounded global searches. The voltage-restoration searches retained a zero
-global lower bound at their 60-second limits. Positive local relaxation values
-therefore remain upper bounds, not infeasibility certificates.
-
-The strict searches after verified bound tightening also have a separate ledger;
-no relaxed point can pass as a strict witness. The scripts preserve the original
-OPF/SCOPF files and start no SCOPF campaigns.
-
-The 500-bus probe imports all 90 generator records, including an unavailable
-zero-Q-range unit, and calibrates 51 active no-deadband curves to the saved OPF.
-It builds the sparse SOC and global models and independently replays that source
-point. It runs only a bounded LP sanity check, not a 500-bus global proof search.
-The global model has 5,951 variables for 593 active branches, demonstrating sparse
-construction; this does not establish tractable global solution time.
-
-Results are in `artifacts/s1_arpae14_global_feasibility/` and
-`artifacts/s1_global_scale_probe/`. Cycle-strengthened results are in `artifacts/s1_cycle_feasibility/`.
-The cycle LP uses 11 small PSD blocks and 24 lifted edges on the 14-bus case.
-Three verified bound-tightening rounds improve voltage bounds, but both 90%
-demand variants remain unresolved. Each strict global search using the new
-verified voltage bounds reached its 60-second limit with no feasible witness
-and no infeasibility proof (numerical lower bound zero). The 500-bus cycle model has 236 small PSD
-blocks, 888 lifted edges (including fill), and 3,166 LP variables; construction
-was approximately 0.48 seconds in the measured warm run. Its saved source point
-passed independent replay and the new PSD separation check. A 60-second LP
-budget remained inconclusive, as expected for a known feasible source point;
-this LP is not itself a feasibility witness.
-
-The cycle and previous LP runs used different refinement budgets, so their bound
-comparison records the combined effect of cuts and refinement, not an isolated
-performance benchmark. Larger cases retain the same gate and bounded escalation
-policy; sparse construction alone does not demonstrate tractable global proof
-search.
+A time limit, zero lower bound or positive local relaxation value does not
+certify infeasibility. A feasible outer relaxation is not an AC witness.
+Sparse construction does not establish tractable global solution time.
+Retain the model contract, solver outcome, failed attempts and independently
+replayed proof or witness for each calculation.
 
 ## API
 

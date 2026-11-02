@@ -1,99 +1,78 @@
-# M7 equipment and joint droop optimization
+# Equipment and joint droop optimization
 
-These synthetic three-bus studies demonstrate base-case continuous optimization. They do not establish security-constrained equipment performance, discrete implementability or scalability. All three slices use the same dispatch-deviation objective; losses and setting deviations are separate metrics.
+Selected continuous taps, simple banks and curve parameters can be optimized
+while unselected equipment stays at supplied settings. Start with
+[branch/shunt physics](ac_model.md) and [the data contract](data_model.md).
+Bounds must describe the equipment you intend to permit; imported settings do
+not establish manufacturer capability or legal positions.
 
-The joint API also accepts `encoding=:complementarity` to optimize the same
-continuous tap, simple-bank and bounded droop-parameter variables with CCOpt's
-exact droop graph.
-This provides an exact-versus-smoothed droop comparison without changing the
-equipment relaxation, bounds, or objective. Omitted droop parameter bounds keep
-those parameters fixed, as in the smooth path. The returned result records both
-`encoding` and `complementarity_residual_max`. Discrete tap positions and
-switched-shunt selection are not part of this comparison.
+![From-side tap, series impedance and branch charging in the electrical model.](assets/teaching/branch_pi.svg)
 
-A reproducible matched run is provided by
-`examples/m7_ccopt_comparison.jl`. It writes each solver's complete design,
-independent physical residuals, setting differences and objective differences
-to `artifacts/m7_ccopt_comparison`.
+*Figure 1. Tap design changes the positive from-side ratio. Bank design changes
+bus admittance, which is separate from branch charging.*
 
-The dedicated `optimize_taps` and `optimize_shunts` APIs accept the same
-`encoding=:complementarity` option. Their result records include `encoding` and
-`complementarity_residual_max`, matching joint-design reporting. As with joint
-design, omit `optimizer_factory` in exact mode and pass CCOpt settings through
-`optimizer_attributes`.
+## Transformer ratios
 
-The tables below summarize historical synthetic studies. A selected [tap-sweep figure](validation_evidence.md) is included in this documentation. Full inputs, gallery figures and reports for `m7_1`, `m7_2` and `m7_3` are in the local research archives; restore those prerequisites before using `examples/build_m7_gallery.py`.
+For a `case` with transformer ID 11 and a validated `state`:
 
-## M7.1 — Transformer taps
+```julia
+controls = [TapControl(11; lower=0.95, upper=1.05, nominal=1.0)]
+result = optimize_taps(case, controls; initial_state=state)
+audit = validate_tap_design(case, result)
+physical_case = with_tap_settings(case, result.taps)
+```
 
-Fixed-bound and standalone equivalence, a 41-point tap sweep and one/two-free-tap comparisons. Transformer phase shifts, shunts and droops stay fixed.
+The bounds and `nominal` are dimensionless ratios. `initial` is a numerical
+starting value; `nominal` is a reporting reference, not an objective penalty.
+Set equal lower/upper bounds to fix a selected setting. Phase shifts remain
+supplied. Both branch-terminal ratings and AC balance remain active.
 
-| Configuration | Objective | Tap 11 | AC residual (pu) | Branch loss (pu) |
-|---|---|---|---|---|
-| fixed | 2.760045e-05 | 1.02 | 2.431215e-15 | 0.002264238 |
-| tap 11 free | 1.994948e-05 | 1.0023 | 2.870759e-13 | 0.002113501 |
-| taps 11 and 22 free | 1.993398e-05 | 1.001548 | 5.830753e-14 | 0.002108155 |
+## Simple bank susceptance
 
-[Archived full evidence and restoration instructions](research.md)
+A selected bank must have supported single-step metadata with nonzero step
+susceptance. For example, step susceptance ``B_{step}=0.02`` pu and legal counts
+0–3 give a continuous design interval 0–0.06 pu. Here ``B_{step}`` is admittance
+per section, while ``B`` is aggregate susceptance. With conductance per section
+``G_{step}``, aggregate conductance remains ``G=G_{step}B/B_{step}``.
+Positive ``B`` is capacitive; negative ``B`` is inductive.
 
-## M7.2 — Simple capacitor/reactor banks
+```julia
+# Requires supported simple bank ID 201 in case.network.banks.
+result = optimize_shunts(case, [ShuntControl(201)]; initial_state=state)
+audit = validate_shunt_design(case, result)
+physical_case = with_shunt_settings(case, result.susceptances)
+```
 
-Each bank has one step type. A fractional count scales G and B together. Taps and droops stay fixed. Each capacitor/reactor sweep contains 31 points. Complex-bank optimization is deferred until simple-bank/transformer/droop scaling is demonstrated.
+A fractional section count is a continuous relaxation. It needs a separate legal
+state recovery and validation before being described as discrete switching.
+Fixed shunts without bank metadata cannot be selected through this interface.
 
-| Equipment | Mode | Objective | AC residual (pu) | Branch loss (pu) | Shunt active consumption (pu) |
-|---|---|---|---|---|---|
-| capacitor | fixed | 3.165313e-05 | 3.969047e-15 | 0.002262357 | 0.003334059 |
-| capacitor | one free | 2.935443e-05 | 2.124758e-09 | 0.002287727 | 0.002377693 |
-| capacitor | both free | 2.557165e-05 | 2.245834e-11 | 0.002289527 | 0.001899371 |
-| reactor | fixed | 3.726789e-05 | 5.172945e-15 | 0.002329133 | 0.003314389 |
-| reactor | one free | 2.935434e-05 | 1.236122e-12 | 0.002287783 | 0.002376528 |
-| reactor | both free | 2.557165e-05 | 6.664602e-11 | 0.002289591 | 0.001898015 |
+## Joint settings and curves
 
-[Archived full evidence and restoration instructions](research.md)
+```julia
+result = optimize_joint_design(case;
+    tap_controls=[TapControl(11; lower=0.95, upper=1.05)],
+    shunt_controls=[ShuntControl(201)],
+    droop_controls=[DroopControl(2; slope_bounds=(0.04,0.10))],
+    initial_state=state)
+audit = validate_joint_design(case, result)
+physical_case = with_joint_settings(case, result)
+```
 
-## M7.3 — Joint equipment and droop design
+This fragment assumes those device IDs and control index 2 exist. Slope is in
+pu voltage/pu reactive power. Missing design bounds fix the corresponding curve
+parameter. Reactive output inside the deadband and supplied capability remain
+fixed. Explicit reactive assignments must match the selected design family.
 
-Digits denote **tap / shunt / droop**, with 1 free and 0 fixed. Each configuration has two starts. Tables select the lowest-objective physically valid attempt; the evidence retains every attempt and failure. Tap 11 is bounded to [0.95,1.05], bank 201 B to [0,0.06] pu, and droop 2 slope to [0.04,0.10]. Other parameters are fixed in this grid; separate regression tests exercise reference and asymmetric deadband selection.
+Compare fixed and free configurations under the same objective, operating
+limits and initial/evaluation policy. Similar objectives with different settings
+can indicate weak parameter identification; repeated starts do not prove a
+unique or global optimum.
 
-| T/S/D | Valid starts | Objective | Tap | B (pu) | Slope | AC residual (pu) |
-|---|---|---|---|---|---|---|
-| 000 | 2/2 | 3.165313e-05 | 1.02 | 0.02 | 0.075 | 1.915135e-15 |
-| 001 | 2/2 | 2.857831e-05 | 1.02 | 0.02 | 0.0999999 | 8.430756e-16 |
-| 010 | 2/2 | 2.935435e-05 | 1.02 | 3.024316e-05 | 0.075 | 1.826502e-10 |
-| 011 | 2/2 | 2.620771e-05 | 1.02 | 1.061755e-07 | 0.0999999 | 1.034173e-13 |
-| 100 | 2/2 | 2.37211e-05 | 1.002058 | 0.02 | 0.075 | 1.460221e-13 |
-| 101 | 2/2 | 2.37124e-05 | 1.000147 | 0.02 | 0.05446868 | 1.136674e-12 |
-| 110 | 2/2 | 2.183084e-05 | 1.002401 | 4.454692e-05 | 0.075 | 7.189332e-09 |
-| 111 | 2/2 | 2.18081e-05 | 0.9993228 | 1.480988e-07 | 0.04644218 | 1.709433e-11 |
+## Outage permission is a separate decision
 
-| T/S/D | Active objective | Reactive objective | Branch loss | Shunt consumption | Objective spread | Slope spread |
-|---|---|---|---|---|---|---|
-| 000 | 1.565994e-05 | 1.599318e-05 | 0.002262357 | 0.003334059 | 3.455894e-19 | 0 |
-| 001 | 1.557982e-05 | 1.299849e-05 | 0.002256893 | 0.003325188 | 5.23072e-06 | 0.05999455 |
-| 010 | 1.088287e-05 | 1.847148e-05 | 0.002287728 | 0.002377647 | 7.98245e-11 | 0 |
-| 011 | 1.081902e-05 | 1.538869e-05 | 0.002282338 | 0.002369333 | 1.770052e-10 | 4.499464e-09 |
-| 100 | 1.489327e-05 | 8.827828e-06 | 0.002114444 | 0.003343261 | 2.78335e-17 | 0 |
-| 101 | 1.490091e-05 | 8.811489e-06 | 0.002110516 | 0.003348588 | 1.378631e-17 | 2.530132e-09 |
-| 110 | 1.024779e-05 | 1.158305e-05 | 0.002141423 | 0.002385782 | 6.579897e-11 | 0 |
-| 111 | 1.024086e-05 | 1.156724e-05 | 0.002135656 | 0.002390017 | 2.098927e-15 | 2.75197e-07 |
-
-The objective is the sum of the two listed components. Design penalty is zero in every configuration. Loss quantities are in pu. The second-start design values are tap=1, B=0.04 and slope=0.095 for enabled families, with the solved fixed operating state; the first start uses supplied settings and the declared proportional-regime state.
-
-### Matched attribution and interactions
-
-Each comparison below changes only droop freedom. Variation across these four benefits measures its dependence on equipment freedom; isolated benefits must not be added without accounting for interactions.
-
-| Equipment freedom held fixed | Objective decrease from freeing droop |
-|---|---|
-| tap=0 shunt=0 | 3.074821e-06 |
-| tap=0 shunt=1 | 3.146635e-06 |
-| tap=1 shunt=0 | 8.702212e-09 |
-| tap=1 shunt=1 | 2.274399e-08 |
-
-Some starts may reach different valid local solutions. Similar objectives with different settings indicate weak parameter identification on this case. Multi-start evidence is not a global-optimality certificate.
-
-[Archived full evidence and restoration instructions](research.md)
-
-## Acceptance and next scope
-
-Independent AC and exact-droop tolerances are 1e-6 and 1e-5 pu. Smooth epsilon is 1e-5. Fixed/free comparisons allow objective differences of 1e-8 for numerical equivalence. The full suite checks policy perturbations, physical replay, serialization and Ipopt/MadNLP agreement. M8 adds steady-state transformer AVR; M9 adds coordinated equipment decisions and response policies across contingencies.
+A base `Case` design does not itself authorize corrective equipment movement.
+A `Study` declares selections, absolute bounds, preventive/corrective timing and
+movement maps through `SCOPFControlPolicy`. Read [SCOPF equipment timing](scopf.md#Equipment-timing-and-movement-bounds)
+before using outage recourse. Continuous endpoints do not establish device timing
+or the feasibility of the path between endpoints.

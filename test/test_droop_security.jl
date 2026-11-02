@@ -1,4 +1,5 @@
 include(joinpath(@__DIR__,"..","examples","droop_security_cases.jl"))
+import CCOpt, MadNLP
 
 @testset "Shared SCOPF droop design and full N-1 audit" begin
     case = droop_security_case()
@@ -18,6 +19,33 @@ include(joinpath(@__DIR__,"..","examples","droop_security_cases.jl"))
     enumerated = optimize_droop_parameters(full,controls;initial_states=fixed.states)
     @test validate_droop_design(full,enumerated).valid
     @test Set(keys(enumerated.settings)) == Set([1,2])
+    # Analytically feasible, nonzero-deadband two-controller fixture. Both
+    # voltage states are strictly below the lower deadband edge, so this tests
+    # shared free parameters without relying on a solver escaping a kink.
+    exact_case = Case("shared-exact-deadband";base_power=100.,base_frequency=50.,
+        network=ACNetwork([Bus(1;reference=true)],Branch[]),
+        generators=[Generator(i,1;p_min=0.,p_max=1.2,q_min=-1.,q_max=1.,
+            initial_p=.3,initial_q=.075) for i in (7,9)],
+        loads=[Load(1,1;p=.6,q=.15)],
+        controls=[VoltVarDroop(VoltageSchedule(1.;v_db_low=.99,v_db_high=1.01),
+            .05,0.,ReactiveCapability(p_min=0.,p_max=1.2,q_min=-1.,q_max=1.)) for _ in 1:2],
+        attachments=[GeneratorControlAttachment(i,k,RegulatedLocation(:bus,1)) for (k,i) in enumerate((7,9))])
+    exact_study = Study(exact_case;contingencies=[Contingency(:generator_9;generator_ids=[9])])
+    exact_controls = [DroopControl(1;slope_bounds=(.04,.08)),DroopControl(2;slope_bounds=(.04,.1))]
+    exact_barrier=MadNLP.MonotoneUpdate(1e-11,10.)
+    exact_barrier.mu_init=1e-6
+    exact = optimize_droop_parameters(exact_study,exact_controls;encoding=:complementarity,
+        initial_states=Dict(:base=>ACState([.98625],[0.],[.3,.3],[.075,.075]),
+            :generator_9=>ACState([.9825],[0.],[.6,0.],[.15,0.])),
+        optimizer_attributes=Dict("relaxation_update"=>CCOpt.ProportionalRelaxationUpdate(sigma_min=1e-14),"tol"=>1e-11,
+            "barrier"=>exact_barrier,"bound_relax_factor"=>0.,
+            "acceptable_tol"=>1e-11,"bound_push"=>1e-8,"bound_fac"=>1e-8,
+            "max_iter"=>3000,"max_wall_time"=>60.))
+    @test exact.result.encoding == :complementarity
+    @test validate_droop_design(exact_study,exact).valid
+    @test Set(keys(exact.settings)) == Set([1,2])
+    @test all(.04-1e-8 <= exact.settings[c.control_id].slope <= c.bounds.slope[2]+1e-8 for c in controls)
+    @test_throws ArgumentError optimize_droop_parameters(base,controls;encoding=:unknown)
     base = Study(case;participation=full.participation)
     iterative = optimize_droop_security(base,controls;max_rounds=5,batch_size=1,initial_states=seed.states,
         solver_kwargs=(;optimizer_attributes=Dict("max_iter"=>500)))
@@ -85,6 +113,7 @@ end
     assignments = reactive_control_assignments(case)
     explicit = Study(case;reactive_assignments=assignments)
     @test validate_droop_design(explicit,optimize_droop_parameters(explicit,[DroopControl(1)];initial_states=Dict(:base=>droop_security_start(case)))).valid
+    @test_throws ArgumentError optimize_droop_parameters(explicit,[DroopControl(1)];encoding=:complementarity)
 end
 
 @testset "Opt-in sparse droop balances preserve physical results" begin

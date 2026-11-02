@@ -23,7 +23,7 @@ end
 `tap_ratio * cis(phase_shift)`. `kind` is explicit `:line` or `:transformer`
 metadata; it does not alter the electrical equations. The ratio is positive and
 dimensionless; phase shift is in radians. Ratio and phase are fixed equipment
-inputs in M5.
+inputs in transformer support.
 """
 struct Branch{T<:Real}
     id::Int

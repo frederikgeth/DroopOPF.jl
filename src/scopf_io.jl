@@ -60,7 +60,7 @@ write_scopf_result(path::AbstractString, result::SCOPFResult) =
 write_scopf_report(path::AbstractString, report::SCOPFReport) =
     _write_scopf_json(path, "DroopOPF.SCOPFReport", report)
 
-"""Write a paired M9.3 immediate/settled assessment to JSON."""
+"""Write a paired immediate/settled assessment immediate/settled assessment to JSON."""
 write_scopf_stage_assessment(path::AbstractString, assessment::SCOPFStageAssessment) =
     _write_scopf_json(path, "DroopOPF.SCOPFStageAssessment", assessment)
 

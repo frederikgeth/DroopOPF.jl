@@ -1,4 +1,4 @@
-"""Independent bounds for the existing M3 droop family; omitted fields stay fixed."""
+"""Independent bounds for the existing droop design droop family; omitted fields stay fixed."""
 struct DroopControl
     control_id::Int
     bounds::NamedTuple

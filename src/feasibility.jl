@@ -443,7 +443,7 @@ function _feasibility_scaled_case(c,factor)
         loads=[Load(l.id,l.bus_id;p=factor*l.p,q=factor*l.q) for l in c.loads])
 end
 
-"""Qualify a proposed droop replacement before accepting it for S1 analysis.
+"""Qualify a proposed droop replacement before accepting it for independent-demand study analysis.
 
 The source calibration point must replay both before and after replacement;
 optimization cannot repair a failed calibration check. Then both the original

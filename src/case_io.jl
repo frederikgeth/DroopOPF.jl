@@ -162,26 +162,110 @@ function _io_rating(value, base, options, diagnostics, identity)
     options.unrated_limit_pu
 end
 
-# A source envelope guard, not an electrical parser. Unknown MATPOWER extension
-# assignments must not silently disappear in either backend. Numerical tables
-# remain the selected backend's responsibility.
+# Mask comments and quoted text before inspecting the source envelope. A quote
+# after an identifier or closing delimiter is MATLAB transpose, not a string.
+function _io_matpower_code(bytes)
+    chars = collect(String(copy(bytes)))
+    masked = copy(chars)
+    previous = '\0'
+    i = 1
+    while i <= length(chars)
+        c = chars[i]
+        if c == '%'
+            while i <= length(chars) && !(chars[i] in ('\n', '\r'))
+                masked[i] = ' '; i += 1
+            end
+        elseif c == '"' || (c == '\'' && !(isletter(previous) || isdigit(previous) ||
+                previous in (')', ']', '}', '.')))
+            delimiter = c
+            masked[i] = ' '; i += 1
+            closed = false
+            while i <= length(chars)
+                c = chars[i]
+                masked[i] = c in ('\n', '\r') ? c : ' '
+                i += 1
+                if c == delimiter
+                    if i <= length(chars) && chars[i] == delimiter
+                        masked[i] = ' '; i += 1
+                    else
+                        closed = true
+                        break
+                    end
+                end
+            end
+            closed || _io_error(:unsupported_matpower_statement, :convert,
+                "unterminated quoted text in MATPOWER source")
+            previous = delimiter
+        else
+            isspace(c) || (previous = c)
+            i += 1
+        end
+    end
+    String(masked)
+end
+
+# Find one literal definition's terminator without treating matrix/cell row
+# separators as top-level statements. Computation remains the backend's job;
+# arbitrary MATLAB calls must not be silently ignored by the native reader.
+function _io_matpower_literal_end(text, diagnostics)
+    delimiters = Char[]
+    for i in eachindex(text)
+        c = text[i]
+        if c == ';' && isempty(delimiters)
+            return i
+        elseif c in ('[', '{')
+            push!(delimiters, c)
+        elseif c in (']', '}')
+            expected = c == ']' ? '[' : '{'
+            !isempty(delimiters) && pop!(delimiters) == expected ||
+                _io_error(:unsupported_matpower_statement, :convert,
+                    "unbalanced literal MATPOWER definition"; diagnostics)
+        elseif !(isspace(c) || isdigit(c) || c in ('.', '+', '-', 'e', 'E', 'd', 'D', ',', ';'))
+            _io_error(:unsupported_matpower_statement, :convert,
+                "MATPOWER definitions must be literal data, not executable expressions"; diagnostics)
+        end
+    end
+    _io_error(:unsupported_matpower_statement, :convert,
+        "MATPOWER literal definitions require a terminating semicolon"; diagnostics)
+end
+
+# A source envelope guard, not a MATLAB evaluator. Parse the entire restricted
+# envelope so indexed/indirect writes and calls such as eval cannot disappear
+# while a backend imports the earlier literal tables.
 function _io_matpower_envelope(bytes, diagnostics)
-    text = replace(String(copy(bytes)), r"%[^\r\n]*" => "")
+    text = lstrip(_io_matpower_code(bytes))
+    header = match(r"^function\s+mpc\s*=\s*[A-Za-z_]\w*\s*(?:\(\s*\))?\s*(?:;|\r?\n|$)", text)
+    isnothing(header) || (text = lstrip(SubString(text, ncodeunits(header.match) + 1)))
     core = ("version", "baseMVA", "bus", "gen", "branch")
     annotations = ("bus_name", "gentype", "genfuel", "gencost")
-    for m in eachmatch(r"\bmpc\.([A-Za-z_]\w*)\s*=\s*", text)
-        name = m.captures[1]
-        name in core && continue
-        if name in annotations
+    defined = Set{String}()
+    while !isempty(text)
+        ending = match(r"^end\b\s*(?:;|\r?\n|$)", text)
+        if !isnothing(ending)
+            text = lstrip(SubString(text, ncodeunits(ending.match) + 1))
+            continue
+        end
+        definition = match(r"^mpc\s*\.\s*([A-Za-z_]\w*)\s*=(?!=)", text)
+        isnothing(definition) && _io_error(:unsupported_matpower_statement, :convert,
+            "only direct literal MATPOWER definitions are supported; indexed, indirect and executable statements are unsupported"; diagnostics)
+        name = definition.captures[1]
+        value = SubString(text, ncodeunits(definition.match) + 1)
+        stop = _io_matpower_literal_end(value, diagnostics)
+        literal = SubString(value, 1, stop)
+        if name in core
+            name in defined && _io_error(:unsupported_matpower_statement, :convert,
+                "mpc.$name is assigned more than once; executable updates are unsupported"; diagnostics)
+            push!(defined, name)
+        elseif name in annotations
             push!(diagnostics, _io_diagnostic(:study_metadata_unmodeled, :convert,
                 "mpc.$name is outside the static electrical profile; source costs do not configure the DroopOPF objective";
                 component="mpc.$name"))
         else
-            rest = SubString(text, m.offset + ncodeunits(m.match))
-            occursin(r"^\[\s*\]\s*;", rest) && continue
-            _io_error(:unsupported_matpower_extension, :convert,
-                "mpc.$name requires a separately qualified model projection"; diagnostics)
+            occursin(r"^\s*\[\s*\]\s*;", literal) ||
+                _io_error(:unsupported_matpower_extension, :convert,
+                    "mpc.$name requires a separately qualified model projection"; diagnostics)
         end
+        text = lstrip(SubString(value, nextind(value, stop)))
     end
 end
 

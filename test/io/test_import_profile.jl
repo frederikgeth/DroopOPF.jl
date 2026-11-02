@@ -15,6 +15,25 @@
             for field in ("dcline", "storage", "A", "unknown_extension")
                 @test errorcode(source * "\nmpc.$field = [1 2 3];\n") == :unsupported_matpower_extension
             end
+            # Put updates inside a valid case function, before its final end.
+            # Each backend must reject them before reading stale literal values.
+            for statement in ("mpc.branch(1,6) = 123;", "mpc.bus(:,3) = 0;",
+                "mpc.gen(1,9) = 5;", "mpc.unknown_extension(1) = 123;",
+                "mpc.storage{1} = 123;", "mpc.extra.field = 123;",
+                "mpc.baseMVA = 200;", "mpc.branch = mpc.branch;",
+                "mpc . branch (1,6) = 123;", "mpc.('branch')(1,6) = 123;",
+                "mpc(1).branch(1,6) = 123;", "mpc = setfield(mpc, 'baseMVA', 200);",
+                "alias = mpc; alias.branch(1,6) = 123;",
+                "eval('mpc.branch(1,6) = 123;');",
+                "mpc.gencost = eval('mpc.branch(1,6) = 123;');")
+                updated = replace(source, r"\bend\s*$" => statement * "\nend\n")
+                @test errorcode(updated) == :unsupported_matpower_statement
+            end
+            # A mention in a name or comment is data, not executable source.
+            text = source * "\n% mpc.branch(1,6) = 123;\n" *
+                "mpc.bus_name = {'mpc.branch(1,6) = 123;'; 'O''Brien % mpc.extra = 1;'; 'BUS3'};\n"
+            write(path, text)
+            @test length(import_case(path; backend).case.network.buses) == 3
             @test errorcode(replace(source, "1 -360 360" => "1 -30 30")) == :unsupported_angle_limits
             write(path, source * "\nmpc.storage = [];\n")
             @test length(import_case(path; backend).case.network.buses) == 3

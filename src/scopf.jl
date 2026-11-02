@@ -154,7 +154,7 @@ end
 """
     solve_scopf(study; smooth_epsilon=1e-4, optimizer_factory=Ipopt.Optimizer, ...)
 
-Solve the base and all listed contingencies jointly, minimizing the M1 base
+Solve the base and all listed contingencies jointly, minimizing the base OPF base
 schedule-deviation objective. Contingencies impose feasibility constraints and
 have no additional cost. The fixed droop graph applies in every available unit.
 `fixed_base_state` evaluates security of an existing equilibrium without changing it.
@@ -199,8 +199,8 @@ function solve_scopf(study::Study;
     end
     silent && set_silent(model)
     if !isnothing(_droop_parameter_builder)
-        encoding == :smooth && isnothing(fixed_base_state) && !_phase1_power_balance ||
-            throw(ArgumentError("shared droop design requires a smooth, unfixed SCOPF"))
+        isnothing(fixed_base_state) && !_phase1_power_balance ||
+            throw(ArgumentError("shared droop design requires an unfixed, physical SCOPF"))
     end
     droop_parameters = isnothing(_droop_parameter_builder) ? Dict() :
         _droop_parameter_builder(model)
@@ -278,6 +278,7 @@ function solve_scopf(study::Study;
                 shared_model=model, scenario_prefix=prefix, set_objective=(k == 1),
                 initial_state=initial, reactive_assignments=study.reactive_assignments,
                 tap_controls=tap_arg, shunt_controls=shunt_arg,
+                droop_parameter_variables=droop_parameters,
                 power_balance_slacks=_phase1_power_balance)
         end
         push!(variables, vars)

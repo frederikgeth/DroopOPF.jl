@@ -48,7 +48,7 @@ DroopSettings(control::VoltVarDroop) = DroopSettings(
     control.schedule.v_db_high - control.schedule.v_ref,
 )
 
-"""M3 optimized settings, reference objective, and scenario-indexed SCOPF result."""
+"""droop design optimized settings, reference objective, and scenario-indexed SCOPF result."""
 struct DroopDesignResult
     control_id::Int
     reference_settings::DroopSettings{Float64}
@@ -69,7 +69,7 @@ _json_data(design::DroopDesignResult) = Dict(
     "result" => _json_data(design.result),
 )
 
-"""Write an optimized M3 droop design and its training result to versioned JSON."""
+"""Write an optimized droop design droop design and its training result to versioned JSON."""
 write_droop_design(path::AbstractString, design::DroopDesignResult) =
     _write_scopf_json(path, "DroopOPF.DroopDesignResult", design)
 
@@ -82,7 +82,7 @@ function _droop_settings_from_data(data)
     )
 end
 
-"""Read an M3 design; independently validate it against its study before use."""
+"""Read an droop design design; independently validate it against its study before use."""
 function read_droop_design(path::AbstractString)
     data = _read_scopf_json(path, "DroopOPF.DroopDesignResult")
     return DroopDesignResult(
@@ -194,8 +194,8 @@ end
 
 Optimize one control's slope, voltage reference, and asymmetric deadband widths
 as variables shared by the base case and every training contingency. Omitted
-bounds fix that setting at its M2 value. The dispatch objective is unchanged,
-so fixing all bounds at the reference reproduces M2. This is a smooth-NLP
+bounds fix that setting at its fixed-curve SCOPF value. The dispatch objective is unchanged,
+so fixing all bounds at the reference reproduces fixed-curve SCOPF. This is a smooth-NLP
 design problem for Ipopt or MadNLP; CCOpt may be used only after reconstructing
 the optimized fixed curve.
 """

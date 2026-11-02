@@ -4,10 +4,6 @@ The [common case import and export API](case_io.md) also supports an optional
 PowerIO pathway and canonical exports. This page documents the native parser
 and its existing saved-state validation API.
 
-Historical `artifacts/` paths on this page identify local campaign records, not
-files bundled with the release. See [archive access](research.md) and the
-[current qualification index](milestones.md).
-
 `parse_psse_raw` reads full-case bus/branch RAW revisions **33, 34 and 36**.
 `import_psse_case` converts the supported electrical subset into a DroopOPF
 `Case`, with source identities, supplied operating points and diagnostics.
@@ -131,9 +127,8 @@ Formats Reference Manual, sections 1.8–1.13 and RAW format change summary
 the proprietary manual is not redistributed. In particular, v36 BP and the new
 sections must not be inferred solely from an inherited v35 branch schema.
 
-Evidence is retained under `artifacts/p3_psse_parser_20261022/`. This work does
-not alter sealed P2/S2 or multi-period campaign evidence and does not qualify
-new controls or security studies.
+Parsing and saved-state replay do not themselves qualify a new control policy
+or an outage-security study.
 
 ## Check a new file against its saved power-flow state
 

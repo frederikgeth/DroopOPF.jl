@@ -24,6 +24,11 @@ The native backend remains the default during migration. Format detection
 recognizes `.raw` and `.m`; otherwise supply `format=:psse` or `:matpower`.
 There is no automatic fallback after a reader rejects a case.
 
+MATPOWER inputs must contain literal core tables with one direct definition per
+field. Indexed reads or writes, nested field updates, and repeated core
+definitions are rejected by both backends. The importer does not execute
+MATLAB code or silently use tables from before an update.
+
 ## Import policies and evidence
 
 Both new import pathways require an explicit finite substitute for zero or

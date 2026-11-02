@@ -1,4 +1,4 @@
-"""Metrics and solver status for one fixed droop slope in an M3 parameter sweep."""
+"""Metrics and solver status for one fixed droop slope in an droop design parameter sweep."""
 struct DroopSlopeSweepPoint
     slope::Float64
     objective::Float64
@@ -77,7 +77,7 @@ function _sweep_point(study::Study, slope::Real, result::SCOPFResult)
     )
 end
 
-"""Evaluate bounded fixed-slope M2 studies, anchored and warm-started at a reference slope."""
+"""Evaluate bounded fixed-slope fixed-curve SCOPF studies, anchored and warm-started at a reference slope."""
 function sweep_droop_slope(
     study::Study,
     control_id::Integer,
@@ -120,7 +120,7 @@ function sweep_droop_slope(
     )
 end
 
-"""Return the valid sweep point with the smallest M2 dispatch objective."""
+"""Return the valid sweep point with the smallest fixed-curve SCOPF dispatch objective."""
 function best_droop_slope(sweep::DroopSlopeSweep)
     candidates = [point for point in sweep.points if point.valid && isfinite(point.objective)]
     isempty(candidates) && throw(ArgumentError("the sweep has no valid points"))
