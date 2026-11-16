@@ -7,7 +7,8 @@ active/reactive dispatch and voltage state. Equipment stays at the supplied
 fixed settings throughout the horizon.
 
 This API covers deterministic base-operation periods with fixed equipment.
-Storage, commitment and dynamic trajectories are outside this formulation.
+Storage, optimized commitment and dynamic trajectories are outside this formulation.
+Generator on/off status may be supplied independently for each period.
 
 ![Chronological base dispatch and alternative outage states, with shared curves.](assets/teaching/period_scenario_grid.svg)
 
@@ -18,8 +19,9 @@ not dynamic response trajectories. See [the workflow tutorial](study_workflows.m
 ## Time and objective contract
 
 Cases must share the same ordered network, equipment settings, generators,
-controls, attachments, power base, frequency and load identities. Only load
-powers may vary. All original voltage, thermal and generator limits remain
+controls, attachments, power base, frequency and load identities. Load powers,
+generator availability and generator initialization hints may vary; generator
+capability bounds must remain compatible. All original voltage, thermal and generator limits remain
 active, with optional explicit branch-angle bounds.
 
 For period `t`, `duration_hours[t]` is both its energy weight and the elapsed
@@ -47,7 +49,8 @@ The global notation reference uses ``k`` for time to avoid confusing it with a
 branch's to-side endpoint ``t``.
 
 Omitted generators have no inter-period ramp restriction. Zero rates freeze
-active output across periods. These planned dispatch ramps do not replace the
+active output across periods. Ramps also apply across supplied on/off changes;
+no startup or shutdown exemption is inferred. These planned dispatch ramps do not replace the
 library's automatic contingency-response policy and do not establish dynamic
 frequency performance.
 
@@ -80,3 +83,14 @@ The base-operation API above retains its fixed-equipment scope. The separate
 capability circles, outage recourse, explicit Study equipment policies and optional
 preventive AVR scheduling. See [Mixed AVR and droop studies](mixed_avr_droop.md)
 for the model contract, declared legacy comparison comparison settings and qualification limits.
+
+## Supplied AVR targets in security studies
+
+`optimize_multi_period_security(...; supplied_avr_schedule=true)` accepts supplied
+AVR targets that differ between periods while retaining common modes and regulated
+locations. The target for a period is fixed across its outages. This input option
+does not optimize references or infer a target movement budget. The default false
+retains the common-target contract (apart from explicitly supported frozen-base
+evaluation). Response weights agree whenever a generator is online; offline
+participants are omitted. See [RAW series](psse.md) for protected zone workflows
+and [static controls](static_controls.md) for the separate frequency APIs.

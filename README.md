@@ -20,6 +20,27 @@ extract it, and use `Pkg.develop(path="/path/to/DroopOPF")`.
 Julia 1.10 and 1.12 are the release test targets. Solver dependencies are installed
 separately by Julia; the source archive size is not the installed depot footprint.
 
+## Current development updates
+
+The current `main` branch includes updates beyond the tagged prerelease:
+
+- Correct RAW CZ=2/3 transformer impedance conversion and independent two-winding
+  checks; PowerIO integration is tested with native 0.11.7 and official 0.11.9.
+- RAW snapshot inspection, compatible time-series loading, explicit generator
+  classifications and zone extraction with fixed saved boundary exchanges.
+- Supplied generator on/off changes and period-specific AVR input targets,
+  preserving capability, ramp and outage-policy checks.
+- Explicit static inverter/current-limit and common-frequency models,
+  initialization helpers, static witnesses and validated operating-point transfer.
+
+For these APIs, install `rev="main"` instead of the tag above, or develop a
+checkout of the current source. Record the exact commit for reproducible studies.
+This does not create a new tagged release or change the stable documentation
+snapshot. See [static controls](docs/src/static_controls.md),
+[case import/export](docs/src/case_io.md), and [RAW series](docs/src/psse.md).
+All new control models remain steady-state models; no dynamic stability or
+native PSS/E matching claim follows from import or a converged solve.
+
 ## Learn the model
 
 Start with the [teaching guide](docs/src/index.md), then run the complete
@@ -57,7 +78,9 @@ synthetic two-bus case and writes no files.
 - [SCOPF policies](docs/src/scopf.md)
 - [Multi-period operation](docs/src/multi_period.md)
 - [Mixed AVR/droop controls](docs/src/mixed_avr_droop.md)
-- [PSS/E data and saved-solution checks](docs/src/psse.md)
+- [PSS/E data, saved-solution checks and snapshot series](docs/src/psse.md)
+- [Case import/export and optional PowerIO](docs/src/case_io.md)
+- [Static controls, initialization and operating-point transfer](docs/src/static_controls.md)
 - [Validation](docs/src/validation.md)
 - [Supported scope](docs/src/release_scope.md)
 
