@@ -272,6 +272,7 @@ function validate_reactive_assignments(
     avr_targets = Dict{Tuple{Symbol,Int,Union{Nothing,Symbol}},Float64}()
     for assignment in assignments
         assignment.mode isa AVR || continue
+        generators[assignment.generator_id].available || continue
         key = (assignment.location.kind, assignment.location.bus_id,
             assignment.location.side)
         target = Float64(assignment.mode.voltage_setpoint)

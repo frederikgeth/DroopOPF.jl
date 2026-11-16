@@ -57,3 +57,16 @@ using DroopOPF
 end
 
 include("test_joint_zero_deadband.jl")
+
+# Reusable static controls, RAW series and materialization (synthetic fixtures).
+include("test_psse_series.jl")
+include("test_static_inverters.jl")
+include("test_common_frequency.jl")
+include("test_voltage_source_gfm.jl")
+include("test_gfm_current_limiter.jl")
+include("test_initialization.jl")
+include("test_interoperability.jl")
+include("test_static_witnesses.jl")
+include("test_static_objectives.jl")
+include("test_static_objective_equipment.jl")
+include("test_static_equipment.jl")

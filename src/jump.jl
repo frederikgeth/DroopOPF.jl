@@ -204,6 +204,7 @@ function _build_acopf_model(
     sparse_balance::Bool = false,
     load_relief = nothing,
     avr_target_variables = Dict(),
+    thermal_margin = 0.,
 )
     isnothing(case.network) && throw(ArgumentError("AC OPF requires case.network"))
     network = case.network
@@ -417,6 +418,7 @@ function _build_acopf_model(
     taps = Dict{Int,VariableRef}()
     shunts = Dict{Int,VariableRef}()
     if isnothing(tap_controls)
+        thermal_margin===0. || throw(ArgumentError("thermal margin requires branch-based network builder"))
         Y = _admittance_matrix(network)
         if !isnothing(shunt_controls)
             shunts = _shunt_variables!(model,case,shunt_controls,Y;normalize_controls)
@@ -467,7 +469,7 @@ function _build_acopf_model(
     else
         taps,shunts = _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,
             load_p,load_q,tap_controls,shunt_controls;normalize_controls,
-            power_balance_slacks,scenario_prefix)
+            power_balance_slacks,scenario_prefix,thermal_margin)
     end
 
     # Keep the legacy explicit formulation's nonlinear constraint ordering.
