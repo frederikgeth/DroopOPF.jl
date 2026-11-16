@@ -73,9 +73,9 @@ balanced MATPOWER and RAW networks containing buses, generators,
 constant-power/impedance loads, fixed shunts and supplied switched-shunt
 admittance. Fixed two-winding transformers are supported through MATPOWER.
 RAW transformers require the loaded library to pass a small public-parser
-qualification over CW/CZ and nominal-voltage bases. The released PowerIO 0.11.7
-library fails because it omits the nominal-winding/bus voltage-base impedance
-factor for CZ=2/3. A corrected local build can pass and enable this pathway.
+qualification over CW/CZ and zero, unequal and reversed nominal voltages.
+Native PowerIO 0.11.7 and 0.11.9 use the expected CZ conversion; 0.11.8
+adds an incorrect nominal-voltage multiplier and fails this gate.
 The check is repeated when needed, so changing the loaded library cannot
 reuse a cached qualification. The native transformer importer and independent
 two-port tests remain the compatibility reference.
@@ -150,7 +150,7 @@ The initial export profiles are canonical MATPOWER and PSS/E RAW v33 single
 files. Export passes `base_frequency` metadata to the public dictionary
 constructor and checks the actual constructed frequency before writing.
 Released PowerIO 0.11.7 ignores this metadata and therefore remains restricted
-to 60 Hz construction. A corrected local build preserves it, enabling 50 Hz
+to 60 Hz construction. Official native 0.11.9 preserves it, enabling 50 Hz
 RAW exports. MATPOWER cannot encode frequency; its writer reports that loss
 for non-60 Hz cases and the prepared plan remains unaccepted.
 
@@ -199,10 +199,25 @@ preference is needed.
 
 Run the integration suite described in the repository's `test/README.md` with
 `DROOPOPF_POWERIO_TEST_PROFILE=corrected` for that library. CI separately requires
-the released binary's rejection paths and the corrected build's positive paths,
+transformer import success for both profiles and frequency preservation for
+the corrected profile,
 including original two-port admittances, the public IEEE14 RAW case, native
 equivalence and exported RAW frequencies. The corrected CI library is built
-from a pinned upstream source with a test-only patch; production uses the
-installed library and its qualification guards. A local patch does not change the installed
-package's reported release version, so qualification uses behavior rather
-than an assumed future version number.
+from official 0.11.9 at the source revision recorded in CI, without a local
+patch. Production uses the installed library and its qualification guards.
+Behavioral qualification remains necessary for local builds and overrides.
+
+## RAW transformer impedance bases
+
+For CZ=2/3, convert series impedance from the declared transformer MVA base to
+the system MVA base. Do not multiply it by `(NOMV1 / bus_base_kV)^2`. NOMV
+enters the winding ratios for CW=3; the two winding ratios and phase shift
+remain in the terminal-admittance model. CW=2 winding values use bus base kV.
+
+The native parser and PowerIO gate test zero, unequal and reversed nominal
+voltages against an independent two-winding circuit. PowerIO native 0.11.7
+has the expected conversion; 0.11.8 introduced an extra nominal-voltage factor,
+and official 0.11.9 removes it. A version string alone is not qualification.
+The old local test patch and its incorrect oracle have been retired; CI now
+uses official 0.11.9 for the corrected profile. Existing source files are never
+rewritten to accommodate an unsupported library.

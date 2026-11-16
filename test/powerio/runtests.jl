@@ -15,7 +15,7 @@ profile in ("released", "corrected") || error("DROOPOPF_POWERIO_TEST_PROFILE mus
         # This profile is intentionally pinned: an upstream fix must trigger a
         # dependency/profile review, rather than silently changing the test set.
         @test pkgversion(PowerIO) == v"0.11.7"
-        @test !transformers
+        @test transformers
         @test !frequency
     end
 end

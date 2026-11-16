@@ -22,8 +22,8 @@ failure checks and fresh-process extension load orders. CI runs both suites
 on Julia 1.10 and 1.12; native library failures fail integration tests.
 
 CI pins PowerIO 0.11.7 and explicitly requires two profiles on both Julia
-versions. The default `released` profile requires the known guards. The
-`corrected` profile builds the exact upstream source and test-only patch
+versions. The default `released` profile requires transformer support and the
+known frequency guard. The `corrected` profile builds official 0.11.9 source
 documented in [powerio/support/README.md](powerio/support/README.md), then
 requires both corrected capabilities. This is validation infrastructure and
 does not patch the user's dependency or select a production library.
@@ -32,8 +32,8 @@ To test a corrected local PowerIO library, set `POWERIO_CAPI` to its shared
 library path and `DROOPOPF_POWERIO_TEST_PROFILE=corrected` before running the
 integration command. The suite checks both
 RAW transformer basis qualification and dictionary frequency preservation;
-the released 0.11.7 binary must retain its rejection paths, while a corrected
-build exercises the full transformer matrix and 50 Hz RAW exports.
+the released 0.11.7 binary must pass transformer tests while retaining its
+frequency rejection path. Official 0.11.9 also exercises 50 Hz RAW exports.
 The small OPF smoke test validates independently replayed residuals. With a
 corrected library it also exports a solved 50 Hz static snapshot and checks
 that file through the native saved-state validator.

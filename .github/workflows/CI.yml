@@ -84,12 +84,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: eigenergy/powerio
-          ref: d104aa5b47fa436b0eb8cf833c2c32ab43b2f704
+          ref: e8472dd0d3b80af8642b3232ea41b4e0768f44c1
           path: _powerio_validation_source
           persist-credentials: false
-      - name: Apply test-only upstream corrections
-        working-directory: _powerio_validation_source
-        run: git apply --check ../test/powerio/support/powerio-0.11.7-qualification.patch && git apply ../test/powerio/support/powerio-0.11.7-qualification.patch
       - name: Build validation library
         working-directory: _powerio_validation_source
         run: cargo build --locked -p powerio-capi

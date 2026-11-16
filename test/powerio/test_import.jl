@@ -82,12 +82,11 @@
         write(path, replace(raw,"0,100,33"=>"0,200,33"))
         x = import_case(path; backend=PowerIOBackend()).case
         @test x.loads[1].p == .3
-        # Independently check the original two-ideal-winding circuit. Stock
-        # libraries must reject these cases; corrected builds must import them.
-        for base in (100.,200.), nominal in (false,true), cw in 1:3, cz in 1:3
+        # Independently check the original two-ideal-winding circuit. Qualified
+        # libraries must import these cases; unsupported builds must reject them.
+        for base in (100.,200.), (nom1,nom2) in ((0.,0.),(230.,115.),(110.,220.)), cw in 1:3, cz in 1:3
             wind1 = cw==2 ? 231. : 1.05
             wind2 = cw==2 ? 107.8 : .98
-            nom1, nom2 = nominal ? (230.,115.) : (0.,0.)
             resistance = cz==3 ? 50000. : .01
             text = replace(raw_source,
                 "0,100,33"=>"0,$base,33",
@@ -106,10 +105,10 @@
             b=only(filter(b->b.kind==:transformer,imported.case.network.branches))
             r=cz==3 ? .001 : .01
             x=cz==3 ? sqrt(.2^2-r^2) : .2
-            scale=cz==1 ? 1. : base/50*(nominal ? (230/220)^2 : 1.)
+            scale=cz==1 ? 1. : base/50
             z=complex(r,x)*scale
-            a=cw==2 ? 231/220 : cw==3 && nominal ? 1.05*230/220 : 1.05
-            d=cw==2 ? 107.8/110 : cw==3 && nominal ? .98*115/110 : .98
+            a=cw==2 ? 231/220 : cw==3 && nom1!=0 ? 1.05*nom1/220 : 1.05
+            d=cw==2 ? 107.8/110 : cw==3 && nom2!=0 ? .98*nom2/110 : .98
             t=a*cis(deg2rad(5.))
             expected=[1/(z*abs2(t)) -1/(z*conj(t)*d); -1/(z*t*d) 1/(z*d^2)]
             actual=transpose(reshape(collect(DroopOPF._branch_admittances(b)),2,2))
