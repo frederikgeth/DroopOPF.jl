@@ -47,6 +47,14 @@ The voltage smoothing width is in per-unit voltage. By default, reactive
 smoothing is a relative fraction of each control's available reactive range;
 `smooth_reactive_epsilon` can override it with an absolute per-unit width.
 
+With the standard `MadNLP.Optimizer` factory, `solve_opf` uses exact variable
+bounds (`bound_relax_factor=0`). This avoids a reproduced line-search stagnation
+on the small, fully determined compatibility case under Julia's package-test
+compiler settings. Solver convergence tolerances are unchanged. Explicit
+`optimizer_attributes` override this default; custom optimizer factories retain
+their own configuration. If using a custom MadNLP factory, configure exact bounds
+there when the same stagnation occurs.
+
 ## Exact complementarity formulation
 
 `solve_opf_complementarity` uses MathOptComplements and CCOpt. Each voltage

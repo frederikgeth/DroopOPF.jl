@@ -13,6 +13,14 @@ projection of the raw droop value onto `[Qmin, Qmax]`.
 
 ## What agreement means
 
+`solve_opf` with the standard `MadNLP.Optimizer` factory uses exact variable
+bounds (`bound_relax_factor=0`). The upstream relaxed-bound default reproduced
+`SLOW_PROGRESS` under Linux Julia 1.10 package-test settings despite tiny primal
+residuals; exact bounds restored native convergence at the same tolerance.
+Explicit optimizer attributes override the default, and custom factories retain
+their own configuration. The regression continues to require successful solver
+termination as well as physical agreement.
+
 The single-case CCOpt wrapper uses exact variable bounds and `1e-14` for both
 relaxation floors so the upstream `1e-8` defaults do not obstruct convergence.
 Caller-supplied optimizer attributes still override these defaults. No solver
