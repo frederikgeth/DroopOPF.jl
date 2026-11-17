@@ -79,6 +79,19 @@ The exact formulation has no smoothing parameter. CCOpt may report
 `ALMOST_LOCALLY_SOLVED` after its homotopy; use the independent equilibrium
 report and `complementarity_residual_max` to assess the result.
 
+The single-case `solve_opf_complementarity` wrapper keeps variable bounds exact
+(`bound_relax_factor=0`) and sets both CCOpt relaxation floors to `1e-14`.
+The upstream `1e-8` floors and relaxed nonnegative bounds can otherwise cause
+stagnation near the default convergence tolerance, even with tiny relaxed-NLP
+residuals. These defaults do not loosen convergence tolerances or change the
+physical equations. Explicit `optimizer_attributes` override them. For tighter
+targets, configure both `sigma_min` and the `sigma_min` field of
+`CCOpt.ProportionalRelaxationUpdate`; they are separate settings.
+
+`SLOW_PROGRESS` remains an unsuccessful termination, even if the physical
+residuals are small. The compatibility regression requires successful native
+termination and independently checks power, droop and complementarity residuals.
+
 ## Comparing solutions
 
 Ipopt and MadNLP should usually agree closely because they solve the same

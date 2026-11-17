@@ -509,6 +509,15 @@ function solve_opf_complementarity(
         initial_state = initial_state,
         reactive_assignments = reactive_assignments,
     )
+    # CCOpt's default 1e-8 relaxation floors coincide with its convergence
+    # tolerance. Relaxing the nonnegative pair bounds by another 1e-8 can
+    # prevent convergence even when the relaxed NLP has negligible residuals.
+    # Keep the physical pair bounds exact and let both relaxation floors fall
+    # below the convergence target. Explicit caller attributes still win.
+    set_optimizer_attribute(model, "bound_relax_factor", 0.0)
+    set_optimizer_attribute(model, "sigma_min", 1.0e-14)
+    set_optimizer_attribute(model, "relaxation_update",
+        CCOpt.ProportionalRelaxationUpdate(sigma_min = 1.0e-14))
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
     end

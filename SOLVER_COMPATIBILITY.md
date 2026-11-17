@@ -13,6 +13,14 @@ projection of the raw droop value onto `[Qmin, Qmax]`.
 
 ## What agreement means
 
+The single-case CCOpt wrapper uses exact variable bounds and `1e-14` for both
+relaxation floors so the upstream `1e-8` defaults do not obstruct convergence.
+Caller-supplied optimizer attributes still override these defaults. No solver
+success status is inferred from residuals: `SLOW_PROGRESS` remains a failure.
+In addition to the routine checks below, the regression suite requires native
+CCOpt convergence at `1e-10`, complementarity error below `1e-10`, power error
+below `1e-9`, and exact-droop error below `1e-8` on the small compatibility case.
+
 Ipopt and MadNLP should generally agree very closely because they receive the
 same smooth NLP, objective, bounds, and constraints. CCOpt solves a different
 numerical problem: its complementarity homotopy follows the exact PWL graph,
