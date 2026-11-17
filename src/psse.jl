@@ -459,13 +459,8 @@ function import_psse_case(raw::PSSERawData;id=nothing,unrated_limit=nothing)
             end
             _psse_fail(raw.source,first(r.lines),"unsupported transformer CW=$cw")
         end
-        if cz!=1
-            nom1=_psse_get(r,:NOMV_1,0.)
-            if nom1!=0
-                kv1>0 || _psse_fail(raw.source,first(r.lines),"positive bus kV required for impedance base conversion")
-                z*=(nom1/kv1)^2
-            end
-        end
+        # CZ changes the MVA base. NOMV affects winding ratios through CW=3;
+        # series impedance already uses the winding bus voltage base.
         tap1=ratio(1,kv1);tap2=ratio(2,kv2)
         tap1>0&&tap2>0 || _psse_fail(raw.source,first(r.lines),"transformer winding ratio must be positive")
         # Moving the secondary ratio into the from-side primitive scales series

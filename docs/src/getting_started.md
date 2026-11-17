@@ -14,6 +14,9 @@ using DroopOPF
 
 The named environment keeps the tutorial's dependencies together. The revision
 pins the documented prerelease; use a specific revision for reproducible studies.
+The current development APIs for RAW snapshot series and explicit static
+controls require `rev="main"` or a matching current checkout; they are not
+retroactively added to the tag. Pin a commit after selecting the needed version.
 Package installation requires network access. Ipopt and the other declared Julia
 dependencies are installed with the package; teaching examples require no additional input files.
 

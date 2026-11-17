@@ -43,6 +43,20 @@ function _security_assignments(case,assignments,settings,targets)
         ReactiveControlAssignment(x.generator_id,AVR(targets[x.generator_id]),x.location) : x for x in a]
 end
 
+# Availability may vary by period. A common declared response policy means each
+# generator has the same weight whenever it is online; offline keys are absent
+# because Study rejects response policies for unavailable equipment.
+function _period_participation_agrees(studies)
+    weights=Dict{Int,Float64}()
+    for s in studies, g in s.case.generators
+        g.available || continue
+        w=get(s.participation,g.id,0.)
+        haskey(weights,g.id) && weights[g.id]!=w && return false
+        weights[g.id]=w
+    end
+    true
+end
+
 """Optimize shared droop across ordered periods and listed contingencies.
 
 `response=:s2_proportional` preserves supplied weights without saturation;
@@ -68,14 +82,17 @@ do not change equipment bounds, timing, movement budgets or shared constraints.
 remaining primal variables across retries; each supplies one dictionary per period.
 Unknown scenario/target IDs, nonfinite values and inconsistent shared targets are
 rejected. AVR and individual relief starts are clipped to variable bounds.
-No manufacturer timing is inferred.
+`supplied_avr_schedule=true` permits period-specific supplied AVR setpoints with
+common mode/location assignments. These are fixed input targets across outages,
+not optimized scheduling; no movement budget is inferred. Default false preserves
+the original common-target contract. No manufacturer timing is inferred.
 """
 function optimize_multi_period_security(studies;duration_hours=ones(length(studies)),
     ramp_limits=Dict(),angle_limits=Dict(),droop_controls=DroopControl[],
     initial_states=fill(Dict(),length(studies)),response=:limit_aware,
     initial_avr_targets=fill(Dict(),length(studies)),initial_relief=fill(Dict(),length(studies)),
     initial_balancing_power=fill(Dict(),length(studies)),
-    s2_emergency=false,smooth_epsilon=1e-6,optimizer_factory=Ipopt.Optimizer,
+    s2_emergency=false,supplied_avr_schedule=false,smooth_epsilon=1e-6,optimizer_factory=Ipopt.Optimizer,
     optimizer_attributes=Dict(),silent=true,avr_bounds=Dict(),avr_movement_per_hour=.01,
     fixed_base_states=nothing,fixed_base_taps=nothing,fixed_base_shunts=nothing,
     initial_equipment=fill((;taps=Dict(),shunts=Dict()),length(studies)),objective_upper_bound=nothing,objective_policy=:loss,reserve_generator_outages=Int[],reserve_margin_pu=0.)
@@ -106,19 +123,19 @@ function optimize_multi_period_security(studies;duration_hours=ones(length(studi
         end
     end
     all(s->s.mode==:preventive,ss) || throw(ArgumentError("preventive active response required"))
-    # Frozen evaluation may supply a previously qualified preventive AVR schedule.
+    # Frozen evaluation or explicitly supplied schedules may vary AVR targets.
     # Only the declared AVR target may differ; all other mode/location data match.
     reference_assignments=ss[1].reactive_assignments
     reference_targets=isnothing(reference_assignments) ? Dict() :
         Dict(a.generator_id=>a.mode.voltage_setpoint for a in reference_assignments if a.mode isa AVR)
     all(s->_json_data(s.reactive_assignments)==_json_data(reference_assignments) ||
-        (!isnothing(fixed_base_states) &&
+        ((!isnothing(fixed_base_states) || supplied_avr_schedule) &&
          _json_data(_security_assignments(s.case,s.reactive_assignments,Dict(),reference_targets))==_json_data(reference_assignments)),ss) ||
         throw(ArgumentError("periods require common input assignments except frozen AVR targets"))
     all(s->_json_data(s.tap_controls)==_json_data(ss[1].tap_controls) &&
         _json_data(s.shunt_controls)==_json_data(ss[1].shunt_controls) &&
         _json_data(s.control_policy)==_json_data(ss[1].control_policy) &&
-        s.participation==ss[1].participation && s.redispatch_limits==ss[1].redispatch_limits,ss) ||
+        s.redispatch_limits==ss[1].redispatch_limits,ss) && _period_participation_agrees(ss) ||
         throw(ArgumentError("periods require common equipment/response policy"))
     length(unique(c.control_id for c in droop_controls))==length(droop_controls) || throw(ArgumentError("duplicate droop IDs"))
     _check_mixed_design(ss[1].case,ss[1].reactive_assignments,droop_controls)

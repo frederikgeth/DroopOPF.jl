@@ -38,6 +38,8 @@ schedule is not a transient-stability or device-switching trajectory assessment.
 | Which controls may change after an outage? | [Study workflows](study_workflows.md) | [SCOPF policy](scopf.md) |
 | How do I choose one curve for many conditions? | [Design versus response](concepts.md) | [Droop optimization](droop_optimization.md), [contingency addition](droop_security.md) |
 | How are demand samples different from time periods? | [Scenario/time diagram](study_workflows.md) | [Multi-period model](multi_period.md) |
+| How do I inspect RAW snapshots or extract a zone? | [PSS/E series](psse.md) | [Case import/export](case_io.md) |
+| How do I declare inverter limits or a common frequency? | [Static controls](static_controls.md) | [API reference](api.md) |
 | Can I trust this result? | [Validation](validation.md) | [Feasibility](feasibility_gate.md), [robustness](robustness.md) |
 | Which model features are supported? | [Supported scope](release_scope.md) | [API reference](api.md) |
 

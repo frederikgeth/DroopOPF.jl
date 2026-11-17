@@ -3,8 +3,8 @@
 `duration_hours[t]` weights period t's energy and is the elapsed time from
 period t to t+1. `ramp_limits[id] = (up, down)` is in pu/hour on the case MVA
 base. Omitted generators have no inter-period ramp restriction. There is no
-initial/terminal boundary, storage, commitment, uncertainty or outage recourse.
-Only loads may differ between period cases; their IDs and buses must agree.
+initial/terminal boundary, storage, optimized commitment, uncertainty or outage recourse.
+Loads, generator availability and initialization hints may differ; other physical data and IDs must agree.
 """
 struct MultiPeriodStudy
     cases::Vector{Case}
@@ -21,8 +21,8 @@ struct MultiPeriodStudy
         reference=cs[1]
         isnothing(reference.network) && throw(ArgumentError("AC network required"))
         # Compare serialized physical data, not object identity. Loads are the
-        # only time-varying inputs in this initial multi-period contract.
-        signature(c)=(_json_data(c.network),_json_data(c.generators),
+        # time-varying demand inputs; generator availability and starts may also vary.
+        signature(c)=(_json_data(c.network),[(g.id,g.bus_id,g.p_min,g.p_max,g.q_min,g.q_max,g.s_rated) for g in c.generators],
             _json_data(c.controls),_json_data(c.attachments),c.base_power,c.base_frequency,
             [(l.id,l.bus_id) for l in c.loads])
         sig=signature(reference)

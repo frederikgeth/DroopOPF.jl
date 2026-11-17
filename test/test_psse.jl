@@ -127,15 +127,15 @@ psse_parse(text)=parse_psse_raw(IOBuffer(text);source="test.raw")
     @test fixed_solution.state.qg[1]==0.
     # Cross-base impedance and both winding ratios, checked against a direct
     # two-port current primitive (independent of the importer's Branch builder).
-    for cw in 1:3,cz in 1:3
+    for (nom1,nom2) in ((0.,0.),(230.,115.),(110.,220.)),cw in 1:3,cz in 1:3
         raw=psse_parse(text);f=raw.sections[:transformer][1].fields
-        f[:CW]=cw;f[:CZ]=cz;f[:NOMV_1]=230.;f[:NOMV_2]=115.
+        f[:CW]=cw;f[:CZ]=cz;f[:NOMV_1]=nom1;f[:NOMV_2]=nom2;
         f[:WINDV_1]=cw==2 ? 231. : 1.05;f[:WINDV_2]=cw==2 ? 107.8 : .98
         f[:R12]=cz==3 ? 50000. : .01
         znom=cz==3 ? complex(.001,sqrt(.2^2-.001^2)) : complex(.01,.2)
-        znom*=cz==1 ? 1. : (100/50)*(230/220)^2
-        a=cw==1 ? 1.05 : cw==2 ? 231/220 : 1.05*230/220
-        b=cw==1 ? .98 : cw==2 ? 107.8/110 : .98*115/110
+        znom*=cz==1 ? 1. : 100/50
+        a=cw==1 ? 1.05 : cw==2 ? 231/220 : (nom1==0 ? 1.05 : 1.05*nom1/220)
+        b=cw==1 ? .98 : cw==2 ? 107.8/110 : (nom2==0 ? .98 : .98*nom2/110)
         phi=deg2rad(5.);tap=complex(cos(phi),sin(phi))*a
         expected=ComplexF64[1/(znom*abs2(tap)) -1/(znom*conj(tap)*b);-1/(znom*tap*b) 1/(znom*b^2)]
         tr=import_psse_case(raw).case.network.branches[2]

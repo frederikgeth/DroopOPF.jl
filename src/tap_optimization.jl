@@ -37,7 +37,7 @@ end
 # Terminal powers depend on tau inside the NLP; phase shift stays fixed.
 function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_q,
     controls,shunt_controls=nothing;normalize_controls=false,
-    power_balance_slacks=false,scenario_prefix="")
+    power_balance_slacks=false,scenario_prefix="",thermal_margin=0.)
     net=case.network; indices=_bus_indices(net); n=length(net.buses)
     taps=Dict{Int,Union{VariableRef,AffExpr}}()
     for c in controls
@@ -65,7 +65,7 @@ function _add_tap_network!(model,case,vm,va,pg,qg,generators_at_bus,load_p,load_
             p=@NLexpression(model,vm[i]^2*gs*scale+vm[i]*vm[j]/tau*(gm*cos(va[i]-va[j])+bm*sin(va[i]-va[j])))
             q=@NLexpression(model,-vm[i]^2*bs*scale+vm[i]*vm[j]/tau*(gm*sin(va[i]-va[j])-bm*cos(va[i]-va[j])))
             push!(ps[i],p); push!(qs[i],q)
-            @NLconstraint(model,p^2+q^2 <= b.thermal_limit^2)
+            @NLconstraint(model,p^2+q^2 <= b.thermal_limit^2*(1-thermal_margin)^2)
         end
     end
     shunt_vars=isnothing(shunt_controls) ? Dict{Int,VariableRef}() : _shunt_variables!(model,case,shunt_controls,nothing;normalize_controls)

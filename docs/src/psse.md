@@ -210,3 +210,66 @@ supply an independent branch-flow result listing, so recomputed flows are not
 claimed to have been compared against a separate PSS/E branch-flow export.
 Original PSS/E solver termination, remote/automatic control semantics, dynamics
 and security qualification remain outside this small check.
+
+## Operating-point series and zone extraction
+
+`load_psse_series(folder; files, duration_hours, require_valid=true)` imports an
+explicit sequence of RAW operating points. Without `files`, discovery is
+nonrecursive and ordering is lexical by basename. Supply positive durations and
+ramp limits explicitly; filename order does not establish timestamps. Imports
+retain the source saved states, while the study uses generator P/Q as numerical
+initialization hints rather than fixed schedules.
+
+```julia
+series = load_psse_series(folder;
+    files=["first.raw", "second.raw"], duration_hours=[0.5, 0.5],
+    require_valid=true)
+```
+
+Loads and supplied generator availability may change between periods. The
+loader requires compatible identities, topology, equipment settings, ratings
+and capabilities; it does not optimize commitment or infer startup/shutdown
+ramp exemptions. `inspect_psse_series` reports changes even for incompatible
+snapshots, without optimizing or repairing their states.
+
+With `zone=4` (or another explicitly selected zone), cut AC branches become
+signed fixed P/Q loads equal to their saved retained-terminal exchanges in each
+period. These equivalents stay fixed during outages. The largest positive-Pmax
+retained physical generator determines the angle reference, without assigning
+slack capability. Use `series.initial_states` for the extracted model;
+`series.imports` still refers to the full input network. This reduction does not
+model external voltage response or qualify boundary outages.
+
+## Explicit generator classifications
+
+An optional UTF-8 `generator_csv` has columns
+`bus_number,bus_name,technology,generator_id`. Supported labels are
+`ibr_unidentified`, `synchronous_generator` and `synchronous_condenser`.
+Match source bus/name and RAW machine ID, not row order. IDs are required at
+multi-unit buses; coverage includes offline and full-network units before zone
+selection. Missing or ambiguous mappings are errors.
+
+Passing this classification explicitly opts synchronous generators and condensers
+into Q-limit-releasing AVR at supplied RAW VS/IREG. Targets may vary by period
+but remain fixed across that period's outages. No reference-design freedom or
+movement budget is inferred. Unresolved remote buses, conflicting active AVRs,
+invalid targets and positive-generation condenser capability block the protected
+solve rather than being silently repaired.
+
+`series.ibr_fits` contains exploratory static Volt/VAR candidates from usable
+online saved observations. Insufficient excitation, saturation, setting changes
+and unobserved regimes remain explicit. Candidate curves are not installed as
+controls and do not prove an autonomous controller or its unique parameters.
+Technology labels do not supply inverter ratings or dynamic models.
+
+For extracted zone studies, use `psse_series_studies` and
+`optimize_psse_series_security` to retain the required
+AVR assignments and full-load policy. Their default response weights use effective
+active range, with zero participation for condensers; offline units are masked.
+Explicit reviewed IBR assignments can be supplied without dropping required AVRs.
+Equipment actions and contingencies still require an explicit study declaration.
+
+Source objects, detailed inspection reports and fit tables contain network data.
+Keep confidential data and all derived outputs outside Git/cloud folders and
+connected assistants. `psse_series_diagnostic` emits a fixed minimal status schema;
+it performs no security solve and is not automatic permission to disclose it.

@@ -1,11 +1,10 @@
-# A local fix and the released library can both report version 0.11.7. Qualify
-# behavior through the public parser rather than accepting a version string or
-# exposing an unsafe bypass. This temporary migration gate is intentionally not
-# cached: PowerIO.set_library! can select another library in the same process.
+# Qualify the loaded parser behavior: PowerIO 0.11.8 added a NOMV impedance
+# factor that 0.11.7 did not apply and 0.11.9 removed. A version string alone
+# also cannot distinguish local builds. Recheck after a library change because
+# PowerIO.set_library! can select another library in the same process.
 function _raw_transformer_basis_qualified()
-    for nominal in (false, true), cw in 1:3, cz in 1:3
+    for (nom1, nom2) in ((0.,0.), (230.,115.), (110.,220.)), cw in 1:3, cz in 1:3
         wind1, wind2 = cw==2 ? (231.,107.8) : (1.05,.98)
-        nom1, nom2 = nominal ? (230.,115.) : (0.,0.)
         resistance = cz==3 ? 50000. : .01
         text = """
         0,200,33,0,0,50
@@ -35,11 +34,11 @@ function _raw_transformer_basis_qualified()
         isempty(module_.diagnostics) || return false
         length(module_.value.branches)==1 || return false
         branch = only(module_.value.branches)
-        ratio1 = cw==2 ? 231/220 : cw==3 && nominal ? 1.05*230/220 : 1.05
-        ratio2 = cw==2 ? 107.8/110 : cw==3 && nominal ? .98*115/110 : .98
+        ratio1 = cw==2 ? 231/220 : cw==3 && nom1!=0 ? 1.05*nom1/220 : 1.05
+        ratio2 = cw==2 ? 107.8/110 : cw==3 && nom2!=0 ? .98*nom2/110 : .98
         r = cz==3 ? .001 : .01
         x = cz==3 ? sqrt(.2^2-r^2) : .2
-        scale = cz==1 ? 1. : (200/50)*(nominal ? (230/220)^2 : 1.)
+        scale = cz==1 ? 1. : 200/50
         isapprox(branch.resistance_pu, r*scale*ratio2^2; atol=1e-12,rtol=1e-10) || return false
         isapprox(branch.reactance_pu, x*scale*ratio2^2; atol=1e-12,rtol=1e-10) || return false
         isapprox(branch.effective_tap_ratio,ratio1/ratio2;atol=1e-12,rtol=1e-10) || return false
