@@ -1,0 +1,29 @@
+name: Solver diagnostics
+on:
+  push:
+    branches: [codex/solver-compatibility-fix]
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      JULIA_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v2
+      - run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: MadNLP convergence diagnostics
+        run: |
+          julia --check-bounds=yes --project=. -e '
+            using DroopOPF
+            include_string(Main, first(split(read("test/test_solver_compatibility.jl", String), "@testset")))
+            for attrs in (Dict(), Dict("bound_relax_factor"=>0.0), Dict("nlp_scaling"=>false), Dict("linear_solver"=>MadNLP.UmfpackSolver))
+              @show attrs
+              result=solve_opf(_solver_compatibility_case(); smooth_epsilon=1e-3, optimizer_factory=MadNLP.Optimizer, optimizer_attributes=attrs, silent=false)
+              @show result
+            end'
