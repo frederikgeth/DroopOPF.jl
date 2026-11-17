@@ -12,6 +12,17 @@
   @test isapprox(metrics.cost,sum(w.weight*sum(maximum(m*r.states[i].pg[j]+b for (m,b) in costs[g.id]) for (j,g) in enumerate(w.case.generators)) for (i,w) in enumerate(ws));atol=1e-10)
   results[obj]=(r,metrics)
  end
+ # Reporting-only cost data must not perturb a non-cost solve.
+ plain=optimize_static_witnesses(ws;design_bounds=bounds,objective=:loss,optimizer_attributes=attrs)
+ @test validate_static_witnesses(ws,plain;design_bounds=bounds).valid
+ @test isapprox(plain.objective,results[:loss][1].objective;atol=1e-10,rtol=1e-9)
+ # A cost ceiling still needs the epigraph even when minimizing losses.
+ seed,cm=results[:cost];cost_limits=Dict(:cost=>cm.cost+.01)
+ capped=optimize_static_witnesses(ws;design_bounds=bounds,generation_costs=costs,
+  initial_parameters=seed.parameters,initial_states=seed.states,objective=:loss,
+  objective_limits=cost_limits,optimizer_attributes=attrs)
+ @test validate_static_witnesses(ws,capped;design_bounds=bounds,generation_costs=costs,objective_limits=cost_limits).valid
+ @test static_witness_metrics(ws,capped;generation_costs=costs).cost<=cost_limits[:cost]+1e-8
  r,m=results[:q_reserve];limits=Dict(:q_reserve=>m.q_reserve-1e-5)
  polish=optimize_static_witnesses(ws;design_bounds=bounds,generation_costs=costs,initial_parameters=r.parameters,initial_states=r.states,objective_limits=limits,objective=:loss,optimizer_attributes=attrs)
  @test validate_static_witnesses(ws,polish;design_bounds=bounds,generation_costs=costs,objective_limits=limits).valid
