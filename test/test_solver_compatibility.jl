@@ -49,12 +49,15 @@ end
         :ccopt => solve_opf_complementarity(case; silent = true),
     )
 
-    for result in values(results)
-        @test result.state !== nothing
-        @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
-        residual = equilibrium_residual(case, result.state)
-        @test maximum(abs, residual.power.vector) < 1.0e-5
-        @test maximum(abs, residual.droop) < 5.0e-4
+    for (backend, result) in results
+        @testset "$backend" begin
+            @info "Solver compatibility" backend termination_status=result.termination_status objective=result.objective
+            @test result.state !== nothing
+            @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+            residual = equilibrium_residual(case, result.state)
+            @test maximum(abs, residual.power.vector) < 1.0e-5
+            @test maximum(abs, residual.droop) < 5.0e-4
+        end
     end
     @test abs(results[:madnlp].objective - results[:ipopt].objective) < 1.0e-8
     @test abs(results[:ccopt].objective - results[:ipopt].objective) < 1.0e-4

@@ -1,0 +1,23 @@
+name: Solver diagnostics
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      JULIA_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v2
+      - run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: Repeated solver diagnostics
+        run: |
+          for trial in 1 2 3 4 5; do
+            julia --project=. -e 'using Test, DroopOPF; include("test/test_solver_compatibility.jl")' || exit 1
+          done
