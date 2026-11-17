@@ -47,6 +47,14 @@ The voltage smoothing width is in per-unit voltage. By default, reactive
 smoothing is a relative fraction of each control's available reactive range;
 `smooth_reactive_epsilon` can override it with an absolute per-unit width.
 
+With the standard `MadNLP.Optimizer` factory, `solve_opf` uses exact variable
+bounds (`bound_relax_factor=0`). This avoids a reproduced line-search stagnation
+on the small, fully determined compatibility case under Julia's package-test
+compiler settings. Solver convergence tolerances are unchanged. Explicit
+`optimizer_attributes` override this default; custom optimizer factories retain
+their own configuration. If using a custom MadNLP factory, configure exact bounds
+there when the same stagnation occurs.
+
 ## Exact complementarity formulation
 
 `solve_opf_complementarity` uses MathOptComplements and CCOpt. Each voltage
@@ -78,6 +86,19 @@ ccopt_result = solve_opf_complementarity(case)
 The exact formulation has no smoothing parameter. CCOpt may report
 `ALMOST_LOCALLY_SOLVED` after its homotopy; use the independent equilibrium
 report and `complementarity_residual_max` to assess the result.
+
+The single-case `solve_opf_complementarity` wrapper keeps variable bounds exact
+(`bound_relax_factor=0`) and sets both CCOpt relaxation floors to `1e-14`.
+The upstream `1e-8` floors and relaxed nonnegative bounds can otherwise cause
+stagnation near the default convergence tolerance, even with tiny relaxed-NLP
+residuals. These defaults do not loosen convergence tolerances or change the
+physical equations. Explicit `optimizer_attributes` override them. For tighter
+targets, configure both `sigma_min` and the `sigma_min` field of
+`CCOpt.ProportionalRelaxationUpdate`; they are separate settings.
+
+`SLOW_PROGRESS` remains an unsuccessful termination, even if the physical
+residuals are small. The compatibility regression requires successful native
+termination and independently checks power, droop and complementarity residuals.
 
 ## Comparing solutions
 

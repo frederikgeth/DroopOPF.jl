@@ -51,6 +51,10 @@ assignments and AC witnesses; use `validate_static_witnesses` for physical accep
 Limits, relief, equipment controls and objectives must remain part of the declared
 contract. A feasible witness does not prove network-wide feasibility or optimality.
 
+Supplying `generation_costs` for reporting does not add cost variables to a
+non-cost solve. Cost epigraphs are added only for `objective=:cost` or an explicit
+`:cost` entry in `objective_limits`; reported costs are recomputed from dispatch.
+
 `model_data` exposes the library's serializable representation without writing a
 file. `materialize_operating_point` returns a supported case, state, reactive
 assignments and source context, rejecting invalid optimized results through the

@@ -1,6 +1,7 @@
 using JuMP
 using LogExpFunctions
 import Ipopt
+import MadNLP
 
 struct ACOPFResult{T<:Real}
     state::Union{Nothing,ACState{T}}
@@ -529,6 +530,12 @@ function solve_opf(
         reactive_assignments = reactive_assignments,
         sparse_balance = sparse_balance,
     )
+    # The default bound relaxation can make MadNLP's line search stagnate on
+    # square, nearly feasible OPFs before dual/barrier convergence. Exact bounds
+    # avoid this without loosening solver tolerances or changing physical limits.
+    # Leave custom factories intact; explicit attributes below override this.
+    optimizer_factory === MadNLP.Optimizer &&
+        set_optimizer_attribute(model, "bound_relax_factor", 0.0)
     for (key, value) in optimizer_attributes
         set_optimizer_attribute(model, key, value)
     end

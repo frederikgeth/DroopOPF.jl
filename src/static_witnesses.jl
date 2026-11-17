@@ -415,7 +415,9 @@ function optimize_static_witnesses(witnesses;design_bounds=Dict(),initial_parame
     loss_expr=@expression(model,sum(w.weight*w.case.base_power*(sum(variables[i].pg)-sum(l.p for l in w.case.loads)) for (i,w) in enumerate(ws)))
     vd_expr=@expression(model,sum(sum(((v-1.)/.1)^2 for v in vars.vm)/length(vars.vm) for vars in variables)/length(ws))
     cost_terms=Any[]
-    if !isempty(generation_costs)
+    # Cost metadata is also used for reporting. Unused epigraph variables have
+    # no objective incentive to become tight and introduce flat directions.
+    if objective == :cost || haskey(objective_limits, :cost)
         for (i,w) in enumerate(ws)
             w.weight>0 || continue
             for (j,g) in enumerate(w.case.generators)

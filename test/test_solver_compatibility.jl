@@ -36,6 +36,21 @@ function _solver_compatibility_case()
     )
 end
 
+@testset "CCOpt convergence below the upstream relaxation floor" begin
+    case = _solver_compatibility_case()
+    # The upstream 1e-8 floors/bound relaxation can stall with SLOW_PROGRESS
+    # despite tiny relaxed-NLP residuals. Require tighter native convergence
+    # and independently check the original equations; do not accept stagnation.
+    result = solve_opf_complementarity(case; optimizer_attributes = Dict(
+        "tol" => 1.0e-10, "acceptable_tol" => 1.0e-10))
+    @test result.termination_status == :LOCALLY_SOLVED
+    @test result.state !== nothing
+    @test result.complementarity_residual_max < 1.0e-10
+    residual = equilibrium_residual(case, result.state)
+    @test maximum(abs, residual.power.vector) < 1.0e-9
+    @test maximum(abs, residual.droop) < 1.0e-8
+end
+
 @testset "solver compatibility" begin
     case = _solver_compatibility_case()
     results = Dict{Symbol,Any}(
@@ -49,12 +64,15 @@ end
         :ccopt => solve_opf_complementarity(case; silent = true),
     )
 
-    for result in values(results)
-        @test result.state !== nothing
-        @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
-        residual = equilibrium_residual(case, result.state)
-        @test maximum(abs, residual.power.vector) < 1.0e-5
-        @test maximum(abs, residual.droop) < 5.0e-4
+    for (backend, result) in results
+        @testset "$backend" begin
+            @info "Solver compatibility" backend termination_status=result.termination_status objective=result.objective
+            @test result.state !== nothing
+            @test result.termination_status in (:LOCALLY_SOLVED, :ALMOST_LOCALLY_SOLVED)
+            residual = equilibrium_residual(case, result.state)
+            @test maximum(abs, residual.power.vector) < 1.0e-5
+            @test maximum(abs, residual.droop) < 5.0e-4
+        end
     end
     @test abs(results[:madnlp].objective - results[:ipopt].objective) < 1.0e-8
     @test abs(results[:ccopt].objective - results[:ipopt].objective) < 1.0e-4
