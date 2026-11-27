@@ -30,6 +30,10 @@ A generator's curve can stay fixed while its Q output changes with voltage.
 The [complete security example](first_security.md) runs this coupling on a
 three-bus network. The [SCOPF guide](scopf.md) specifies exact API behavior. A ranking merely changes
 execution order; an unassessed low-ranked outage is not an accepted AC equilibrium.
+For headroom-constrained loss design, record the witnesses covered by the floor
+and replay the frozen policy over the required catalogue. The
+[initialization guide](design_workflow.md#Initialization-and-handoff)
+documents the standalone study runner and the optional frozen MQ2 exchange.
 
 ## Understand limit-aware active response
 

@@ -63,7 +63,8 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
     smooth_reactive_epsilon::Union{Nothing,Real}=nothing,control_normalization=:none,
     droop_q_bounds=:explicit,droop_q_formulation=:explicit,
     encoding=:smooth, optimizer_factory=Ipopt.Optimizer,silent=true,
-    optimizer_attributes=Dict(),reactive_assignments=nothing,_measurement_hook=nothing)
+    optimizer_attributes=Dict(),reactive_assignments=nothing,_measurement_hook=nothing,
+    _solve_sequence=nothing)
     encoding in (:smooth, :complementarity) || throw(ArgumentError("encoding must be :smooth or :complementarity"))
     control_normalization in (:none,:bounds) || throw(ArgumentError("control_normalization must be :none or :bounds"))
     droop_q_bounds in (:explicit,:implied) || throw(ArgumentError("droop_q_bounds must be :explicit or :implied"))
@@ -107,23 +108,31 @@ function optimize_joint_design(case::Case;tap_controls=TapControl[],shunt_contro
         set_optimizer_attribute(model,k,x)
     end
     isnothing(_measurement_hook) || _measurement_hook(:built,model)
-    optimize!(model)
-    isnothing(_measurement_hook) || _measurement_hook(:solved,model)
-    present=has_values(model)
-    state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
-    epsilon = encoding == :smooth ? Float64(smooth_epsilon) : nothing
-    opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,encoding == :smooth && !isnothing(smooth_reactive_epsilon) ? Float64(smooth_reactive_epsilon) : nothing)
-    taps=present ? Dict(b.id=>Float64(haskey(v.taps,b.id) ? value(v.taps[b.id]) : b.tap_ratio) for b in case.network.branches) : Dict{Int,Float64}()
-    shunts=present ? Dict{Int,Float64}(id=>value(x) for (id,x) in v.shunts) : Dict{Int,Float64}()
-    droops=Dict{Int,DroopSettings{Float64}}()
-    if present
-        for (id,p) in parameters
-            droops[id]=DroopSettings((_droop_design_value(getfield(p,k)) for k in keys(p))...)
+    function extract_result()
+        present=has_values(model)
+        state=present ? ACState(value.(v.vm),value.(v.va),value.(v.pg),value.(v.qg)) : nothing
+        epsilon = encoding == :smooth ? Float64(smooth_epsilon) : nothing
+        opf=ACOPFResult{Float64}(state,present ? objective_value(model) : NaN,Symbol(string(termination_status(model))),Symbol(string(primal_status(model))),epsilon,epsilon,encoding == :smooth && !isnothing(smooth_reactive_epsilon) ? Float64(smooth_reactive_epsilon) : nothing)
+        taps=present ? Dict(b.id=>Float64(haskey(v.taps,b.id) ? value(v.taps[b.id]) : b.tap_ratio) for b in case.network.branches) : Dict{Int,Float64}()
+        shunts=present ? Dict{Int,Float64}(id=>value(x) for (id,x) in v.shunts) : Dict{Int,Float64}()
+        droops=Dict{Int,DroopSettings{Float64}}()
+        if present
+            for (id,p) in parameters
+                droops[id]=DroopSettings((_droop_design_value(getfield(p,k)) for k in keys(p))...)
+            end
         end
+        residual = present && encoding == :complementarity ? _complementarity_residual(v) : nothing
+        assignments=_settings_assignments(case,reactive_assignments,droops)
+        result=JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls),encoding,residual,assignments)
+        result
     end
-    residual = present && encoding == :complementarity ? _complementarity_residual(v) : nothing
-    assignments=_settings_assignments(case,reactive_assignments,droops)
-    result=JointDesignResult(opf,taps,shunts,droops,collect(tap_controls),collect(shunt_controls),collect(droop_controls),encoding,residual,assignments)
+    if isnothing(_solve_sequence)
+        optimize!(model)
+    else
+        _solve_sequence(model,v,extract_result)
+    end
+    isnothing(_measurement_hook) || _measurement_hook(:solved,model)
+    result=extract_result()
     isnothing(_measurement_hook) || _measurement_hook(:extracted,model)
     result
 end

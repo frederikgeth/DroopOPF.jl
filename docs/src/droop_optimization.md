@@ -182,3 +182,11 @@ small contingency set while producing non-unique, hard-to-interpret curves.
 The vector `DroopControl` interface and iterative contingency-addition driver
 are documented in [Droop security design](droop_security.md). They share the
 ordinary SCOPF builder and retain equipment policy equipment policies.
+
+```@meta
+CurrentModule = DroopOPF
+```
+
+```@docs
+optimize_joint_design
+```
