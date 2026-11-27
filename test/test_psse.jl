@@ -127,21 +127,22 @@ psse_parse(text)=parse_psse_raw(IOBuffer(text);source="test.raw")
     @test fixed_solution.state.qg[1]==0.
     # Cross-base impedance and both winding ratios, checked against a direct
     # two-port current primitive (independent of the importer's Branch builder).
-    for (nom1,nom2) in ((0.,0.),(230.,115.),(110.,220.)),cw in 1:3,cz in 1:3
-        raw=psse_parse(text);f=raw.sections[:transformer][1].fields
-        f[:CW]=cw;f[:CZ]=cz;f[:NOMV_1]=nom1;f[:NOMV_2]=nom2;
+    for base in (100.,200.), (nom1,nom2) in ((0.,0.),(230.,115.),(110.,220.)), cw in 1:3,cz in 1:3
+        raw=psse_parse(replace(text,"0,100,33"=>"0,$base,33"));f=raw.sections[:transformer][1].fields
+        f[:CW]=cw;f[:CZ]=cz;f[:NOMV_1]=nom1;f[:NOMV_2]=nom2
         f[:WINDV_1]=cw==2 ? 231. : 1.05;f[:WINDV_2]=cw==2 ? 107.8 : .98
         f[:R12]=cz==3 ? 50000. : .01
         znom=cz==3 ? complex(.001,sqrt(.2^2-.001^2)) : complex(.01,.2)
-        znom*=cz==1 ? 1. : 100/50
-        a=cw==1 ? 1.05 : cw==2 ? 231/220 : (nom1==0 ? 1.05 : 1.05*nom1/220)
-        b=cw==1 ? .98 : cw==2 ? 107.8/110 : (nom2==0 ? .98 : .98*nom2/110)
+        znom*=cz==1 ? 1. : base/50
+        a=cw==2 ? 231/220 : cw==3 && nom1!=0 ? 1.05*nom1/220 : 1.05
+        b=cw==2 ? 107.8/110 : cw==3 && nom2!=0 ? .98*nom2/110 : .98
         phi=deg2rad(5.);tap=complex(cos(phi),sin(phi))*a
         expected=ComplexF64[1/(znom*abs2(tap)) -1/(znom*conj(tap)*b);-1/(znom*tap*b) 1/(znom*b^2)]
         tr=import_psse_case(raw).case.network.branches[2]
         z=complex(tr.resistance,tr.reactance);t=tr.tap_ratio*cis(tr.phase_shift)
         actual=ComplexF64[1/(z*abs2(t)) -1/(z*conj(t));-1/(z*t) 1/z]
         @test actual≈expected atol=1e-12
+        @test complex(tr.resistance,tr.reactance)≈znom*b^2 atol=1e-12
     end
     # Public native exports exercise actual v33 and v34 section ordering.
     source=joinpath(@__DIR__,"data/arpae/c1_network01/scenario_01/case.raw")
@@ -161,4 +162,39 @@ psse_parse(text)=parse_psse_raw(IOBuffer(text);source="test.raw")
     @test raw.sections[:branch][1].fields[:ST]==1
     @test c.network.branches[end].tap_ratio≈.87976
     @test c.network.branches[end].phase_shift≈deg2rad(2.541)
+end
+
+# Exercise both parser behaviors without replacing the installed PowerIO library.
+module TransformerBasisGateProbe
+    module P
+        import DroopOPF
+        struct BalancedNetwork end
+        struct PioModule{T} end
+        struct PowerIOError <: Exception end
+        const extra_nominal_factor = Ref(false)
+
+        function Base.parse(::Type{PioModule{BalancedNetwork}}, bytes; name, format)
+            raw = DroopOPF.parse_psse_raw(IOBuffer(bytes); source=name)
+            branch = only(DroopOPF.import_psse_case(raw).case.network.branches)
+            fields = only(raw.sections[:transformer]).fields
+            nominal = get(fields, :NOMV_1, 0.)
+            factor = extra_nominal_factor[] && fields[:CZ] != 1 && nominal != 0 ?
+                (nominal / 220)^2 : 1.
+            converted = (resistance_pu=branch.resistance*factor,
+                reactance_pu=branch.reactance*factor,
+                effective_tap_ratio=branch.tap_ratio,
+                phase_shift_degrees=rad2deg(branch.phase_shift))
+            (diagnostics=Any[], value=(branches=[converted],))
+        end
+    end
+    include(joinpath(@__DIR__, "..", "ext", "powerio_transformer_qualification.jl"))
+end
+
+@testset "RAW transformer gate rejects the extra nominal-voltage factor" begin
+    probe = TransformerBasisGateProbe
+    @test probe._raw_transformer_basis_qualified()
+    probe.P.extra_nominal_factor[] = true
+    @test !probe._raw_transformer_basis_qualified()
+    probe.P.extra_nominal_factor[] = false
+    @test probe._raw_transformer_basis_qualified()
 end

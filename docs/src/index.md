@@ -29,6 +29,9 @@ counterparts. Individual teaching pages also define symbols where they first app
 All examples use a balanced, positive-sequence AC model. An equilibrium or an hourly
 schedule is not a transient-stability or device-switching trajectory assessment.
 
+Follow the [parse-to-design flowcharts](design_workflow.md) for initialization
+objectives, stage handoff, control decisions and performance review.
+
 ## Find the guide for your task
 
 | Your question | Start here | Detailed reference |

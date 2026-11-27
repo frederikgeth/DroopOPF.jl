@@ -82,8 +82,8 @@
         write(path, replace(raw,"0,100,33"=>"0,200,33"))
         x = import_case(path; backend=PowerIOBackend()).case
         @test x.loads[1].p == .3
-        # Independently check the original two-ideal-winding circuit. Qualified
-        # libraries must import these cases; unsupported builds must reject them.
+        # Independently check the original two-ideal-winding circuit. The gate
+        # rejects the extra NOMV impedance factor introduced by PowerIO 0.11.8.
         for base in (100.,200.), (nom1,nom2) in ((0.,0.),(230.,115.),(110.,220.)), cw in 1:3, cz in 1:3
             wind1 = cw==2 ? 231. : 1.05
             wind2 = cw==2 ? 107.8 : .98

@@ -45,6 +45,8 @@ native PSS/E matching claim follows from import or a converged solve.
 
 Start with the [teaching guide](docs/src/index.md), then run the complete
 [two-bus OPF](docs/src/first_opf.md) and [three-bus security example](docs/src/first_security.md).
+The [workflow flowcharts](docs/src/design_workflow.md) cover parsing, input checks,
+initialization objectives, design handoff and candidate review.
 The guide includes network/control schematics, a [Volt/VAR curve tutorial](docs/src/volt_var.md),
 [AC branch physics](docs/src/ac_model.md), and [notation, signs and units](docs/src/notation.md).
 The examples execute and check their results during the documentation build.
@@ -88,3 +90,19 @@ synthetic two-bus case and writes no files.
 
 Library code is BSD-3-Clause; see [LICENSE](LICENSE). Third-party test data retain
 their own provenance and notices; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Integration boundary
+
+This repository owns the reusable AC OPF/SCOPF core, static controls, capability,
+equipment policies, multi-period optimisation and case I/O. DroopDesign consumes
+it for Q/H research and MHQ integration. See [package boundaries](docs/src/package_boundaries.md).
+
+### Fixed-frequency Q–V study scope
+
+New aggregate IBR studies use [`qv_inverter`](docs/src/static_inverters.md),
+with a configurable reactive ceiling of 0.395 times effective apparent rating.
+Supplied Q bounds, apparent/current limits and declared control priority remain
+active. GFL, terminal-equivalent GFM and BESS charging are supported; storage
+energy accounting is separate. P–f/common-frequency models remain available
+as the **frequency-aware Q–V design** side study. Existing constructor behavior
+and historical evidence are preserved. See `examples/fixed_frequency_qv.jl`.

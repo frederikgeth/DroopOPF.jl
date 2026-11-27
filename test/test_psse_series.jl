@@ -238,24 +238,41 @@ end
     end
 end
 
-@testset "Classified series diagnostic exposes statuses only" begin
+@testset "CSV snapshot CLI keeps diagnostics status-only" begin
+    cli=Module(:PSSESeriesCLITest)
+    source=read(joinpath(@__DIR__,"..","examples","check_psse_series.jl"),String)
+    Base.include_string(cli,replace(source,"exit(main(ARGS))"=>""))
     mktempdir() do dir
         raw=read(joinpath(@__DIR__,"data","psse","synthetic_v33.raw"),String)
         write(joinpath(dir,"1.raw"),replace(raw,"220,3,1,1,1"=>"220,3,1,4,1"))
-        csv=joinpath(dir,"generator-technology.csv")
+        csv=joinpath(dir,"secret-generator-technology.csv")
         write(csv,"bus_number,bus_name,technology\n1,\"SLACK / O'Brien\",ibr_unidentified\n")
-        series=load_psse_series(dir;zone=4,generator_csv=csv)
-        status=psse_series_diagnostic(series)
-        @test Set(keys(status))==Set(["schema","import_status","saved_replay","security_status"])
-        @test status["import_status"]=="compatible"
-        @test status["security_status"]=="not_run"
-        text=JSON.json(status)
-        for private_value in (dir,"SLACK","ibr_unidentified","generator_id","candidate_curve")
-            @test !occursin(private_value,text)
+        output=joinpath(dir,"stdout.txt");errors=joinpath(dir,"stderr.txt")
+        function runcli()
+            open(output,"w") do out
+                open(errors,"w") do err
+                    redirect_stdout(out) do
+                        redirect_stderr(err) do
+                            cli.main([dir,"4",csv])
+                        end
+                    end
+                end
+            end
         end
-        # Only the typed series API can construct the minimal status object;
-        # callers cannot pass a detailed report and claim it has been redacted.
-        @test_throws MethodError psse_series_diagnostic(series.build_reports[1])
+        @test runcli()==0
+        text=read(output,String)
+        @test JSON.parse(text)["import_status"]=="compatible"
+        @test !occursin(dir,text)
+        @test !occursin("SLACK",text)
+        @test !occursin("ibr_unidentified",text)
+        @test !occursin("generator_id",text)
+        write(csv,"private malformed content")
+        @test runcli()==1
+        @test isempty(read(output,String))
+        err=read(errors,String)
+        @test !occursin(dir,err)
+        @test !occursin("private malformed",err)
+        @test !occursin("Stacktrace",err)
     end
 end
 
@@ -316,5 +333,26 @@ end
         full=load_psse_series(dir;generator_csv=csv)
         @test all(a.location.bus_id==2 for a in full.reactive_assignments[1])
         @test full.build_reports[1]["avr_policy"]["qualified"]
+    end
+end
+
+@testset "Classified series diagnostic exposes statuses only" begin
+    mktempdir() do dir
+        raw=read(joinpath(@__DIR__,"data","psse","synthetic_v33.raw"),String)
+        write(joinpath(dir,"1.raw"),replace(raw,"220,3,1,1,1"=>"220,3,1,4,1"))
+        csv=joinpath(dir,"generator-technology.csv")
+        write(csv,"bus_number,bus_name,technology\n1,\"SLACK / O'Brien\",ibr_unidentified\n")
+        series=load_psse_series(dir;zone=4,generator_csv=csv)
+        status=psse_series_diagnostic(series)
+        @test Set(keys(status))==Set(["schema","import_status","saved_replay","security_status"])
+        @test status["import_status"]=="compatible"
+        @test status["security_status"]=="not_run"
+        text=JSON.json(status)
+        for private_value in (dir,"SLACK","ibr_unidentified","generator_id","candidate_curve")
+            @test !occursin(private_value,text)
+        end
+        # Only the typed series API can construct the minimal status object;
+        # callers cannot pass a detailed report and claim it has been redacted.
+        @test_throws MethodError psse_series_diagnostic(series.build_reports[1])
     end
 end

@@ -65,7 +65,13 @@ function P2PartitionedEvaluator(original,variables)
             c=constraints[i];local_model.constraints[N.ConstraintIndex(j)]=N.Constraint(clone(c.expression),c.set)
         end
         local_model.last_constraint_index=length(rows)
-        objective && (local_model.objective=clone(source.objective))
+        if objective
+            local_model.objective=clone(source.objective)
+            # MOI 1.55 evaluates nonlinear objectives using the model's sense.
+            # New models default to feasibility, which would zero this block.
+            hasproperty(source,:objective_sense) &&
+                setproperty!(local_model,:objective_sense,getproperty(source,:objective_sense))
+        end
         ids=sort!(collect(variable_ids));columns=[positions[i] for i in ids]
         evaluator=N.Evaluator(local_model,N.SparseReverseMode(),P2MOI.VariableIndex.(ids))
         push!(blocks,(;evaluator,rows,columns,objective,g=zeros(length(rows)),gradient=zeros(length(columns)),jac=Float64[]))
