@@ -52,3 +52,25 @@ end
     @test objective_value(b)≈objective_value(a) atol=1e-6
     @test all(isapprox(value(b[v]),value(a[v]);atol=1e-5) for v in (:shared,:f1_s1_x,:f1_s2_x))
 end
+
+@testset "Partitioned nonlinear objective preserves minimization and maximization" begin
+    for sense in (P2MOI.MIN_SENSE,P2MOI.MAX_SENSE)
+        m=Model()
+        @variable(m,shared,start=1.)
+        @variable(m,f1_s1_x,start=.8)
+        @NLobjective(m,Min,shared^2+2 * f1_s1_x^2)
+        set_objective_sense(m,sense)
+        standard=JuMP.NLPEvaluator(m)
+        blocks=P2PartitionedEvaluator(standard,all_variables(m))
+        P2MOI.initialize(standard,[:Grad,:Jac])
+        P2MOI.initialize(blocks,[:Grad,:Jac])
+        x=[1.1,.8];g0=zeros(2);g1=zeros(2)
+        f=P2MOI.eval_objective(blocks,x)
+        @test abs(f)≈2.49
+        @test f≈P2MOI.eval_objective(standard,x)
+        P2MOI.eval_objective_gradient(standard,g0,x)
+        P2MOI.eval_objective_gradient(blocks,g1,x)
+        @test g0≈g1
+        @test sum(abs,g1)>0
+    end
+end
